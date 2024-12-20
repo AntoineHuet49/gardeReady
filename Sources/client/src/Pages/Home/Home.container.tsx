@@ -1,17 +1,13 @@
-import { useForm } from "@tanstack/react-form";
+import { useForm } from "react-hook-form";
 import Home from "./Home";
+import { LoginValues } from "../../Types/formValues";
 
 function HomeContainer() {
-    const form = useForm({
-        defaultValues: {
-            email: '',
-            password: ''
-        },
-        onSubmit:  async data => {
-            console.log(data)
-            data.formApi.setFieldValue("password", "");
-        }
-    });
+    const { register, handleSubmit } = useForm<LoginValues>();
+
+    const handleSubmitForm = (data: LoginValues) => {
+        console.log(data);
+    };
 
     const handleStartClick = () => {
         document
@@ -25,7 +21,7 @@ function HomeContainer() {
         }, 300);
     };
 
-    return <Home handleStartClick={handleStartClick} form={form} />;
+    return <Home handleStartClick={handleStartClick} register={register} handleSubmit={handleSubmit} handleSubmitForm={handleSubmitForm} />;
 }
 
 export default HomeContainer;

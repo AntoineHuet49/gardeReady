@@ -1,25 +1,22 @@
-import { ReactFormExtendedApi } from "@tanstack/react-form";
+import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form";
 import Button from "../../Components/Button/button";
 import TextInput from "../../Components/Input/TextInput";
+import { LoginValues } from "../../Types/formValues";
 import MailIcon from "../../assets/icons/mail.svg";
 import PasswordIcon from "../../assets/icons/password.svg";
 
 type HomeProps = {
     handleStartClick: () => void;
-    form: ReactFormExtendedApi<
-        {
-            email: string;
-            password: string;
-        },
-        undefined
-    >;
+    register: UseFormRegister<LoginValues>;
+    handleSubmit: UseFormHandleSubmit<LoginValues>;
+    handleSubmitForm: (data: LoginValues) => void;
 };
 
-function Home({ handleStartClick, form }: HomeProps) {
+function Home({ handleStartClick, register, handleSubmit, handleSubmitForm }: HomeProps) {
     return (
         <div className="container flex flex-col items-center justify-center h-screen">
             <h1 id="homeTitle" className="text-6xl mb-20">
-                Garde Ready
+            Véri'Feu
             </h1>
             <Button
                 id="startButton"
@@ -28,35 +25,23 @@ function Home({ handleStartClick, form }: HomeProps) {
             />
             <form
                 id="loginForm"
-                className="hero bg-base p-10 w-3/4 h-fit absolute flex flex-col border-2 border-base-300 rounded-lg hidden"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit();
-                }}
+                className="hero bg-base p-5 w-3/4 h-fit absolute flex-col border-2 border-base-300 rounded-lg hidden"
+                onSubmit={handleSubmit(handleSubmitForm)}
             >
-                <h2 className="text-3xl mb-8">Login</h2>
-                <form.Field
-                    name="email"
-                    children={(field) => (
+                <h2 className="text-3xl mb-8">Connexion</h2>
                         <TextInput
                             placeholder="email"
                             icon={MailIcon}
-                            field={field}
+                            register={register}
+                            name="email"
                         />
-                    )}
-                />
-                <form.Field
-                    name="password"
-                    children={(field) => (
                         <TextInput
                             placeholder="Mot de passe"
                             icon={PasswordIcon}
-                            field={field}
+                            register={register}
+                            name="password"
                             isPassword
                         />
-                    )}
-                />
                 <Button text="Connexion" />
             </form>
         </div>

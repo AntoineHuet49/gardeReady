@@ -1,6 +1,4 @@
-export type FormValues = {
+export type LoginValues = {
     email: string;
     password: string;
 }
-
-export type FormName = keyof FormValues;

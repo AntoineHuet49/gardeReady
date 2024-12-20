@@ -1,7 +1,7 @@
 # Dockerfile pour un environnement de développement React TypeScript avec Vite
 
 # Utiliser une image Node officielle
-FROM node:22
+FROM node:22-alpine
 
 # Définir le répertoire de travail
 WORKDIR /app

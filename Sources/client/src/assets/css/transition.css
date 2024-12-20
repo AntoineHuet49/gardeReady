@@ -25,7 +25,8 @@
 }
 
 .appear {
-    animation: appear 1s ease-in-out both;
+    display: flex;
+    animation: appear 0.5s ease-in-out both;
 }
 
 @keyframes appear {
