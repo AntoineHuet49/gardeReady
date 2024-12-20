@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: ./Sources/client
+    container_name: gardeReady-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Sources/client:/app
+      # - /app/node_modules
+    environment:
+      - NODE_ENV=development

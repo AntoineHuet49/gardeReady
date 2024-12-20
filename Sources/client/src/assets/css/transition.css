@@ -1,0 +1,38 @@
+.slide_title_on_top {
+    animation: slide-bck-top 1s ease-in-out both;
+}
+
+@keyframes slide-bck-top {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-35vh);
+    }
+}
+
+.disappear {
+    animation: disappear 1s ease-in-out both;
+}
+
+@keyframes disappear {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.appear {
+    animation: appear 1s ease-in-out both;
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
