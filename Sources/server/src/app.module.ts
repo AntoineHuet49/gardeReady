@@ -13,7 +13,7 @@ import { UsersModule } from './users/users.module';
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_DATABASE || 'gardeready',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       retryAttempts: 5, // Nombre de tentatives
       retryDelay: 3000, // Délai entre les tentatives (en ms)
     }),

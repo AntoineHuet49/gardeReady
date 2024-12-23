@@ -9,6 +9,9 @@ export class Gardes {
   @Column({ default: 'non assigné' })
   numero: string;
 
-  @OneToOne(() => Users, (responsable) => responsable.garde_id)
-  responsable: Users;
+  @Column({ default: 'non assigné' })
+  couleur: string;
+
+  @OneToOne(() => Users, (users) => users.garde)
+  responsable: Users[];
 }

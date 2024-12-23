@@ -59,6 +59,8 @@ INSERT INTO gardes (numero, couleur, responsable) VALUES
 ('G002', 'Bleu', 2), -- Responsable : Jane Smith
 ('G003', 'Vert', 3); -- Responsable : Alice Jones
 
+SELECT * FROM users;
+
 -- Mise à jour de la table users avec les IDs de garde
 UPDATE users SET garde_id = 1 WHERE id = 1; -- John Doe est assigné à la garde G001
 UPDATE users SET garde_id = 2 WHERE id = 2; -- Jane Smith est assignée à la garde G002
@@ -82,3 +84,5 @@ INSERT INTO vehicules_elements (vehicule_id, elements_id) VALUES
 (1, 2), -- Camion de pompier - Sirène
 (2, 2), -- Voiture de police - Sirène
 (3, 3); -- Ambulance - Trousse de secours
+
+SELECT * FROM users;

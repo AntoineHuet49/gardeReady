@@ -1,23 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Gardes } from './gardes.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true })
+  @Column()
+  @Exclude()
   password: string;
 
-  @Column({ nullable: true })
+  @Column()
   firstname: string;
 
-  @Column({ nullable: true })
+  @Column()
   lastname: string;
 
-  @OneToMany(() => Gardes, (gardes) => gardes.id)
-  garde_id: Gardes;
+  @ManyToOne(() => Gardes, (garde) => garde.responsable, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'garde_id' })
+  garde: Gardes;
 }
