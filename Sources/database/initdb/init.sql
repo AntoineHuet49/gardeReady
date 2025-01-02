@@ -49,9 +49,9 @@ ADD CONSTRAINT fk_elements FOREIGN KEY (elements_id) REFERENCES elements(id) ON 
 -- Insertion des données dans les tables
 -- Table users
 INSERT INTO users (email, password, firstname, lastname) VALUES
-('john.doe@example.com', 'password123', 'John', 'Doe'),
-('jane.smith@example.com', 'password456', 'Jane', 'Smith'),
-('alice.jones@example.com', 'password789', 'Alice', 'Jones');
+('john.doe@example.com', 'test', 'John', 'Doe'),
+('jane.smith@example.com', 'test', 'Jane', 'Smith'),
+('alice.jones@example.com', 'test', 'Alice', 'Jones');
 
 -- Table gardes
 INSERT INTO gardes (numero, couleur, responsable) VALUES

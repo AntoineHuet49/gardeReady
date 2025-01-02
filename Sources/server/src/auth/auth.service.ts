@@ -1,24 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { instanceToPlain } from 'class-transformer';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { LoginReqDTO } from 'src/dto/Login.dto';
-import { Users } from 'src/Entity/users.entity';
-import { Repository } from 'typeorm';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Users)
-    private usersRepository: Repository<Users>,
+    private userServices: UsersService,
+    private jwtService: JwtService,
   ) {}
 
   async login(body: LoginReqDTO) {
     const { email, password } = body;
-    const user = await this.usersRepository.findOne({
-      where: { email },
-      relations: ['garde'],
-    });
-    const safeUser = instanceToPlain(user);
-    return safeUser;
+    const user = await this.userServices.findOneByEmail(email);
+    // Check not found && Check password
+    if (user === null || password !== user.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const payload = { sub: user.id, username: user.email };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
