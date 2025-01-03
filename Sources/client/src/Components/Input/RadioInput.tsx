@@ -1,25 +1,30 @@
+import { UseFormRegister } from "react-hook-form";
 import "./radioInput.scss";
+import { VerificationValues } from "../../Types/formValues";
 
 type RadioInputProps = {
-    id: string;
+    register: UseFormRegister<VerificationValues[]>;
+    name: `${number}` | `${number}.elementId` | `${number}.status` | `${number}.comment`;
 };
 
-function RadioInput({ id }: RadioInputProps) {
+function RadioInput({ register, name }: RadioInputProps) {
     return (
-        <div className="join">
+        <div className="join justify-end">
             <input
                 className="join-item btn"
                 type="radio"
-                name={`option-${id}`}
                 aria-label="OK"
-            />
+                {...register(name)}
+                value="OK"
+                />
             <input
                 className="join-item btn"
                 type="radio"
-                name={`option-${id}`}
                 aria-label="KO"
+                {...register(name)}
+                value="KO"
                 defaultChecked
-            />
+                />
         </div>
     );
 }

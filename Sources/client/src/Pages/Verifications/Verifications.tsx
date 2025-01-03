@@ -1,16 +1,33 @@
+import { UseFormHandleSubmit, UseFormRegister, UseFormWatch } from "react-hook-form";
 import Alert from "../../Components/Alert/Alert";
+import Button from "../../Components/Button/button";
 import RadioInput from "../../Components/Input/RadioInput";
 import Loader from "../../Components/Loader/Loader";
 import { Element } from "../../Types/Element";
 import { Vehicule } from "../../Types/Vehicule";
+import { VerificationValues } from "../../Types/formValues";
 
 type DetailsProps = {
     vehicule?: Vehicule;
     isLoading: boolean;
     error: Error | null;
+    register: UseFormRegister<VerificationValues[]>;
+    handleSubmit: UseFormHandleSubmit<VerificationValues[]>;
+    onSubmit: (data: VerificationValues[]) => void;
+    watch: UseFormWatch<VerificationValues[]>;
+    defaultValues: VerificationValues[]; 
 };
 
-function Verifications({ vehicule, isLoading, error }: DetailsProps) {
+function Verifications({
+    vehicule,
+    isLoading,
+    error,
+    register,
+    handleSubmit,
+    onSubmit,
+    watch,
+    defaultValues,
+}: DetailsProps) {
     return (
         <div className="container flex flex-col items-center p-4">
             <h1 className="text-5xl m-10">Verifications</h1>
@@ -21,21 +38,45 @@ function Verifications({ vehicule, isLoading, error }: DetailsProps) {
                         {vehicule?.name.toLocaleUpperCase()}
                     </h2>
                     <div className="divider"></div>
-                    <div className="flex flex-col items-start w-full">
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="flex flex-col items-start w-full"
+                    >
                         {vehicule?.elements?.map((element: Element) => {
+                            const currentStatus = watch(`${element.id}.status`) || defaultValues[element.id]?.status;
+                            console.log(currentStatus);
                             return (
                                 <div key={element.id} className="w-full">
-                                    <div className="flex justify-between w-full">
-                                        <h3 className="text-xl">
-                                            {element.name}
-                                        </h3>
-                                        <RadioInput id={element.id.toString()} />
+                                    <div className="">
+                                        <div className="flex justify-between w-full mb-4">
+                                            <h3 className="text-xl">
+                                                {element.name}
+                                            </h3>
+                                            <input type="hidden" {...register(`${element.id}.elementId`)} value={element.id} />
+                                            <RadioInput
+                                                name={`${element.id}.status`}
+                                                register={register}
+                                            />
+                                        </div>
+                                        {currentStatus === "KO" && (
+                                            <textarea
+                                            className="textarea textarea-bordered textarea-md w-full"
+                                            placeholder="Commentaire"
+                                            style={{ resize: "none" }}
+                                            {...register(`${element.id}.comment`)}
+                                            required
+                                            ></textarea>
+                                        )}
                                     </div>
                                     <div className="divider"></div>
                                 </div>
                             );
                         })}
-                    </div>
+                        <Button
+                            className="self-end px-10"
+                            text="Valider"
+                        />
+                    </form>
                 </div>
             ) : undefined}
             {error ? (
