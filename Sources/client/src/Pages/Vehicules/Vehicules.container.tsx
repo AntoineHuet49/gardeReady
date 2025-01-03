@@ -1,14 +1,19 @@
-import { Vehicule } from "../../Types/Vehicules";
+import { useQuery } from "@tanstack/react-query";
 import Vehicules from "./Vehicules";
+import { getAllVehicules } from "../../utils/Api/Vehicules";
+import { Vehicule } from "../../Types/Vehicule";
+import { useNavigate } from "react-router";
 
 function VehiculesContainer() {
-    const vehicules: Vehicule[] = [
-        { id: 1, name: "Vehicule 1" },
-        { id: 2, name: "Vehicule 2" },
-        { id: 3, name: "Vehicule 3" },
-    ];
+    const {data, isLoading , error} = useQuery({
+        queryKey: ["vehicules"],
+        queryFn: () => getAllVehicules(),
+    });
+    const navigate = useNavigate();
 
-    return <Vehicules vehicules={vehicules} />;
+    const vehicules: Vehicule[] = data?.data || [];
+
+    return <Vehicules vehicules={vehicules} isLoading={isLoading} error={error} navigate={navigate} />;
 }
 
 export default VehiculesContainer;

@@ -8,7 +8,6 @@ type AlertProps = {
 
 function Alert({ type , display, message}: AlertProps) {
     return (
-        // ${display ? "" : "hidden"}
         <div role="alert" className={`alert alert-${type} mb-4 ${display ? "" : "hidden"}`}>
             <svg
                 xmlns="http://www.w3.org/2000/svg"

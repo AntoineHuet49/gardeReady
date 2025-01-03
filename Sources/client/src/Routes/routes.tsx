@@ -3,6 +3,7 @@ import { Home } from "../Pages/Home";
 import { Vehicules } from "../Pages/Vehicules";
 import { routePath } from "./routeConstants";
 import PrivateRoute from "./privatesRoutes";
+import { Verifications } from "../Pages/Verifications";
 
 function Router() {
     const routes: RouteObject[] = [
@@ -13,6 +14,10 @@ function Router() {
         {
             path: routePath.vehicules,
             element: <PrivateRoute Component={Vehicules} />,
+        },
+        {
+            path: routePath.details,
+            element: <PrivateRoute Component={Verifications} />,
         },
     ];
 
