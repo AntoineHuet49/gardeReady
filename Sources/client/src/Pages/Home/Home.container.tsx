@@ -14,8 +14,7 @@ function HomeContainer() {
     const navigate = useNavigate();
 
     const handleSubmitForm = async (data: LoginValues) => {
-        const result = await mutation.mutateAsync(data);
-        console.log(result);
+        await mutation.mutateAsync(data);
         navigate(routePath.vehicules);
     };
 
@@ -30,8 +29,6 @@ function HomeContainer() {
             loginForm?.classList.remove("hidden");
         }, 300);
     };
-
-    console.log(mutation);
 
     return <Home handleStartClick={handleStartClick} register={register} handleSubmit={handleSubmit} handleSubmitForm={handleSubmitForm} isError={mutation.isError} />;
 }

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { VehiculesService } from './vehicules.service';
 
 @Controller('vehicules')
@@ -11,7 +11,7 @@ export class VehiculesController {
   }
 
   @Get(':id')
-  findOneById(id: number) {
+  findOneById(@Param('id') id: number) {
     return this.VehiculesService.findOneById(id);
   }
 }
