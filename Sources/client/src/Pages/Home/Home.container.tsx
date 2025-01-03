@@ -1,12 +1,22 @@
 import { useForm } from "react-hook-form";
 import Home from "./Home";
 import { LoginValues } from "../../Types/formValues";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "../../utils/Api/Auth";
+import { useNavigate } from "react-router";
+import { routePath } from "../../Routes/routeConstants";
 
 function HomeContainer() {
     const { register, handleSubmit } = useForm<LoginValues>();
+    const mutation = useMutation({
+        mutationFn: (data: LoginValues) => login(data.email, data.password),
+    });
+    const navigate = useNavigate();
 
-    const handleSubmitForm = (data: LoginValues) => {
-        console.log(data);
+    const handleSubmitForm = async (data: LoginValues) => {
+        const result = await mutation.mutateAsync(data);
+        console.log(result);
+        navigate(routePath.vehicules);
     };
 
     const handleStartClick = () => {
@@ -21,7 +31,9 @@ function HomeContainer() {
         }, 300);
     };
 
-    return <Home handleStartClick={handleStartClick} register={register} handleSubmit={handleSubmit} handleSubmitForm={handleSubmitForm} />;
+    console.log(mutation);
+
+    return <Home handleStartClick={handleStartClick} register={register} handleSubmit={handleSubmit} handleSubmitForm={handleSubmitForm} isError={mutation.isError} />;
 }
 
 export default HomeContainer;

@@ -1,15 +1,17 @@
-import {
-    createBrowserRouter,
-    RouteObject,
-    RouterProvider,
-} from "react-router";
+import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
 import { Home } from "../Pages/Home";
+import { Vehicules } from "../Pages/Vehicules";
+import { routePath } from "./routeConstants";
 
 function Router() {
     const routes: RouteObject[] = [
         {
-            path: "/",
+            path: routePath.home,
             element: <Home />,
+        },
+        {
+            path: routePath.vehicules,
+            element: <Vehicules />,
         },
     ];
 
