@@ -2,6 +2,7 @@ import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
 import { Home } from "../Pages/Home";
 import { Vehicules } from "../Pages/Vehicules";
 import { routePath } from "./routeConstants";
+import PrivateRoute from "./privatesRoutes";
 
 function Router() {
     const routes: RouteObject[] = [
@@ -11,7 +12,7 @@ function Router() {
         },
         {
             path: routePath.vehicules,
-            element: <Vehicules />,
+            element: <PrivateRoute Component={Vehicules} />,
         },
     ];
 
