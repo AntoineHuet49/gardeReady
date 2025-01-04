@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as moment from 'moment';
+import * as path from 'path';
+import * as fs from 'fs';
 import { verificationDTO } from 'src/dto/Vehicule.dto';
+import { ElementsService } from 'src/elements/elements.service';
 import { Vehicules } from 'src/Entity/vehicules.entity';
 import { Repository } from 'typeorm';
 
@@ -12,6 +15,7 @@ export class VehiculesService {
   constructor(
     @InjectRepository(Vehicules)
     private vehiculesRepository: Repository<Vehicules>,
+    private elementsService: ElementsService,
   ) {}
 
   async findAll() {
@@ -26,7 +30,6 @@ export class VehiculesService {
   }
 
   async generatePdf(id: number, verification: verificationDTO[]) {
-    console.log(verification);
     const vehicule = await this.findOneById(id);
     const doc = new jsPDF();
     doc.text('Date : ' + this.getFormatDate(), 10, 10);
@@ -49,10 +52,18 @@ export class VehiculesService {
           }
         }
       },
-      body: verification.map((v) => [v.elementId, v.status, v.comment]),
+      body: await Promise.all(
+        verification.map(async (v) => {
+          const element = await this.elementsService.findOneById(v.elementId);
+          return [element.name, v.status, v.comment];
+        }),
+      ),
     });
 
-    doc.save(vehicule.name + '.pdf');
+    console.log(process.cwd());
+    const filePath = path.join(process.cwd(), '/public/verification.pdf');
+    const pdfBuffer = doc.output('arraybuffer');
+    fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
   }
 
   getFormatDate() {
