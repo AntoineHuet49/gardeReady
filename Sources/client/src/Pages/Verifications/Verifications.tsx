@@ -15,7 +15,6 @@ type DetailsProps = {
     handleSubmit: UseFormHandleSubmit<VerificationValues[]>;
     onSubmit: (data: VerificationValues[]) => void;
     watch: UseFormWatch<VerificationValues[]>;
-    defaultValues: VerificationValues[]; 
 };
 
 function Verifications({
@@ -26,7 +25,6 @@ function Verifications({
     handleSubmit,
     onSubmit,
     watch,
-    defaultValues,
 }: DetailsProps) {
     return (
         <div className="container flex flex-col items-center p-4">
@@ -43,8 +41,7 @@ function Verifications({
                         className="flex flex-col items-start w-full"
                     >
                         {vehicule?.elements?.map((element: Element) => {
-                            const currentStatus = watch(`${element.id}.status`) || defaultValues[element.id]?.status;
-                            console.log(currentStatus);
+                            const currentStatus = watch(`${element.id}.status`) || "KO";
                             return (
                                 <div key={element.id} className="w-full">
                                     <div className="">

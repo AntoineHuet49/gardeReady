@@ -46,7 +46,6 @@ function VerificationsContainer() {
             handleSubmit={handleSubmit}
             onSubmit={onSubmit}
             watch={watch}
-            defaultValues={defaultValues}
         />
     );
 }
