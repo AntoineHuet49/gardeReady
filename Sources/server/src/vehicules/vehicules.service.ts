@@ -9,6 +9,7 @@ import { verificationDTO } from 'src/dto/Vehicule.dto';
 import { ElementsService } from 'src/elements/elements.service';
 import { Vehicules } from 'src/Entity/vehicules.entity';
 import { Repository } from 'typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class VehiculesService {
@@ -16,6 +17,7 @@ export class VehiculesService {
     @InjectRepository(Vehicules)
     private vehiculesRepository: Repository<Vehicules>,
     private elementsService: ElementsService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async findAll() {
@@ -60,10 +62,16 @@ export class VehiculesService {
       ),
     });
 
-    console.log(process.cwd());
     const filePath = path.join(process.cwd(), '/public/verification.pdf');
     const pdfBuffer = doc.output('arraybuffer');
     fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
+
+    this.mailerService.sendMail({
+      to: 'antoine.200@orange.fr',
+      subject: 'Véhicule : ' + vehicule.name,
+      text: 'Véhicule : ' + vehicule.name,
+      attachments: [{ path: filePath }],
+    });
   }
 
   getFormatDate() {
