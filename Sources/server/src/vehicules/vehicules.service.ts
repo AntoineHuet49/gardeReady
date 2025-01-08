@@ -55,9 +55,15 @@ export class VehiculesService {
         }
       },
       body: await Promise.all(
-        verification.map(async (v) => {
-          const element = await this.elementsService.findOneById(v.elementId);
-          return [element.name, v.status, v.comment];
+        Object.keys(verification).map(async (key) => {
+          const element = await this.elementsService.findOneById(
+            verification[key].elementId,
+          );
+          return [
+            element.name,
+            verification[key].status,
+            verification[key].comment,
+          ];
         }),
       ),
     });
@@ -66,17 +72,20 @@ export class VehiculesService {
     const pdfBuffer = doc.output('arraybuffer');
     fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
 
-    this.mailerService.sendMail({
-      to: 'antoine.200@orange.fr',
+    const recipient = 'antoine.200@orange.fr';
+    const message = {
+      to: recipient,
       subject: 'Véhicule : ' + vehicule.name,
       text: 'Véhicule : ' + vehicule.name,
       attachments: [{ path: filePath }],
-    });
+    };
+
+    const result = await this.mailerService.sendMail(message);
+
+    return result;
   }
 
   getFormatDate() {
-    const date = moment().locale('fr').format('LLL');
-    console.log(date);
-    return date;
+    return moment().locale('fr').format('LLL');
   }
 }

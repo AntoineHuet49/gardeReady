@@ -49,22 +49,24 @@ ADD CONSTRAINT fk_elements FOREIGN KEY (element_id) REFERENCES elements(id) ON D
 -- Insertion des données dans les tables
 -- Table users
 INSERT INTO users (email, password, firstname, lastname) VALUES
+('antoine.200@orange.fr', 'test', 'Antoine', 'Huet'),
 ('john.doe@example.com', 'test', 'John', 'Doe'),
 ('jane.smith@example.com', 'test', 'Jane', 'Smith'),
 ('alice.jones@example.com', 'test', 'Alice', 'Jones');
 
 -- Table gardes
 INSERT INTO gardes (number, color, responsable) VALUES
-('G001', 'Rouge', 1), -- Responsable : John Doe
-('G002', 'Bleu', 2), -- Responsable : Jane Smith
-('G003', 'Vert', 3); -- Responsable : Alice Jones
+('G001', 'Rouge', 1), -- Responsable : Antoine Huet
+('G002', 'Bleu', 3), -- Responsable : Jane Smith
+('G003', 'Vert', 4); -- Responsable : Alice Jones
 
 SELECT * FROM users;
 
 -- Mise à jour de la table users avec les IDs de garde
-UPDATE users SET garde_id = 1 WHERE id = 1; -- John Doe est assigné à la garde G001
-UPDATE users SET garde_id = 2 WHERE id = 2; -- Jane Smith est assignée à la garde G002
-UPDATE users SET garde_id = 3 WHERE id = 3; -- Alice Jones est assignée à la garde G003
+UPDATE users SET garde_id = 1 WHERE id = 1; -- Antoine Huet est assigné à la garde G001
+UPDATE users SET garde_id = 1 WHERE id = 2; -- John Doe est assigné à la garde G001
+UPDATE users SET garde_id = 2 WHERE id = 3; -- Jane Smith est assignée à la garde G002
+UPDATE users SET garde_id = 3 WHERE id = 4; -- Alice Jones est assignée à la garde G003
 
 -- Table vehicules
 INSERT INTO vehicules (name) VALUES

@@ -18,7 +18,6 @@ export class VehiculesController {
 
   @Post('verifications/:id')
   verifications(@Param('id') id: number, @Body() body: verificationDTO[]) {
-    this.VehiculesService.generatePdf(id, body);
-    // return this.VehiculesService.findOneById(id);
+    return this.VehiculesService.generatePdf(id, body);
   }
 }
