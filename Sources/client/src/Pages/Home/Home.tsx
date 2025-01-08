@@ -33,7 +33,7 @@ function Home({
             />
             <form
                 id="loginForm"
-                className="hero bg-base p-5 w-3/4 h-fit absolute flex-col border-2 border-base-300 rounded-lg hidden"
+                className="hero bg-base p-5 w-3/4 lg:w-1/2 xl:w-1/3 h-fit absolute flex-col border-2 border-base-300 rounded-lg hidden"
                 onSubmit={handleSubmit(handleSubmitForm)}
             >
                 <h2 className="text-3xl mb-4">Connexion</h2>

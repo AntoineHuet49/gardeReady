@@ -36,7 +36,7 @@ function Verifications({
             <h1 className="text-5xl m-10">Verifications</h1>
             {isLoading ? <Loader /> : undefined}
             {!error && !isLoading ? (
-                <div className="flex flex-col items-center justify-center w-full p-6">
+                <div className="flex flex-col items-center justify-center w-full lg:w-3/4 xl:w-1/2 p-6">
                     <div className="flex w-full">
                         <BackButton />
                         <h2 className="text-xl font-bold flex-grow text-center">
