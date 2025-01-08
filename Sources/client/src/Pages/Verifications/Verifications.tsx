@@ -1,4 +1,8 @@
-import { UseFormHandleSubmit, UseFormRegister, UseFormWatch } from "react-hook-form";
+import {
+    UseFormHandleSubmit,
+    UseFormRegister,
+    UseFormWatch,
+} from "react-hook-form";
 import Alert from "../../Components/Alert/Alert";
 import Button from "../../Components/Button/button";
 import RadioInput from "../../Components/Input/RadioInput";
@@ -6,6 +10,7 @@ import Loader from "../../Components/Loader/Loader";
 import { Element } from "../../Types/Element";
 import { Vehicule } from "../../Types/Vehicule";
 import { VerificationValues } from "../../Types/formValues";
+import BackButton from "../../Components/Button/backButton";
 
 type DetailsProps = {
     vehicule?: Vehicule;
@@ -32,16 +37,20 @@ function Verifications({
             {isLoading ? <Loader /> : undefined}
             {!error && !isLoading ? (
                 <div className="flex flex-col items-center justify-center w-full p-6">
-                    <h2 className="text-xl font-bold">
-                        {vehicule?.name.toLocaleUpperCase()}
-                    </h2>
+                    <div className="flex w-full">
+                        <BackButton />
+                        <h2 className="text-xl font-bold flex-grow text-center">
+                            {vehicule?.name.toLocaleUpperCase()}
+                        </h2>
+                    </div>
                     <div className="divider"></div>
                     <form
                         onSubmit={handleSubmit(onSubmit)}
                         className="flex flex-col items-start w-full"
                     >
                         {vehicule?.elements?.map((element: Element) => {
-                            const currentStatus = watch(`${element.id}.status`) || "KO";
+                            const currentStatus =
+                                watch(`${element.id}.status`) || "KO";
                             return (
                                 <div key={element.id} className="w-full">
                                     <div className="">
@@ -49,7 +58,13 @@ function Verifications({
                                             <h3 className="text-xl">
                                                 {element.name}
                                             </h3>
-                                            <input type="hidden" {...register(`${element.id}.elementId`)} value={element.id} />
+                                            <input
+                                                type="hidden"
+                                                {...register(
+                                                    `${element.id}.elementId`
+                                                )}
+                                                value={element.id}
+                                            />
                                             <RadioInput
                                                 name={`${element.id}.status`}
                                                 register={register}
@@ -57,11 +72,13 @@ function Verifications({
                                         </div>
                                         {currentStatus === "KO" && (
                                             <textarea
-                                            className="textarea textarea-bordered textarea-md w-full"
-                                            placeholder="Commentaire"
-                                            style={{ resize: "none" }}
-                                            {...register(`${element.id}.comment`)}
-                                            required
+                                                className="textarea textarea-bordered textarea-md w-full"
+                                                placeholder="Commentaire"
+                                                style={{ resize: "none" }}
+                                                {...register(
+                                                    `${element.id}.comment`
+                                                )}
+                                                required
                                             ></textarea>
                                         )}
                                     </div>
@@ -69,10 +86,7 @@ function Verifications({
                                 </div>
                             );
                         })}
-                        <Button
-                            className="self-end px-10"
-                            text="Valider"
-                        />
+                        <Button className="self-end px-10" text="Valider" />
                     </form>
                 </div>
             ) : undefined}
