@@ -6,8 +6,8 @@ import { ToastContainer } from "react-toastify";
 function App() {
     return (
         <QueryClientProvider client={new QueryClient()}>
-            <ToastContainer />
-            <Router />
+                <ToastContainer />
+                <Router />
         </QueryClientProvider>
     );
 }

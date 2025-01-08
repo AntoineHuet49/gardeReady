@@ -10,6 +10,9 @@ import { ElementsService } from 'src/elements/elements.service';
 import { Vehicules } from 'src/Entity/vehicules.entity';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
+import { UsersService } from 'src/users/users.service';
+import { payload } from 'src/auth/type';
+import { GardesService } from 'src/gardes/gardes.service';
 
 @Injectable()
 export class VehiculesService {
@@ -17,6 +20,8 @@ export class VehiculesService {
     @InjectRepository(Vehicules)
     private vehiculesRepository: Repository<Vehicules>,
     private elementsService: ElementsService,
+    private usersService: UsersService,
+    private gardeService: GardesService,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -31,7 +36,11 @@ export class VehiculesService {
     });
   }
 
-  async generatePdf(id: number, verification: verificationDTO[]) {
+  async generatePdf(
+    id: number,
+    verification: verificationDTO[],
+    userPayload: payload,
+  ) {
     const vehicule = await this.findOneById(id);
     const doc = new jsPDF();
     doc.text('Date : ' + this.getFormatDate(), 10, 10);
@@ -72,7 +81,11 @@ export class VehiculesService {
     const pdfBuffer = doc.output('arraybuffer');
     fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
 
-    const recipient = 'antoine.200@orange.fr';
+    const garde = (await this.usersService.findOneByEmail(userPayload.username))
+      .garde;
+    const responsable = (await this.gardeService.findOneById(garde.id))
+      .responsable;
+    const recipient = responsable.email;
     const message = {
       to: recipient,
       subject: 'Véhicule : ' + vehicule.name,

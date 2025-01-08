@@ -1,17 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Users } from './users.entity';
 
-@Entity()
+@Entity('gardes')
 export class Gardes {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: 'non assigné' })
-  numero: string;
+  @Column({ type: 'varchar', length: 50, unique: true })
+  number: string;
 
-  @Column({ default: 'non assigné' })
-  couleur: string;
+  @Column({ type: 'varchar', length: 50 })
+  color: string;
 
-  @OneToOne(() => Users, (users) => users.garde)
-  responsable: Users[];
+  @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'responsable' }) // Utilisation explicite de la colonne responsable
+  responsable: Users;
+
+  @OneToMany(() => Users, (user) => user.garde)
+  users: Users[];
 }

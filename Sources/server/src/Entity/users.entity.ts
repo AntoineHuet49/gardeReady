@@ -5,8 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Gardes } from './gardes.entity';
 import { Exclude } from 'class-transformer';
+import { Gardes } from './gardes.entity';
 
 @Entity()
 export class Users {
@@ -26,10 +26,7 @@ export class Users {
   @Column()
   lastname: string;
 
-  @ManyToOne(() => Gardes, (garde) => garde.responsable, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Gardes, (gardes) => gardes.users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'garde_id' })
   garde: Gardes;
 }

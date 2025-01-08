@@ -6,6 +6,7 @@ import { VehiculesModule } from './vehicules/vehicules.module';
 import { ElementsModule } from './elements/elements.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
+import { GardesModule } from './gardes/gardes.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ConfigModule } from '@nestjs/config';
     VehiculesModule,
     ElementsModule,
     MailerModule,
+    GardesModule,
   ],
 })
 export class AppModule {}
