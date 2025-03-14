@@ -39,7 +39,7 @@ export class VehiculesController {
     const vehicule = await this.findOneById(id);
 
     this.VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
-    this.VehiculesService.sendVerificationMail(userPayload, vehicule);
+    await this.VehiculesService.sendVerificationMail(userPayload, vehicule);
     this.VehiculesService.removePdf(filePath);
   }
 }
