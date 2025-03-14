@@ -4,9 +4,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VehiculesModule } from './vehicules/vehicules.module';
 import { ElementsModule } from './elements/elements.module';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
 import { GardesModule } from './gardes/gardes.module';
+import { MailerModule } from './Mailer/mailer.module';
 
 @Module({
   imports: [
@@ -27,12 +27,7 @@ import { GardesModule } from './gardes/gardes.module';
       retryDelay: 3000, // Délai entre les tentatives (en ms)
     }),
     // Mailer
-    MailerModule.forRoot({
-      transport: `smtp://${process.env.MAIL_USERNAME}:${process.env.MAIL_PASSWORD}@${process.env.MAIL_SERVER}:${process.env.MAIL_PORT}`,
-      defaults: {
-        from: `"NoReply-CS-SML" <${process.env.MAIL_USERNAME}>`,
-      },
-    }),
+    MailerModule,
     // Other
     AuthModule,
     UsersModule,

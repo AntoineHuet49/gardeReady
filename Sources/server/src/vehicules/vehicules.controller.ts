@@ -11,6 +11,7 @@ import { VehiculesService } from './vehicules.service';
 import { verificationDTO } from 'src/dto/Vehicule.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { payload } from 'src/auth/type';
+import * as path from 'path';
 
 @Controller('vehicules')
 export class VehiculesController {
@@ -28,12 +29,17 @@ export class VehiculesController {
 
   @UseGuards(AuthGuard)
   @Post('verifications/:id')
-  verifications(
+  async verifications(
     @Param('id') id: number,
     @Body() body: verificationDTO[],
     @Request() req,
   ) {
-    const user: payload = req.user;
-    return this.VehiculesService.generatePdf(id, body, user);
+    const userPayload: payload = req.user;
+    const filePath = path.join(process.cwd(), '/public/verification.pdf');
+    const vehicule = await this.findOneById(id);
+
+    this.VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
+    this.VehiculesService.sendVerificationMail(userPayload, vehicule);
+    this.VehiculesService.removePdf(filePath);
   }
 }

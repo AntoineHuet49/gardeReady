@@ -7,6 +7,7 @@ import { Elements } from 'src/Entity/elements.entity';
 import { ElementsModule } from 'src/elements/elements.module';
 import { UsersModule } from 'src/users/users.module';
 import { GardesModule } from 'src/gardes/gardes.module';
+import { MailerModule } from 'src/Mailer/mailer.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { GardesModule } from 'src/gardes/gardes.module';
     ElementsModule,
     UsersModule,
     GardesModule,
+    MailerModule,
   ],
   controllers: [VehiculesController],
   providers: [VehiculesService],

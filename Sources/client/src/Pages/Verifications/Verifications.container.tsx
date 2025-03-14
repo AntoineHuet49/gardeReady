@@ -1,15 +1,17 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Details from "./Verifications";
 import { getVehiculeById } from "../../utils/Api/Vehicules";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { VerificationValues } from "../../Types/formValues";
 import { useMemo } from "react";
 import { Element } from "../../Types/Element";
 import { sendVerifications } from "../../utils/Api/Verifications";
 import { notify } from "../../utils/notify";
+import { routePath } from "../../Routes/routeConstants";
 
 function VerificationsContainer() {
+    const navigate = useNavigate();
     let elements: Element[] = [];
     const { id } = useParams();
     const { data, isLoading, error } = useQuery({
@@ -43,6 +45,7 @@ function VerificationsContainer() {
         const response = await verification.mutateAsync(data);
         if (response.status >= 200 && response.status < 300) {
             notify("Verifications envoyées", "success");
+            navigate(routePath.vehicules);
         } else {
             notify("Une erreur est survenue", "error");
         }
