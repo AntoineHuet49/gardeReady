@@ -12,17 +12,14 @@ services:
 
   backend:
     build:
-      context: ./Sources/server
-    container_name: gardeReady-backend
+      context: ./Sources/api
+    container_name: backend
     ports:
-      - "3000:3000"
+      - "8000:8000"
     volumes:
-      - ./Sources/server:/app
+      - ./Sources/api:/app
     environment:
-      - NODE_ENV=development
-    command: npm run start:dev
-    depends_on:
-      - database
+      APP_ENV: dev
 
   database:
     image: postgres:latest
