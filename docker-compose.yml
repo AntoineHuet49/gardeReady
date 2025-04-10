@@ -15,11 +15,9 @@ services:
       context: ./Sources/api
     container_name: backend
     ports:
-      - "8000:8000"
+      - "3000:3000"
     volumes:
       - ./Sources/api:/app
-    environment:
-      APP_ENV: dev
 
   database:
     image: postgres:latest
