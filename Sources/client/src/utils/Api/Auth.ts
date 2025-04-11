@@ -7,6 +7,6 @@ export async function login(email: string, password: string) {
             {
                 email: email,
                 password: password,
-            }
+            },
         );
 }
