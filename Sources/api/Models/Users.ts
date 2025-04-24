@@ -1,7 +1,17 @@
-import { DataTypes, InferAttributes, Model } from "sequelize";
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { dbContext } from "~~/Utils/Database";
 
-export class Users extends Model {}
+export class Users extends Model<
+  InferAttributes<Users>,
+  InferCreationAttributes<Users>
+> {
+  declare id: CreationOptional<number>;
+  declare email: string;
+  declare password: string;
+  declare firstname: string;
+  declare lastname: string;
+  declare garde_id: number;
+}
 
 Users.init(
     {
@@ -32,7 +42,7 @@ Users.init(
         },
         garde_id: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
             references: {
                 model: "gardes",
                 key: "id",
@@ -41,10 +51,18 @@ Users.init(
         },
     },
     {
+        defaultScope: {
+          attributes: { exclude: ["password"] },  
+        },
+        scopes: {
+          withPassword: {
+            attributes: { include: ["password"] },
+          },
+        },
         sequelize: dbContext,
         tableName: "users",
         timestamps: false,
     }
 );
 
-export type TUser = InferAttributes<Users>;
+export type TUserWithPassword = InferAttributes<Users>;

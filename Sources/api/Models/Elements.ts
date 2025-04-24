@@ -1,21 +1,21 @@
 import {
-    CreationOptional,
+    Model,
     DataTypes,
     InferAttributes,
     InferCreationAttributes,
-    Model,
+    CreationOptional,
 } from "sequelize";
 import { dbContext } from "~~/Utils/Database";
 
-export class Vehicules extends Model<
-    InferAttributes<Vehicules>,
-    InferCreationAttributes<Vehicules>
+export class Elements extends Model<
+    InferAttributes<Elements>,
+    InferCreationAttributes<Elements>
 > {
     declare id: CreationOptional<number>;
     declare name: string;
 }
 
-Vehicules.init(
+Elements.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -29,9 +29,10 @@ Vehicules.init(
     },
     {
         sequelize: dbContext,
-        tableName: "vehicules",
+        modelName: "elements",
+        tableName: "elements",
         timestamps: false,
     }
 );
 
-export type TVehicules = InferAttributes<Vehicules>;
+export type TElement = InferAttributes<Elements>;

@@ -1,6 +1,11 @@
 import express from 'express';
 import router from './routes/routes';
 import { connectDatabase } from './Utils/Database';
+import { configDotenv } from 'dotenv';
+
+// Charge les variables globales
+configDotenv({path: '.env', override: true});
+configDotenv({path: '.env.local', override: true});
 
 var cors = require('cors')
 

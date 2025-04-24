@@ -44,7 +44,8 @@ ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON 
 
 ALTER TABLE vehicules_elements
 ADD CONSTRAINT fk_vehicule FOREIGN KEY (vehicule_id) REFERENCES vehicules(id) ON DELETE CASCADE,
-ADD CONSTRAINT fk_elements FOREIGN KEY (element_id) REFERENCES elements(id) ON DELETE CASCADE;
+ADD CONSTRAINT fk_elements FOREIGN KEY (element_id) REFERENCES elements(id) ON DELETE CASCADE,
+ADD CONSTRAINT vehicules_elements_unique UNIQUE (vehicule_id, element_id);
 
 -- Insertion des données dans les tables
 -- Table users
