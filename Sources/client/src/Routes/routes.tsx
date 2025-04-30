@@ -4,6 +4,8 @@ import { Vehicules } from "../Pages/Vehicules";
 import { routePath } from "./routeConstants";
 import PrivateRoute from "./privatesRoutes";
 import { Verifications } from "../Pages/Verifications";
+import AdminRoutes from "./adminRoutes";
+import { Admin } from "../Pages/Admin";
 
 function Router() {
     const routes: RouteObject[] = [
@@ -19,6 +21,10 @@ function Router() {
             path: routePath.details,
             element: <PrivateRoute Component={Verifications} />,
         },
+        {
+            path: routePath.admin,
+            element: <AdminRoutes Component={Admin} />,
+        }
     ];
 
     const router = createBrowserRouter(routes);

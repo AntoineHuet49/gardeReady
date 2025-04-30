@@ -3,4 +3,5 @@ export const apiUrl = {
     login: "/auth/login",
     vehicule: "/vehicules",
     verification: "/vehicules/verifications",
+    users: "/users",
 };

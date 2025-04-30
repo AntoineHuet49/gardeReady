@@ -3,7 +3,10 @@ import { Users } from "~~/Models";
 import { TUser } from "~~/Types/User";
 
 export class UsersRepository {
-    public static getAllUsers() {}
+    public static async getAllUsers() {
+        const users = await Users.findAll();
+        return users;
+    }
 
     public static async getOneUserByEmail(email: string): Promise<TUser | undefined> {
         const user = await Users.findOne({ where: { email } });

@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
+
 
 body {
     font-family: 'roboto',Arial, Helvetica, sans-serif;

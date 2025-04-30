@@ -10,6 +10,7 @@ export class Users extends Model<
   declare password: string;
   declare firstname: string;
   declare lastname: string;
+  declare role: string;
   declare garde_id: number;
 }
 
@@ -37,6 +38,10 @@ Users.init(
             allowNull: false,
         },
         lastname: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        role : {
             type: DataTypes.STRING(50),
             allowNull: false,
         },

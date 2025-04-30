@@ -3,8 +3,9 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque utilisateur
     email VARCHAR(100) NOT NULL UNIQUE, -- Adresse e-mail de l'utilisateur
     password VARCHAR(255) NOT NULL, -- Mot de passe de l'utilisateur
-    firstname VARCHAR(50) NOT NULL, -- Préname de l'utilisateur
-    lastname VARCHAR(50) NOT NULL -- name de l'utilisateur
+    firstname VARCHAR(50) NOT NULL, -- Prénom de l'utilisateur
+    lastname VARCHAR(50) NOT NULL, -- name de l'utilisateur
+    role VARCHAR(20) NOT NULL DEFAULT 'user' -- Rôle de l'utilisateur (par ex: 'user', 'admin')
 );
 
 -- Création de la table gardes
@@ -49,11 +50,11 @@ ADD CONSTRAINT vehicules_elements_unique UNIQUE (vehicule_id, element_id);
 
 -- Insertion des données dans les tables
 -- Table users
-INSERT INTO users (email, password, firstname, lastname) VALUES
-('antoine.200@orange.fr', 'test', 'Antoine', 'Huet'),
-('john.doe@example.com', 'test', 'John', 'Doe'),
-('jane.smith@example.com', 'test', 'Jane', 'Smith'),
-('alice.jones@example.com', 'test', 'Alice', 'Jones');
+INSERT INTO users (email, password, firstname, lastname, role) VALUES
+('antoine.200@orange.fr', 'test', 'Antoine', 'Huet', 'admin'),
+('john.doe@example.com', 'test', 'John', 'Doe', 'user'),
+('jane.smith@example.com', 'test', 'Jane', 'Smith', 'user'),
+('alice.jones@example.com', 'test', 'Alice', 'Jones', 'user');
 
 -- Table gardes
 INSERT INTO gardes (number, color, responsable) VALUES
