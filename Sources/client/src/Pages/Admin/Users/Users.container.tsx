@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Users from "./Users";
-import { getAllUsers } from "../../../utils/Api/Users";
+import { getAllUsers } from "../../../App/utils/Api/Users";
 
 function UsersContainer() {
     const { data, isLoading, error } = useQuery({

@@ -1,12 +1,13 @@
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
-import { User } from "../../Types/User";
+import { User } from "../../../Types/User";
 import { UserContext } from "./UserContext";
-import Loader from "../../Components/Loader/Loader";
+import Loader from "../../../Components/Loader/Loader";
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     useEffect(() => {
@@ -21,6 +22,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const decoded: User = jwtDecode(token);
                 setUser(decoded);
                 setIsAuthenticated(true);
+                if(decoded.role === "admin") {
+                    setIsAdmin(true);
+                }
             } catch (error) {
                 console.error("Erreur de décodage du token:", error);
                 setUser(null);
@@ -36,12 +40,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     if (isAuthLoading) {
-        // Vous pouvez afficher un loader ou un écran de chargement ici
         return <Loader />;
     }
 
     return (
-        <UserContext.Provider value={{ user, isAuthenticated, logout }}>
+        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, logout }}>
             {children}
         </UserContext.Provider>
     );

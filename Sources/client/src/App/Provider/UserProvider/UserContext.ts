@@ -1,9 +1,10 @@
 import { createContext, useContext } from "react";
-import { User } from "../../Types/User";
+import { User } from "../../../Types/User";
 
 type UserContextType = {
     user: User | null;
     isAuthenticated: boolean;
+    isAdmin: boolean;
     logout: () => void;
 };
 

@@ -2,9 +2,10 @@ import { useForm } from "react-hook-form";
 import Home from "./Home";
 import { LoginValues } from "../../Types/formValues";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "../../utils/Api/Auth";
 import { useNavigate } from "react-router";
-import { routePath } from "../../Routes/routeConstants";
+import { useUser } from "../../App/Provider/UserProvider";
+import { login } from "../../App/utils/Api/Auth";
+import { routePath } from "../../App/Routes/routeConstants";
 
 function HomeContainer() {
     const { register, handleSubmit } = useForm<LoginValues>();
@@ -13,9 +14,17 @@ function HomeContainer() {
     });
     const navigate = useNavigate();
 
-    const handleSubmitForm = async (data: LoginValues) => {
-        await mutation.mutateAsync(data);
-        navigate(routePath.vehicules);
+    const { isAdmin } = useUser();
+
+    const handleSubmitForm = async (loginValues: LoginValues) => {
+        const response = await mutation.mutateAsync(loginValues);
+        if (response.status === 200) {
+            if (isAdmin && window.innerWidth > 768) {
+                navigate(routePath.admin);
+            } else {
+                navigate(routePath.vehicules);
+            }
+        }
     };
 
     const handleStartClick = () => {
@@ -30,7 +39,15 @@ function HomeContainer() {
         }, 300);
     };
 
-    return <Home handleStartClick={handleStartClick} register={register} handleSubmit={handleSubmit} handleSubmitForm={handleSubmitForm} isError={mutation.isError} />;
+    return (
+        <Home
+            handleStartClick={handleStartClick}
+            register={register}
+            handleSubmit={handleSubmit}
+            handleSubmitForm={handleSubmitForm}
+            isError={mutation.isError}
+        />
+    );
 }
 
 export default HomeContainer;

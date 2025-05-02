@@ -3,15 +3,13 @@ import Alert from "../../Components/Alert/Alert";
 import Card from "../../Components/Card/Card";
 import Loader from "../../Components/Loader/Loader";
 import { Vehicule } from "../../Types/Vehicule";
-import { routePath } from "../../Routes/routeConstants";
-import Button from "../../Components/Button/button";
+import { routePath } from "../../App/Routes/routeConstants";
 
 type VehiculesProps = {
     vehicules: Vehicule[];
     isLoading: boolean;
     error: Error | null;
     navigate: NavigateFunction;
-    actualLocation: string;
 };
 
 function Vehicules({
@@ -19,16 +17,9 @@ function Vehicules({
     isLoading,
     error,
     navigate,
-    actualLocation,
 }: VehiculesProps) {
     return (
         <div className="container flex flex-col items-center p-4">
-            {actualLocation !== routePath.admin && (
-                <Button
-                    onClick={() => navigate(routePath.admin)}
-                    text="Tableau de bord"
-                />
-            )}
             <h1 className="text-6xl m-10">Véhicules</h1>
             {isLoading ? <Loader /> : undefined}
             {!error ? (

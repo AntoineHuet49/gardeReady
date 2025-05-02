@@ -3,6 +3,6 @@ export type User = {
     email: string;
     firstname: string;
     lastname: string;
-    role: string;
+    role: "user" | "admin";
     garde_id: number;
 };

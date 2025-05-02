@@ -1,14 +1,14 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Details from "./Verifications";
-import { getVehiculeById } from "../../utils/Api/Vehicules";
 import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { VerificationValues } from "../../Types/formValues";
 import { useMemo } from "react";
 import { Element } from "../../Types/Element";
-import { sendVerifications } from "../../utils/Api/Verifications";
-import { notify } from "../../utils/notify";
-import { routePath } from "../../Routes/routeConstants";
+import { getVehiculeById } from "../../App/utils/Api/Vehicules";
+import { sendVerifications } from "../../App/utils/Api/Verifications";
+import { notify } from "../../App/utils/notify";
+import { routePath } from "../../App/Routes/routeConstants";
 
 function VerificationsContainer() {
     const navigate = useNavigate();

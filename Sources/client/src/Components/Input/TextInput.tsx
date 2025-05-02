@@ -1,15 +1,14 @@
-import { UseFormRegister } from "react-hook-form";
-import { LoginValues } from "../../Types/formValues";
+import { FieldValues, Path, UseFormRegister } from "react-hook-form";
 
-type TextInputProps = {
+type TextInputProps<T extends FieldValues> = {
     icon?: string;
     placeholder: string;
     isPassword?: boolean;
-    register: UseFormRegister<LoginValues>;
-    name: keyof LoginValues;
+    register: UseFormRegister<T>;
+    name: Path<T>;
 };
 
-function TextInput({ icon, placeholder, isPassword, register, name }: TextInputProps) {
+function TextInput<T extends FieldValues>({ icon, placeholder, isPassword, register, name }: TextInputProps<T>) {
     return (
         <label className="input input-bordered flex items-center gap-2 mb-4 over w-full">
             {icon !== undefined ? (

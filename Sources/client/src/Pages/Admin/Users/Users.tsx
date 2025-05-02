@@ -1,5 +1,6 @@
 import Loader from "../../../Components/Loader/Loader";
 import { User } from "../../../Types/User";
+import AddUserModal from "./AddUserModal/AddUserModal";
 
 type UsersProps = {
     users?: User[];
@@ -17,7 +18,7 @@ function Users({ users, isLoading }: UsersProps) {
                         {/* head */}
                         <thead>
                             <tr>
-                                <th></th>
+                                <th><AddUserModal buttonText="+" /></th>
                                 <th>Prénom</th>
                                 <th>Nom</th>
                                 <th>Email</th>

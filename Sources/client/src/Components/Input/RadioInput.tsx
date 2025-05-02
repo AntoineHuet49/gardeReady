@@ -1,5 +1,4 @@
 import { UseFormRegister } from "react-hook-form";
-import "./radioInput.scss";
 import { VerificationValues } from "../../Types/formValues";
 
 type RadioInputProps = {
@@ -11,14 +10,14 @@ function RadioInput({ register, name }: RadioInputProps) {
     return (
         <div className="join justify-end">
             <input
-                className="join-item btn"
+                className="join-item btn checked:btn-success"
                 type="radio"
                 aria-label="OK"
                 {...register(name)}
                 value="OK"
                 />
             <input
-                className="join-item btn"
+                className="join-item btn checked:btn-error"
                 type="radio"
                 aria-label="KO"
                 {...register(name)}

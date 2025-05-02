@@ -1,10 +1,10 @@
 import { Navigate } from "react-router";
 
 type PrivateRouteProps = {
-    Component: React.ComponentType;
+    children: React.ReactNode;
 };
 
-const PrivateRoute = ({ Component }: PrivateRouteProps) => {
+const PrivateRoute = ({ children }: PrivateRouteProps) => {
     let isAuthenticated = false;
 
     document.cookie.split(";").forEach((cookie) => {
@@ -14,6 +14,6 @@ const PrivateRoute = ({ Component }: PrivateRouteProps) => {
         }
     });
 
-    return isAuthenticated ? <Component /> : <Navigate to="/" />;
+    return isAuthenticated ? (<>{children}</>) : <Navigate to="/" />;
 };
 export default PrivateRoute;
