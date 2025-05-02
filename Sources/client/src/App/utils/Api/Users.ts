@@ -1,4 +1,4 @@
-import { User } from "../../Types/User";
+import { User } from "../../../Types/User";
 import { apiUrl } from "../constants";
 import { instance } from "./axios";
 

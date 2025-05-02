@@ -4,4 +4,5 @@ export const apiUrl = {
     vehicule: "/vehicules",
     verification: "/vehicules/verifications",
     users: "/users",
+    gardes: "/gardes",
 };

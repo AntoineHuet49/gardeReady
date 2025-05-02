@@ -11,10 +11,11 @@ function DropdownInput<T extends FieldValues>({ options, register, name }: Dropd
 
     return (
         <div className="mb-4 over w-full">
+            {(options && optionsArray.length > 0) && 
             <select
-                defaultValue={optionsArray[0][0]}
-                {...register(name)}
-                className="select w-full"
+            defaultValue={optionsArray[0][0]}
+            {...register(name)}
+            className="select w-full"
             >
                 {optionsArray.map((option, index) => (
                     <option key={index} value={option[1]}>
@@ -22,6 +23,7 @@ function DropdownInput<T extends FieldValues>({ options, register, name }: Dropd
                     </option>
                 ))}
             </select>
+            }
         </div>
     );
 }

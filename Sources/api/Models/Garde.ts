@@ -14,7 +14,7 @@ import {
     InferCreationAttributes<Gardes>
   > {
     declare id: CreationOptional<number>;
-    declare number: string;
+    declare name: string;
     declare color: string;
   
     // Association : une garde a un responsable
@@ -31,7 +31,7 @@ import {
         autoIncrement: true,
         primaryKey: true,
       },
-      number: {
+      name: {
         type: DataTypes.STRING(50),
         allowNull: false,
         unique: true,

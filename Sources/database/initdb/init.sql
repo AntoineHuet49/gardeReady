@@ -11,7 +11,7 @@ CREATE TABLE users (
 -- Création de la table gardes
 CREATE TABLE gardes (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque garde
-    number VARCHAR(50) NOT NULL UNIQUE, -- Numéro de la garde
+    name VARCHAR(50) NOT NULL UNIQUE, -- Numéro de la garde
     color VARCHAR(50) NOT NULL -- color de la garde
 );
 
@@ -57,10 +57,10 @@ INSERT INTO users (email, password, firstname, lastname, role) VALUES
 ('alice.jones@example.com', 'test', 'Alice', 'Jones', 'user');
 
 -- Table gardes
-INSERT INTO gardes (number, color, responsable) VALUES
-('G001', 'Rouge', 1), -- Responsable : Antoine Huet
-('G002', 'Bleu', 3), -- Responsable : Jane Smith
-('G003', 'Vert', 4); -- Responsable : Alice Jones
+INSERT INTO gardes (name, color, responsable) VALUES
+('Garde 1', 'Rouge', 1), -- Responsable : Antoine Huet
+('Garde 2', 'jaune', 3), -- Responsable : Jane Smith
+('Garde 3', 'Vert', 4); -- Responsable : Alice Jones
 
 SELECT * FROM users;
 
