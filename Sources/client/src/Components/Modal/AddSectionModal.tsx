@@ -1,22 +1,29 @@
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
-import { useElementMutations } from "../../hooks/useElementMutations";
+import { useSectionMutations } from "../../hooks/useSectionMutations";
 import Button from "../Button/button";
 import TextInput from "../Input/TextInput";
 
-type AddElementModalProps = {
+type AddSectionModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    sectionId: number;
-    sectionName: string;
+    vehiculeId?: number;
+    parentSectionId?: number;
+    contextName: string; // Nom du véhicule ou de la section parent
 };
 
 type FormData = {
     name: string;
 };
 
-const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElementModalProps) => {
-    const { createElementMutation } = useElementMutations();
+const AddSectionModal = ({ 
+    isOpen, 
+    onClose, 
+    vehiculeId, 
+    parentSectionId, 
+    contextName 
+}: AddSectionModalProps) => {
+    const { createSectionMutation } = useSectionMutations();
     
     const {
         register,
@@ -37,9 +44,10 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElement
     }, [isOpen, setFocus]);
 
     const onSubmit = (data: FormData) => {
-        createElementMutation.mutate({
+        createSectionMutation.mutate({
             name: data.name,
-            section_id: sectionId
+            vehicule_id: vehiculeId,
+            parent_section_id: parentSectionId
         }, {
             onSuccess: () => {
                 reset();
@@ -59,7 +67,7 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElement
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Ajouter un équipement</h3>
+                    <h3 className="text-lg font-semibold">Ajouter une section</h3>
                     <button
                         onClick={handleClose}
                         className="text-gray-500 hover:text-gray-700"
@@ -69,18 +77,22 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElement
                 </div>
                 
                 <p className="text-sm text-gray-600 mb-4">
-                    Section : <strong>{sectionName}</strong>
+                    {parentSectionId ? (
+                        <>Dans la section : <strong>{contextName}</strong></>
+                    ) : (
+                        <>Pour le véhicule : <strong>{contextName}</strong></>
+                    )}
                 </p>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="mb-4">
                         <TextInput
-                            placeholder="Ex: Stéthoscope, Masque, etc."
+                            placeholder="Ex: Sac de secours, Matériel médical, etc."
                             register={register}
                             name="name"
                             required
                             options={{
-                                required: "Le nom de l'équipement est requis",
+                                required: "Le nom de la section est requis",
                                 minLength: {
                                     value: 2,
                                     message: "Le nom doit contenir au moins 2 caractères"
@@ -95,14 +107,14 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElement
                             type="button"
                             onClick={handleClose}
                             className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-                            disabled={createElementMutation.isPending}
+                            disabled={createSectionMutation.isPending}
                         >
                             Annuler
                         </button>
                         <Button
-                            text={createElementMutation.isPending ? "Création..." : "Créer"}
+                            text={createSectionMutation.isPending ? "Création..." : "Créer"}
                             type="submit"
-                            disabled={createElementMutation.isPending}
+                            disabled={createSectionMutation.isPending}
                             className="px-4 py-2"
                         />
                     </div>
@@ -112,4 +124,4 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName }: AddElement
     );
 };
 
-export default AddElementModal;
+export default AddSectionModal;

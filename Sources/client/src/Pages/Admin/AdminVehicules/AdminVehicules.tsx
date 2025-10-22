@@ -6,7 +6,10 @@ import Loader from "../../../Components/Loader/Loader";
 import Alert from "../../../Components/Alert/Alert";
 import Collapse from "../../../Components/Collapse/Collapse";
 import AddElementModal from "../../../Components/Modal/AddElementModal";
+import AddSectionModal from "../../../Components/Modal/AddSectionModal";
+import Button from "../../../Components/Button/button";
 import { useElementMutations } from "../../../hooks/useElementMutations";
+import { useSectionMutations } from "../../../hooks/useSectionMutations";
 
 type AdminVehiculesProps = {
     vehicules: Vehicule[];
@@ -17,7 +20,15 @@ type AdminVehiculesProps = {
 const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; name: string } | null>(null);
+    const [sectionModalOpen, setSectionModalOpen] = useState(false);
+    const [selectedContext, setSelectedContext] = useState<{ 
+        vehiculeId?: number; 
+        parentSectionId?: number; 
+        contextName: string 
+    } | null>(null);
+    
     const { deleteElementMutation } = useElementMutations();
+    const { deleteSectionMutation } = useSectionMutations();
 
     const openModal = (sectionId: number, sectionName: string) => {
         setSelectedSection({ id: sectionId, name: sectionName });
@@ -29,9 +40,25 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         setSelectedSection(null);
     };
 
+    const openSectionModal = (vehiculeId?: number, parentSectionId?: number, contextName?: string) => {
+        setSelectedContext({ vehiculeId, parentSectionId, contextName: contextName || "" });
+        setSectionModalOpen(true);
+    };
+
+    const closeSectionModal = () => {
+        setSectionModalOpen(false);
+        setSelectedContext(null);
+    };
+
     const handleDeleteElement = (elementId: number, elementName: string) => {
         if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'équipement "${elementName}" ?`)) {
             deleteElementMutation.mutate(elementId);
+        }
+    };
+
+    const handleDeleteSection = (sectionId: number, sectionName: string) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la section "${sectionName}" et tout son contenu ?`)) {
+            deleteSectionMutation.mutate(sectionId);
         }
     };
 
@@ -43,19 +70,33 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             <div key={section.id} className="mb-2">
                 <Collapse title={section.name} level={level + 1}>
                     <div className="space-y-2">
-                        {/* Header avec bouton d'ajout */}
-                        <div className="flex justify-between items-center mb-3">
-                            <span className="text-sm text-gray-600">
-                                {hasElements ? `${section.elements!.length} équipement(s)` : "Aucun équipement"}
-                            </span>
-                            <button
-                                onClick={() => openModal(section.id, section.name)}
-                                className="flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                                title="Ajouter un équipement"
-                            >
-                                <span className="text-sm font-bold">+</span>
-                                <span>Équipement</span>
-                            </button>
+                        {/* Header avec boutons d'actions */}
+                        <div className="flex justify-between items-start mb-3 gap-2">
+                            <div className="text-sm text-gray-600">
+                                <div>{hasElements ? `${section.elements!.length} équipement(s)` : "Aucun équipement"}</div>
+                                <div>{hasSubSections ? `${section.subSections!.length} sous-section(s)` : "Aucune sous-section"}</div>
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                                <Button
+                                    text="+ Équipement"
+                                    onClick={() => openModal(section.id, section.name)}
+                                    className="btn-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                                    title="Ajouter un équipement"
+                                />
+                                <Button
+                                    text="+ Section"
+                                    onClick={() => openSectionModal(undefined, section.id, section.name)}
+                                    className="btn-xs bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+                                    title="Ajouter une sous-section"
+                                />
+                                <Button
+                                    text={deleteSectionMutation.isPending ? "..." : "✕"}
+                                    onClick={() => handleDeleteSection(section.id, section.name)}
+                                    className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                    title="Supprimer cette section"
+                                    disabled={deleteSectionMutation.isPending}
+                                />
+                            </div>
                         </div>
 
                         {/* Éléments de cette section */}
@@ -68,14 +109,13 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             className="bg-gray-50 p-2 rounded border text-sm flex justify-between items-center group"
                                         >
                                             <span className="font-medium">{element.name}</span>
-                                            <button
+                                            <Button
+                                                text={deleteElementMutation.isPending ? "..." : "✕"}
                                                 onClick={() => handleDeleteElement(element.id, element.name)}
-                                                className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-all duration-200 ml-2 p-1 rounded hover:bg-red-100"
+                                                className="btn-xs opacity-0 group-hover:opacity-100 bg-red-100 text-red-500 border-red-200 hover:bg-red-200 hover:text-red-700 transition-all duration-200"
                                                 title="Supprimer cet équipement"
                                                 disabled={deleteElementMutation.isPending}
-                                            >
-                                                {deleteElementMutation.isPending ? "..." : "🗑️"}
-                                            </button>
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -135,8 +175,16 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                 <div className="p-4">
                                     {vehicule.sections && vehicule.sections.length > 0 ? (
                                         <div className="space-y-3">
-                                            <div className="text-sm text-gray-600 mb-4">
-                                                <strong>Sections :</strong> {vehicule.sections.length} section(s) principale(s)
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="text-sm text-gray-600">
+                                                    <strong>Sections :</strong> {vehicule.sections.length} section(s) principale(s)
+                                                </div>
+                                                <Button
+                                                    text="+ Section"
+                                                    onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
+                                                    className="btn-sm bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+                                                    title="Ajouter une section au véhicule"
+                                                />
                                             </div>
                                             {vehicule.sections.map((section: Section) => 
                                                 renderSection(section, 0)
@@ -145,7 +193,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                     ) : (
                                         <div className="text-center py-8 text-gray-500">
                                             <p>Ce véhicule n'a aucune section configurée</p>
-                                            <p className="text-sm mt-2">Ajoutez des sections pour organiser les équipements</p>
+                                            <p className="text-sm mt-2 mb-4">Ajoutez des sections pour organiser les équipements</p>
+                                            <Button
+                                                text="+ Ajouter une section"
+                                                onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
+                                                className="btn-primary"
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -162,6 +215,17 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     onClose={closeModal}
                     sectionId={selectedSection.id}
                     sectionName={selectedSection.name}
+                />
+            )}
+
+            {/* Modal d'ajout de section */}
+            {selectedContext && (
+                <AddSectionModal
+                    isOpen={sectionModalOpen}
+                    onClose={closeSectionModal}
+                    vehiculeId={selectedContext.vehiculeId}
+                    parentSectionId={selectedContext.parentSectionId}
+                    contextName={selectedContext.contextName}
                 />
             )}
         </div>
