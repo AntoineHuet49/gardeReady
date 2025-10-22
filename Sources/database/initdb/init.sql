@@ -27,12 +27,24 @@ CREATE TABLE elements (
     name VARCHAR(100) NOT NULL -- name de l'élément
 );
 
--- Création de la table vehicules_elements
-CREATE TABLE vehicules_elements (
-    vehicule_id INT NOT NULL, -- Clé étrangère vers vehicules
-    element_id INT NOT NULL, -- Clé étrangère vers elements
-    PRIMARY KEY (vehicule_id, element_id) -- Clé primaire composée
+-- Création de la table sections (hiérarchique)
+CREATE TABLE sections (
+    id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque section
+    name VARCHAR(100) NOT NULL, -- Nom de la section
+    vehicule_id INT, -- Clé étrangère vers vehicules (nullable, seulement pour les sections racines)
+    parent_section_id INT, -- Clé étrangère auto-référentielle (nullable pour les sections racines)
+    CONSTRAINT fk_section_vehicule FOREIGN KEY (vehicule_id) REFERENCES vehicules(id) ON DELETE CASCADE,
+    CONSTRAINT fk_section_parent FOREIGN KEY (parent_section_id) REFERENCES sections(id) ON DELETE CASCADE,
+    CONSTRAINT check_section_root CHECK (
+        (vehicule_id IS NOT NULL AND parent_section_id IS NULL) OR -- Section racine
+        (vehicule_id IS NULL AND parent_section_id IS NOT NULL)    -- Sous-section
+    )
 );
+
+-- Modification de la table elements pour référencer une section
+ALTER TABLE elements
+ADD COLUMN section_id INT,
+ADD CONSTRAINT fk_element_section FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE;
 
 -- Ajout des clés étrangères après la création de toutes les tables
 ALTER TABLE users
@@ -42,11 +54,6 @@ ADD CONSTRAINT fk_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DELETE C
 ALTER TABLE gardes
 ADD COLUMN responsable INT NOT NULL,
 ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE vehicules_elements
-ADD CONSTRAINT fk_vehicule FOREIGN KEY (vehicule_id) REFERENCES vehicules(id) ON DELETE CASCADE,
-ADD CONSTRAINT fk_elements FOREIGN KEY (element_id) REFERENCES elements(id) ON DELETE CASCADE,
-ADD CONSTRAINT vehicules_elements_unique UNIQUE (vehicule_id, element_id);
 
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
@@ -74,21 +81,33 @@ UPDATE users SET garde_id = 3 WHERE id = 4; -- Jane Smith est assignée à la ga
 
 -- Table vehicules
 INSERT INTO vehicules (name) VALUES
+('VSAV'),
 ('Camion de pompier'),
-('Voiture de police'),
-('Ambulance');
+('Voiture de police');
 
--- Table elements
-INSERT INTO elements (name) VALUES
-('Extincteur'),
-('Sirène'),
-('Trousse de secours');
+-- Table sections (hiérarchique)
+-- Sections racines (attachées aux véhicules)
+INSERT INTO sections (name, vehicule_id) VALUES
+('Sac prompt secours', 1),      -- Section racine du VSAV
+('Extérieur', 1),               -- Section extérieur du VSAV
+('Compartiment principal', 2),   -- Section principale du camion
+('Cabine', 3);                  -- Section cabine de la voiture
 
--- Table vehicules_elements
-INSERT INTO vehicules_elements (vehicule_id, element_id) VALUES
-(1, 1), -- Camion de pompier - Extincteur
-(1, 2), -- Camion de pompier - Sirène
-(2, 2), -- Voiture de police - Sirène
-(3, 3); -- Ambulance - Trousse de secours
+-- Sous-sections (attachées aux sections parentes)
+INSERT INTO sections (name, parent_section_id) VALUES
+('Poche bleue', 1),             -- Sous-section dans le sac prompt secours
+('Poche rouge', 1),             -- Autre sous-section dans le sac prompt secours
+('Tiroir gauche', 3),           -- Sous-section dans le compartiment principal
+('Tiroir droit', 3);            -- Autre sous-section dans le compartiment principal
+
+-- Table elements avec leur section
+INSERT INTO elements (name, section_id) VALUES
+('Thermomètre', 5),             -- Dans la poche bleue
+('Saturomètre', 5),             -- Dans la poche bleue
+('Tensiomètre', 6),             -- Dans la poche rouge
+('Phare', 2),                   -- Dans l'extérieur du VSAV
+('Extincteur', 7),              -- Dans le tiroir gauche du camion
+('Sirène', 4),                  -- Dans la cabine de la voiture de police
+('Trousse de secours', 8);      -- Dans le tiroir droit du camion
 
 SELECT * FROM users;

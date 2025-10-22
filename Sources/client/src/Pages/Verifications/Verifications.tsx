@@ -5,12 +5,12 @@ import {
 } from "react-hook-form";
 import Alert from "../../Components/Alert/Alert";
 import Button from "../../Components/Button/button";
-import RadioInput from "../../Components/Input/RadioInput";
 import Loader from "../../Components/Loader/Loader";
-import { Element } from "../../Types/Element";
+import { Section } from "../../Types/Section";
 import { Vehicule } from "../../Types/Vehicule";
 import { VerificationValues } from "../../Types/formValues";
 import BackButton from "../../Components/Button/backButton";
+import SectionVerification from "../../Components/Section/SectionVerification";
 
 type DetailsProps = {
     vehicule?: Vehicule;
@@ -46,46 +46,24 @@ function Verifications({
                     <div className="divider"></div>
                     <form
                         onSubmit={handleSubmit(onSubmit)}
-                        className="flex flex-col items-start w-full"
+                        className="flex flex-col items-start w-full space-y-4"
                     >
-                        {vehicule?.elements?.map((element: Element) => {
-                            const currentStatus =
-                                watch(`${element.id}.status`) || "KO";
-                            return (
-                                <div key={element.id} className="w-full">
-                                    <div className="">
-                                        <div className="flex justify-between w-full mb-4">
-                                            <h3 className="text-xl">
-                                                {element.name}
-                                            </h3>
-                                            <input
-                                                type="hidden"
-                                                {...register(
-                                                    `${element.id}.elementId`
-                                                )}
-                                                value={element.id}
-                                            />
-                                            <RadioInput
-                                                name={`${element.id}.status`}
-                                                register={register}
-                                            />
-                                        </div>
-                                        {currentStatus === "KO" && (
-                                            <textarea
-                                                className="textarea textarea-bordered textarea-md w-full"
-                                                placeholder="Commentaire"
-                                                style={{ resize: "none" }}
-                                                {...register(
-                                                    `${element.id}.comment`
-                                                )}
-                                                required
-                                            ></textarea>
-                                        )}
-                                    </div>
-                                    <div className="divider"></div>
-                                </div>
-                            );
-                        })}
+                        {/* Affichage des sections hiérarchiques si disponibles */}
+                        {vehicule?.sections && vehicule.sections.length > 0 ? (
+                            vehicule.sections.map((section: Section) => (
+                                <SectionVerification
+                                    key={section.id}
+                                    section={section}
+                                    register={register}
+                                    watch={watch}
+                                />
+                            ))
+                        ) : (
+                            /* Aucune section disponible - aucun élément à afficher */
+                            <div className="text-center text-gray-500 py-8">
+                                Aucun élément de vérification disponible pour ce véhicule.
+                            </div>
+                        )}
                         <Button className="self-end px-10" text="Valider" />
                     </form>
                 </div>

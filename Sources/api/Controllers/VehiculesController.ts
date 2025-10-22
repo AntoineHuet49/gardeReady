@@ -13,7 +13,7 @@ export default class VehiculesController extends BaseController {
 
     public static async getOneVehiculeWithElements(req: Request, res: Response): Promise<void> {
         const id = parseInt(req.params.id);
-        const vehicule = await VehiculesService.getOneByIdWithElements(id);
+        const vehicule = await VehiculesService.getOneById(id);
         res.send(vehicule);
     }
 

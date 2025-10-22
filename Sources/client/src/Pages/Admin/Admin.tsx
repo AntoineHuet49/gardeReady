@@ -1,5 +1,6 @@
 import Tabs from "../../Components/Tabs/Tabs";
 import { Vehicules } from "../Vehicules";
+import { AdminVehicule } from "./AdminVehicules";
 import { AdminTabs } from "./constants";
 import { Users } from "./Users";
 
@@ -17,6 +18,7 @@ function Admin({ tabs, activeTab, setActiveTab, tabToDisplay }: AdminProps) {
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab}/>
             <div id="tab-content" className="w-11/12">
                 {tabToDisplay === AdminTabs.USERS && <Users />}
+                {tabToDisplay === AdminTabs.VEHICULES && <AdminVehicule />}
                 {tabToDisplay === AdminTabs.VERIFEU && <Vehicules />}
             </div>
         </div>

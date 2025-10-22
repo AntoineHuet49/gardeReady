@@ -4,6 +4,10 @@ import {
     InferAttributes,
     InferCreationAttributes,
     CreationOptional,
+    ForeignKey,
+    BelongsToGetAssociationMixin,
+    BelongsToSetAssociationMixin,
+    BelongsToCreateAssociationMixin,
 } from "sequelize";
 import { dbContext } from "~~/Utils/Database";
 
@@ -13,6 +17,15 @@ export class Elements extends Model<
 > {
     declare id: CreationOptional<number>;
     declare name: string;
+    declare section_id: ForeignKey<number> | null;
+
+    // Associations
+    declare getSection: BelongsToGetAssociationMixin<any>;
+    declare setSection: BelongsToSetAssociationMixin<any, number>;
+    declare createSection: BelongsToCreateAssociationMixin<any>;
+
+    // Association inverse
+    declare section?: any;
 }
 
 Elements.init(
@@ -25,6 +38,15 @@ Elements.init(
         name: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        section_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'sections',
+                key: 'id',
+            },
+            onDelete: 'CASCADE',
         },
     },
     {

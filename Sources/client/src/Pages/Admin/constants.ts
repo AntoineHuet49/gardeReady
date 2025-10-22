@@ -1,6 +1,5 @@
 export enum AdminTabs {
-    USERS = "Users",
-    GARDES = "Gardes",
+    USERS = "Utilisateurs",
     VEHICULES = "Véhicules",
     VERIFEU = "veri'feu",
 }

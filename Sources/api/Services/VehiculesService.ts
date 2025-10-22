@@ -18,11 +18,7 @@ export default class VehiculesService {
     }
 
     public static async getOneById(id: number) {
-        return await VehiculesRepository.getOneById(id);
-    }
-
-    public static async getOneByIdWithElements(id: number) {
-        const vehicule =  await VehiculesRepository.getOneByIdWithElements(id);
+        const vehicule = await VehiculesRepository.getOneByIdWithSections(id);
         return vehicule?.toJSON();
     }
 
