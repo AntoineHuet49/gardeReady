@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Vehicule } from "../../../Types/Vehicule";
 import { Section } from "../../../Types/Section";
 import { Element } from "../../../Types/Element";
 import Loader from "../../../Components/Loader/Loader";
 import Alert from "../../../Components/Alert/Alert";
 import Collapse from "../../../Components/Collapse/Collapse";
+import AddElementModal from "../../../Components/Modal/AddElementModal";
+import { useElementMutations } from "../../../hooks/useElementMutations";
 
 type AdminVehiculesProps = {
     vehicules: Vehicule[];
@@ -12,6 +15,26 @@ type AdminVehiculesProps = {
 };
 
 const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) => {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedSection, setSelectedSection] = useState<{ id: number; name: string } | null>(null);
+    const { deleteElementMutation } = useElementMutations();
+
+    const openModal = (sectionId: number, sectionName: string) => {
+        setSelectedSection({ id: sectionId, name: sectionName });
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelectedSection(null);
+    };
+
+    const handleDeleteElement = (elementId: number, elementName: string) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'équipement "${elementName}" ?`)) {
+            deleteElementMutation.mutate(elementId);
+        }
+    };
+
     const renderSection = (section: Section, level: number = 0): JSX.Element => {
         const hasElements = section.elements && section.elements.length > 0;
         const hasSubSections = section.subSections && section.subSections.length > 0;
@@ -20,17 +43,39 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             <div key={section.id} className="mb-2">
                 <Collapse title={section.name} level={level + 1}>
                     <div className="space-y-2">
+                        {/* Header avec bouton d'ajout */}
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm text-gray-600">
+                                {hasElements ? `${section.elements!.length} équipement(s)` : "Aucun équipement"}
+                            </span>
+                            <button
+                                onClick={() => openModal(section.id, section.name)}
+                                className="flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                                title="Ajouter un équipement"
+                            >
+                                <span className="text-sm font-bold">+</span>
+                                <span>Équipement</span>
+                            </button>
+                        </div>
+
                         {/* Éléments de cette section */}
                         {hasElements && (
                             <div className="space-y-1">
-                                <h4 className="font-medium text-gray-700 text-sm">Équipements :</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                     {section.elements!.map((element: Element) => (
                                         <div 
                                             key={element.id}
-                                            className="bg-gray-50 p-2 rounded border text-sm"
+                                            className="bg-gray-50 p-2 rounded border text-sm flex justify-between items-center group"
                                         >
                                             <span className="font-medium">{element.name}</span>
+                                            <button
+                                                onClick={() => handleDeleteElement(element.id, element.name)}
+                                                className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-all duration-200 ml-2 p-1 rounded hover:bg-red-100"
+                                                title="Supprimer cet équipement"
+                                                disabled={deleteElementMutation.isPending}
+                                            >
+                                                {deleteElementMutation.isPending ? "..." : "🗑️"}
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -39,7 +84,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
 
                         {/* Sous-sections */}
                         {hasSubSections && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 mt-4">
                                 {section.subSections!.map((subSection: Section) => 
                                     renderSection(subSection, level + 1)
                                 )}
@@ -108,6 +153,16 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         </div>
                     ))}
                 </div>
+            )}
+            
+            {/* Modal d'ajout d'équipement */}
+            {selectedSection && (
+                <AddElementModal
+                    isOpen={modalOpen}
+                    onClose={closeModal}
+                    sectionId={selectedSection.id}
+                    sectionName={selectedSection.name}
+                />
             )}
         </div>
     );

@@ -3,6 +3,7 @@ import { AuthController } from '~~/Controllers/AuthController';
 import { GardeController } from '~~/Controllers/GardeController';
 import { UsersController } from '~~/Controllers/UsersController';
 import VehiculesController from '~~/Controllers/VehiculesController';
+import ElementsController from '~~/Controllers/ElementsController';
 
 const router = express.Router();
 
@@ -15,6 +16,11 @@ router.get('/vehicules', VehiculesController.getAllVehicules);
 router.get('/vehicules/:id', VehiculesController.getOneVehiculeWithElements);
 router.post('/vehicules', VehiculesController.addVehicule);
 router.post('/vehicules/verifications/:id', VehiculesController.validateVehicule);
+
+// Elements
+router.post('/elements', ElementsController.createElement);
+router.put('/elements/:id', ElementsController.updateElement);
+router.delete('/elements/:id', ElementsController.deleteElement);
 
 // Users
 router.get('/users', UsersController.getAllUsers);
