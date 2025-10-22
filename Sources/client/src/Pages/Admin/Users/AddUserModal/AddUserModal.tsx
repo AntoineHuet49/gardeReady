@@ -3,9 +3,11 @@ import Button from "../../../../Components/Button/button";
 import { UsersValues } from "../../../../Types/formValues";
 import TextInput from "../../../../Components/Input/TextInput";
 import DropdownInput from "../../../../Components/Input/DropdownInput";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllGardes } from "../../../../App/utils/Api/Gardes";
+import { createUser } from "../../../../App/utils/Api/Users";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 type AddUserModalProps = {
     buttonText: string;
@@ -17,12 +19,27 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
     );
 
     const modalId = "add-user-modal";
-    const { register, handleSubmit } = useForm<UsersValues>();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<UsersValues>();
+    const queryClient = useQueryClient();
 
     const gardes = useQuery({
         queryKey: ["gardes"],
         queryFn: getAllGardes,
     }).data;
+
+    const createUserMutation = useMutation({
+        mutationFn: createUser,
+        onSuccess: () => {
+            toast.success("Utilisateur créé avec succès !");
+            reset();
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            (document.getElementById(modalId) as HTMLDialogElement)?.close();
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            const errorMessage = error.response?.data?.message || "Erreur lors de la création de l'utilisateur";
+            toast.error(errorMessage);
+        },
+    });
 
     useEffect(() => {
         if (gardes) {
@@ -36,7 +53,23 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
     }, [gardes]);
 
     const handleSubmitForm = async (data: UsersValues) => {
-        console.log(data);
+        // Vérification que les mots de passe correspondent
+        if (data.password !== data.passwordConfirmation) {
+            toast.error("Les mots de passe ne correspondent pas");
+            return;
+        }
+
+        // Préparation des données pour l'API
+        const userData = {
+            email: data.email,
+            password: data.password,
+            firstname: data.firstname,
+            lastname: data.lastname,
+            role: data.role,
+            garde_id: Number(data.garde_id),
+        };
+
+        createUserMutation.mutate(userData);
     };
 
     return (
@@ -65,6 +98,7 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             register={register}
                             placeholder="E-mail"
                             name="email"
+                            errors={errors}
                             options={{
                                 required: "Veuillez entrer un e-mail",
                                 pattern: {
@@ -78,6 +112,7 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             register={register}
                             placeholder="Prénom"
                             name="firstname"
+                            errors={errors}
                             options={{
                                 required: "Veuillez entrer un prénom",
                             }}
@@ -86,6 +121,7 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             register={register}
                             placeholder="Nom"
                             name="lastname"
+                            errors={errors}
                             options={{
                                 required: "Veuillez entrer un nom",
                             }}
@@ -95,6 +131,7 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             placeholder="Mot de passe"
                             name="password"
                             isPassword
+                            errors={errors}
                             options={{
                                 required: "Veuillez entrer un mot de passe",
                                 pattern: {
@@ -109,6 +146,10 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             placeholder="Confirmer le Mot de passe"
                             name="passwordConfirmation"
                             isPassword
+                            errors={errors}
+                            options={{
+                                required: "Veuillez confirmer le mot de passe",
+                            }}
                         />
                         <DropdownInput
                             register={register}
@@ -120,7 +161,7 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
                             name="garde_id"
                             options={gardesOptions}
                         />
-                        <Button className="btn-primary" text="Ajouter" />
+                        <Button type="submit" className="btn-primary" text="Ajouter" />
                         <Button
                             text={"Annuler"}
                             className="ml-2 btn"

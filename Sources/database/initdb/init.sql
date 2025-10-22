@@ -49,26 +49,28 @@ ADD CONSTRAINT fk_elements FOREIGN KEY (element_id) REFERENCES elements(id) ON D
 ADD CONSTRAINT vehicules_elements_unique UNIQUE (vehicule_id, element_id);
 
 -- Insertion des données dans les tables
--- Table users
+-- Table users (mots de passe cryptés avec bcrypt)
+-- Admin: email=admin@sdis49.fr, password=Admin123!
+-- Users: email=user@sdis49.fr, password=User123!
 INSERT INTO users (email, password, firstname, lastname, role) VALUES
-('antoine.200@orange.fr', 'test', 'Antoine', 'Huet', 'admin'),
-('john.doe@example.com', 'test', 'John', 'Doe', 'user'),
-('jane.smith@example.com', 'test', 'Jane', 'Smith', 'user'),
-('alice.jones@example.com', 'test', 'Alice', 'Jones', 'user');
+('admin@sdis49.fr', '$2b$12$WDbdJ/06.C7uaRxE9cLOLO0uh80PTijl8aYDgsaiJJpHnOli9XF9K', 'Admin', 'Test', 'admin'),
+('user@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'User', 'Test', 'user'),
+('john.doe@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'John', 'Doe', 'user'),
+('jane.smith@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'Jane', 'Smith', 'user');
 
 -- Table gardes
 INSERT INTO gardes (name, color, responsable) VALUES
-('Garde 1', 'Rouge', 1), -- Responsable : Antoine Huet
-('Garde 2', 'jaune', 3), -- Responsable : Jane Smith
-('Garde 3', 'Vert', 4); -- Responsable : Alice Jones
+('Garde 1', 'Rouge', 1), -- Responsable : Admin Test
+('Garde 2', 'jaune', 3), -- Responsable : John Doe
+('Garde 3', 'Vert', 4); -- Responsable : Jane Smith
 
 SELECT * FROM users;
 
 -- Mise à jour de la table users avec les IDs de garde
-UPDATE users SET garde_id = 1 WHERE id = 1; -- Antoine Huet est assigné à la garde G001
-UPDATE users SET garde_id = 1 WHERE id = 2; -- John Doe est assigné à la garde G001
-UPDATE users SET garde_id = 2 WHERE id = 3; -- Jane Smith est assignée à la garde G002
-UPDATE users SET garde_id = 3 WHERE id = 4; -- Alice Jones est assignée à la garde G003
+UPDATE users SET garde_id = 1 WHERE id = 1; -- Admin Test est assigné à la garde 1
+UPDATE users SET garde_id = 1 WHERE id = 2; -- User Test est assigné à la garde 1
+UPDATE users SET garde_id = 2 WHERE id = 3; -- John Doe est assigné à la garde 2
+UPDATE users SET garde_id = 3 WHERE id = 4; -- Jane Smith est assignée à la garde 3
 
 -- Table vehicules
 INSERT INTO vehicules (name) VALUES

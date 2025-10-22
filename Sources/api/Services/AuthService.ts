@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { OperationResult } from "~~/Helpers/OperationResult";
 import { TUser } from "~~/Types/User";
 import { TUserWithPassword } from "~~/Models/Users";
+import bcrypt from "bcrypt";
 
 export class AuthService {
     public static async login(body: LoginReqDTO): Promise<OperationResult<string>> {
@@ -14,7 +15,8 @@ export class AuthService {
             return OperationResult.fail("Invalid credentials");
         }
 
-        if(this.isSamePassword(body.password, userWithPassword.password)) {
+        const isPasswordValid = await this.comparePassword(body.password, userWithPassword.password);
+        if(isPasswordValid) {
             const secret = process.env.TOKEN_SECRET ?? "secret";
             const token = jwt.sign(user, secret, { expiresIn: "1d" });
             return OperationResult.ok(token, "Login successful");
@@ -22,10 +24,12 @@ export class AuthService {
         return OperationResult.fail("Invalid credentials");
     }
 
-    private static isSamePassword(password: string, userPassword: string) {
-        if (password === userPassword) {
-            return true;
+    private static async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+        try {
+            return await bcrypt.compare(plainPassword, hashedPassword);
+        } catch (error) {
+            console.error("Error comparing passwords:", error);
+            return false;
         }
-        return false;
     }
 }

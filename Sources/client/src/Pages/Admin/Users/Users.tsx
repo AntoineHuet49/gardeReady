@@ -27,7 +27,7 @@ function Users({ users, isLoading }: UsersProps) {
                         <tbody>
                             {users.map((user) => (
                                 <tr className="hover:bg-base-300" key={user.id}>
-                                    <th>{user.id}</th>
+                                    <th></th>
                                     <td>{user.firstname}</td>
                                     <td>{user.lastname}</td>
                                     <td>{user.email}</td>

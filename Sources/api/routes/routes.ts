@@ -18,6 +18,7 @@ router.post('/vehicules/verifications/:id', VehiculesController.validateVehicule
 
 // Users
 router.get('/users', UsersController.getAllUsers);
+router.post('/users', UsersController.createUser);
 
 // Gardes
 router.get('/gardes', GardeController.getAllGardes);

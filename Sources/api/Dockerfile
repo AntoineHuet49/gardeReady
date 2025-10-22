@@ -7,8 +7,9 @@ WORKDIR /app
 # Étape 3 : Copie les fichiers package.json et package-lock.json
 COPY package*.json ./
 
-# Étape 4 : Installe les dépendances
-RUN npm install
+# Étape 4 : Installe toutes les dépendances
+ENV NODE_ENV=development
+RUN npm ci
 
 # Étape 5 : Copie le reste des fichiers de l'application
 COPY . .

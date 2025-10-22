@@ -8,18 +8,22 @@ import { login } from "../../App/utils/Api/Auth";
 import { routePath } from "../../App/Routes/routeConstants";
 
 function HomeContainer() {
-    const { register, handleSubmit } = useForm<LoginValues>();
+    const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>();
     const mutation = useMutation({
         mutationFn: (data: LoginValues) => login(data.email, data.password),
     });
     const navigate = useNavigate();
 
-    const { isAdmin } = useUser();
+    const { refreshUser } = useUser();
 
     const handleSubmitForm = async (loginValues: LoginValues) => {
         const response = await mutation.mutateAsync(loginValues);
         if (response.status === 200) {
-            if (isAdmin && window.innerWidth > 768) {
+            // Rafraîchir et récupérer directement les informations utilisateur
+            const { isAdmin: userIsAdmin } = refreshUser();
+            
+            // Navigation immédiate basée sur le rôle
+            if (userIsAdmin && window.innerWidth > 768) {
                 navigate(routePath.admin);
             } else {
                 navigate(routePath.vehicules);
@@ -46,6 +50,7 @@ function HomeContainer() {
             handleSubmit={handleSubmit}
             handleSubmitForm={handleSubmitForm}
             isError={mutation.isError}
+            errors={errors}
         />
     );
 }

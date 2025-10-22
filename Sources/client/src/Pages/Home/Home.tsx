@@ -1,4 +1,4 @@
-import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form";
+import { UseFormHandleSubmit, UseFormRegister, FieldErrors } from "react-hook-form";
 import Button from "../../Components/Button/button";
 import TextInput from "../../Components/Input/TextInput";
 import { LoginValues } from "../../Types/formValues";
@@ -12,6 +12,7 @@ type HomeProps = {
     handleSubmit: UseFormHandleSubmit<LoginValues>;
     handleSubmitForm: (data: LoginValues) => void;
     isError: boolean;
+    errors: FieldErrors<LoginValues>;
 };
 
 function Home({
@@ -20,6 +21,7 @@ function Home({
     handleSubmit,
     handleSubmitForm,
     isError,
+    errors,
 }: HomeProps) {
     return (
         <div className="container flex flex-col items-center justify-center h-screen">
@@ -43,6 +45,7 @@ function Home({
                     icon={MailIcon}
                     register={register}
                     name="email"
+                    errors={errors}
                 />
                 <TextInput
                     placeholder="Mot de passe"
@@ -50,6 +53,7 @@ function Home({
                     register={register}
                     name="password"
                     isPassword
+                    errors={errors}
                 />
                 <Button text="Connexion" />
             </form>

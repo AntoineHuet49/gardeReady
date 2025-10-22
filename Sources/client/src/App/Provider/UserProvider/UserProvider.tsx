@@ -10,7 +10,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-    useEffect(() => {
+    const checkAndSetUser = () => {
         const token = document.cookie
             .split(";")
             .map(c => c.trim())
@@ -22,14 +22,22 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const decoded: User = jwtDecode(token);
                 setUser(decoded);
                 setIsAuthenticated(true);
-                if(decoded.role === "admin") {
-                    setIsAdmin(true);
-                }
+                setIsAdmin(decoded.role === "admin");
             } catch (error) {
                 console.error("Erreur de décodage du token:", error);
                 setUser(null);
+                setIsAuthenticated(false);
+                setIsAdmin(false);
             }
+        } else {
+            setUser(null);
+            setIsAuthenticated(false);
+            setIsAdmin(false);
         }
+    };
+
+    useEffect(() => {
+        checkAndSetUser();
         setIsAuthLoading(false);
     }, []);
 
@@ -37,6 +45,39 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Supprime le cookie "token"
         document.cookie = "token=; Max-Age=0; path=/";
         setUser(null);
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+    };
+
+    const refreshUser = (): { isAdmin: boolean; user: User | null } => {
+        const token = document.cookie
+            .split(";")
+            .map(c => c.trim())
+            .find(c => c.startsWith("token="))
+            ?.split("=")[1];
+
+        if (token) {
+            try {
+                const decoded: User = jwtDecode(token);
+                setUser(decoded);
+                setIsAuthenticated(true);
+                const userIsAdmin = decoded.role === "admin";
+                setIsAdmin(userIsAdmin);
+                
+                return { isAdmin: userIsAdmin, user: decoded };
+            } catch (error) {
+                console.error("Erreur de décodage du token:", error);
+                setUser(null);
+                setIsAuthenticated(false);
+                setIsAdmin(false);
+                return { isAdmin: false, user: null };
+            }
+        } else {
+            setUser(null);
+            setIsAuthenticated(false);
+            setIsAdmin(false);
+            return { isAdmin: false, user: null };
+        }
     };
 
     if (isAuthLoading) {
@@ -44,7 +85,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return (
-        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, logout }}>
+        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, logout, refreshUser }}>
             {children}
         </UserContext.Provider>
     );

@@ -1,6 +1,7 @@
 import { TUserWithPassword } from "~~/Models/Users";
 import { Users } from "~~/Models";
 import { TUser } from "~~/Types/User";
+import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
 
 export class UsersRepository {
     public static async getAllUsers() {
@@ -16,5 +17,15 @@ export class UsersRepository {
     public static async getOneUserWithPassword(email: string): Promise<TUserWithPassword | undefined> {
         const user = await Users.scope('withPassword').findOne({ where: { email } });
         return user?.dataValues;
+    }
+
+    public static async createUser(userData: CreateUserDTO): Promise<TUser> {
+        const user = await Users.create(userData);
+        return user.dataValues;
+    }
+
+    public static async checkEmailExists(email: string): Promise<boolean> {
+        const user = await Users.findOne({ where: { email } });
+        return !!user;
     }
 }

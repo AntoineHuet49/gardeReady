@@ -6,6 +6,7 @@ type UserContextType = {
     isAuthenticated: boolean;
     isAdmin: boolean;
     logout: () => void;
+    refreshUser: () => { isAdmin: boolean; user: User | null };
 };
 
 export const UserContext = createContext<UserContextType | undefined>(undefined);

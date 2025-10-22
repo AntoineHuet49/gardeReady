@@ -7,6 +7,7 @@ services:
       - "5173:5173"
     volumes:
       - ./Sources/client:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
 
@@ -18,6 +19,7 @@ services:
       - "3000:3000"
     volumes:
       - ./Sources/api:/app
+      - /app/node_modules
 
   database:
     image: postgres:latest

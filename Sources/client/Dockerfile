@@ -9,8 +9,9 @@ WORKDIR /app
 # Copier les fichiers package.json et package-lock.json ou yarn.lock
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm install
+# Installer toutes les dépendances
+ENV NODE_ENV=development
+RUN npm ci
 
 # Copier le reste des fichiers de l'application
 COPY . .
