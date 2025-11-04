@@ -1,0 +1,30 @@
+name: Simple Railway Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  notify-railway:
+    runs-on: ubuntu-latest
+    name: Trigger Railway Deployment
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Trigger Railway Webhook
+      run: |
+        if [ -n "${{ secrets.RAILWAY_WEBHOOK_URL }}" ]; then
+          curl -X POST ${{ secrets.RAILWAY_WEBHOOK_URL }}
+          echo "✅ Railway webhook déclenché avec succès"
+        else
+          echo "⚠️ RAILWAY_WEBHOOK_URL non configuré - utilisez le déploiement automatique Railway"
+        fi
+
+    - name: Deploy notification
+      run: |
+        echo "🚀 Déploiement déclenché sur Railway"
+        echo "📊 Surveillez le déploiement sur https://railway.app"
+        echo "🔍 Vérifiez les logs de déploiement dans Railway"
