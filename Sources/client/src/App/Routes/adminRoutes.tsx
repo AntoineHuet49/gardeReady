@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { useUser } from "../App/UserProvider";
+import { useUser } from "../Provider/UserProvider";
 import { routePath } from "./routeConstants";
 
 type AdminRoutesProps = {

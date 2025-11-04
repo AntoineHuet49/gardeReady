@@ -1,50 +1,32 @@
-# Configuration GitHub Actions pour Railway
+# GitHub Actions - CI/CD Railway
 
-Ce dossier contient les workflows GitHub Actions pour automatiser le déploiement sur Railway.
+Ce dossier contient le workflow GitHub Actions pour automatiser le déploiement sur Railway.
 
-## Workflows disponibles
+## Workflow : `deploy.yml`
 
-### 1. `deploy-railway.yml` - Déploiement complet
-- Tests et build automatiques
-- Déploiement de l'API et du client
-- Utilise le CLI Railway
+Workflow simple qui :
+- Se déclenche à chaque push sur `main`
+- Peut être déclenché manuellement
+- Déploie automatiquement sur Railway
 
-### 2. `simple-deploy.yml` - Déploiement simple
-- Déclenchement via webhook Railway
-- Plus simple à configurer
-- Recommandé pour débuter
+## Configuration requise
 
-## Configuration des secrets GitHub
+### Secret GitHub
 
-Pour que les workflows fonctionnent, vous devez configurer les secrets suivants dans votre repository GitHub :
+Vous devez configurer **un seul secret** dans votre repository GitHub :
 
-### Méthode 1 : CLI Railway (deploy-railway.yml)
-
-1. Allez dans **Settings** → **Secrets and variables** → **Actions** de votre repo GitHub
-2. Ajoutez ces secrets :
+1. Allez dans **Settings** → **Secrets and variables** → **Actions**
+2. Cliquez **New repository secret**
+3. Ajoutez :
 
 | Secret | Description | Comment l'obtenir |
 |--------|-------------|-------------------|
 | `RAILWAY_TOKEN` | Token d'authentification Railway | `railway login` puis `railway whoami --token` |
-| `RAILWAY_API_SERVICE_ID` | ID du service API | Dans Railway, Settings du service API |
-| `RAILWAY_CLIENT_SERVICE_ID` | ID du service Client | Dans Railway, Settings du service Client |
 
-### Méthode 2 : Webhook Railway (simple-deploy.yml)
-
-1. Dans Railway, allez dans **Settings** → **Webhooks** de votre projet
-2. Créez un nouveau webhook avec l'URL de déploiement
-3. Ajoutez le secret dans GitHub :
-
-| Secret | Description |
-|--------|-------------|
-| `RAILWAY_WEBHOOK_URL` | URL du webhook Railway |
-
-## Instructions de configuration
-
-### Étape 1 : Obtenir le token Railway
+### Obtenir le token Railway
 
 ```bash
-# Installez le CLI Railway
+# Installez le CLI Railway (si pas déjà fait)
 npm install -g @railway/cli
 
 # Connectez-vous
@@ -54,62 +36,24 @@ railway login
 railway whoami --token
 ```
 
-### Étape 2 : Obtenir les IDs des services
+## Utilisation
 
-1. Connectez-vous sur [railway.app](https://railway.app)
-2. Ouvrez votre projet
-3. Pour chaque service (API, Client) :
-   - Cliquez sur le service
-   - Allez dans **Settings**
-   - Copiez l'ID affiché
+1. **Configuration du secret** : Ajoutez `RAILWAY_TOKEN` dans GitHub
+2. **Push automatique** : Chaque push sur `main` déclenche le déploiement
+3. **Déploiement manuel** : Allez dans Actions → Deploy → Run workflow
 
-### Étape 3 : Configurer les secrets GitHub
+## Alternative recommandée : Déploiement automatique Railway
 
-1. Sur GitHub, allez dans votre repository
-2. **Settings** → **Secrets and variables** → **Actions**
-3. Cliquez **New repository secret**
-4. Ajoutez chaque secret un par un
+Railway peut déployer automatiquement sans GitHub Actions :
 
-## Déploiement automatique Railway (recommandé)
+1. Dans Railway, connectez votre repository GitHub
+2. Railway détecte automatiquement les push sur `main`
+3. Déploiement automatique sans configuration supplémentaire
 
-Railway peut déployer automatiquement à chaque push sans GitHub Actions :
+Dans ce cas, GitHub Actions sert uniquement de backup ou pour des déploiements conditionnels.
 
-1. Dans Railway, liez votre repository GitHub
-2. Configurez le déploiement automatique
-3. Railway détectera les changements automatiquement
+## Surveillance
 
-Dans ce cas, les GitHub Actions servent uniquement pour :
-- Tests automatiques
-- Notifications
-- Déploiements conditionnels
-
-## Test des workflows
-
-Pour tester vos workflows :
-
-1. Commitez et pushez sur `main`
-2. Allez dans **Actions** de votre repo GitHub
-3. Surveillez l'exécution du workflow
-4. Vérifiez les logs en cas d'erreur
-
-## Dépannage
-
-### Erreur d'authentification Railway
-- Vérifiez que `RAILWAY_TOKEN` est correct
-- Régénérez le token si nécessaire
-
-### Service non trouvé
-- Vérifiez les IDs des services dans Railway
-- Assurez-vous que les services existent
-
-### Échec de build
-- Vérifiez les logs du workflow
-- Testez le build localement d'abord
-
-## Désactivation temporaire
-
-Pour désactiver temporairement les déploiements automatiques :
-
-1. Renommez le fichier workflow (ajoutez `.disabled`)
-2. Ou commentez les étapes de déploiement
-3. Ou configurez des conditions dans le workflow
+- Surveillez les déploiements dans l'onglet **Actions** de GitHub
+- Vérifiez les logs en cas d'erreur
+- Consultez Railway pour l'état des services
