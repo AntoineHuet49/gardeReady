@@ -19,6 +19,9 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: |
+          Sources/api/package-lock.json
+          Sources/client/package-lock.json
 
     - name: Install dependencies API
       run: |
