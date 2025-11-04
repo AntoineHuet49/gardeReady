@@ -1,9 +1,8 @@
 # Railway project configuration for API
-# This file helps Railway CLI identify which service to deploy
+# Remplacez ces valeurs par vos IDs réels
 
-# You'll need to update these values with your actual Railway project and service IDs
-# Get them from: railway project --json and railway service --json
+[project]
+id = "your-project-id"
 
-# Example format:
-# projectId = "your-project-id"
-# serviceId = "your-api-service-id"
+[service]
+id = "your-api-service-id"
