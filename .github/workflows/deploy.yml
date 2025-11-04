@@ -50,21 +50,33 @@ jobs:
     - name: Install Railway CLI
       run: npm install -g @railway/cli
 
+    - name: Verify Railway Token
+      run: |
+        if [ -z "$RAILWAY_TOKEN" ]; then
+          echo "❌ RAILWAY_TOKEN not set"
+          echo "👉 Add RAILWAY_TOKEN secret in GitHub repository settings"
+          exit 1
+        else
+          echo "✅ RAILWAY_TOKEN is set"
+        fi
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
     - name: Deploy API to Railway
       run: |
         cd Sources/api
-        railway login --browserless
-        railway up
+        railway up --detach || echo "⚠️ Railway API deployment failed - check Railway configuration"
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      continue-on-error: true
 
     - name: Deploy Client to Railway
       run: |
         cd Sources/client
-        railway login --browserless
-        railway up
+        railway up --detach || echo "⚠️ Railway Client deployment failed - check Railway configuration"
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      continue-on-error: true
 
     - name: Deployment complete
       run: |

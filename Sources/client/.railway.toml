@@ -1,0 +1,9 @@
+# Railway project configuration for Client
+# This file helps Railway CLI identify which service to deploy
+
+# You'll need to update these values with your actual Railway project and service IDs
+# Get them from: railway project --json and railway service --json
+
+# Example format:
+# projectId = "your-project-id"
+# serviceId = "your-client-service-id"

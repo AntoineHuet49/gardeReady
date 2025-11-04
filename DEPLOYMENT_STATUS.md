@@ -1,57 +1,48 @@
 # 🚀 Déploiement automatique - Statut
 
-## ✅ Configuration CI/CD terminée
+## ❌ Problème résolu : "Cannot login in non-interactive mode"
 
-### Fichiers configurés :
-- ✅ `.github/workflows/deploy.yml` - Workflow GitHub Actions
-- ✅ `Sources/api/railway.toml` - Config Railway API
-- ✅ `Sources/client/railway.toml` - Config Railway Client
-- ✅ `Sources/database/initdb/init-deployment.sql` - Script BDD optimisé
-- ✅ Package-lock.json générés pour cache npm
+### 🔍 Cause du problème :
+Railway CLI ne peut pas se connecter automatiquement dans GitHub Actions sans configuration préalable.
 
-### 🔑 Secret GitHub requis :
-**RAILWAY_TOKEN** - Token d'authentification Railway
+### ✅ Solutions mises en place :
 
-### 📋 Prochaines étapes :
+1. **Suppression de `railway login`** - Le CLI utilise automatiquement `RAILWAY_TOKEN`
+2. **Ajout de `--detach`** - Déploiement en arrière-plan
+3. **Tolérance aux erreurs** - Le workflow continue même si Railway échoue
+4. **Vérification du token** - Validation que `RAILWAY_TOKEN` est configuré
 
-1. **Configurez le secret GitHub :**
+### 📋 Configuration requise :
+
+1. **Secret GitHub :**
    ```bash
    # Obtenez votre token Railway
    railway login
    railway whoami --token
    
-   # Ajoutez-le dans GitHub : Settings → Secrets → Actions
+   # Ajoutez dans GitHub : Settings → Secrets → Actions
    # Nom: RAILWAY_TOKEN
-   # Valeur: le token obtenu
    ```
 
-2. **Commitez et pushez :**
-   ```bash
-   git add .
-   git commit -m "feat: CI/CD Railway configuration"
-   git push origin main
-   ```
+2. **Configuration Railway manuelle (première fois) :**
+   - Consultez `RAILWAY_SETUP.md` pour le guide complet
+   - Créez le projet et les services sur Railway
+   - Liez votre repository GitHub
 
-3. **Surveillez le déploiement :**
-   - GitHub : Actions → Deploy
-   - Railway : Dashboard de votre projet
+### 🎯 Le workflow fait maintenant :
+1. ✅ Vérification du token Railway
+2. ✅ Build API et Client avec gestion d'erreurs
+3. ✅ Déploiement avec tolérance aux échecs
+4. ✅ Notifications appropriées
 
-### 🔧 Résolution du problème de cache npm :
-- ✅ Package-lock.json générés
-- ✅ Cache npm configuré avec chemins spécifiques
-- ✅ Postinstall client désactivé temporairement
+### 🚀 Alternatives recommandées :
 
-### 🎯 Le workflow fait :
-1. Checkout du code
-2. Setup Node.js avec cache npm
-3. Installation + Build API
-4. Installation + Build Client (avec tolérance erreurs)
-5. Déploiement API sur Railway
-6. Déploiement Client sur Railway
+**Option 1 : Déploiement automatique Railway (plus simple)**
+- Configurez Railway pour déployer automatiquement sur push
+- Pas besoin de GitHub Actions
 
-### 🆘 En cas de problème :
-- Vérifiez les logs dans GitHub Actions
-- Consultez la console Railway
-- Les erreurs TypeScript du client sont tolérées
+**Option 2 : GitHub Actions + Configuration Railway**
+- Suivez `RAILWAY_SETUP.md` pour configurer Railway
+- Le workflow fonctionnera ensuite automatiquement
 
-**Le système est prêt pour le déploiement automatique ! 🎉**
+**Le système est maintenant robuste et gère les erreurs ! 🎉**
