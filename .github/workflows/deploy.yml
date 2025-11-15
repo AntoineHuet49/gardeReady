@@ -121,11 +121,11 @@ jobs:
         fi
         
         echo "📊 API - Fichiers à déployer: $(ls -1 Sources/api/dist/ | wc -l) fichiers"
-        echo "📋 Structure du build API:"
-        find Sources/api/dist -type f -name "*.js" | head -10
+        echo "📋 Taille du bundle API:"
+        ls -lh Sources/api/dist/app.js
         
-        # Copier TOUT le contenu compilé (pas seulement app.js)
-        cp -r Sources/api/dist/* deploy-api/
+        # Avec tsup, tout est bundlé dans un seul fichier app.js
+        cp Sources/api/dist/app.js deploy-api/app.js
         cp Sources/api/package.json deploy-api/
         cp Sources/api/.env deploy-api/
         
