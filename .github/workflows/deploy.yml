@@ -56,7 +56,7 @@ jobs:
         cd ../api
         cat > .env << EOF
         NODE_ENV=production
-        PORT=3000
+        PORT=8080
         DATABASE_URL=${{ secrets.DATABASE_URL }}
         JWT_SECRET=${{ secrets.JWT_SECRET }}
         FRONTEND_URL=${{ secrets.FRONTEND_URL }}
@@ -127,7 +127,23 @@ jobs:
         cp Sources/api/package.json deploy-api/
         cp Sources/api/.env deploy-api/
         
-        echo "✅ API prête pour déploiement (app.js + package.json + .env)"
+        # Créer un .htaccess pour l'API (redirection vers Node.js)
+        cat > deploy-api/.htaccess << 'EOF'
+        # Configuration pour API Node.js sur O2switch
+        RewriteEngine on
+        
+        # Rediriger toutes les requêtes vers l'application Node.js
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ http://localhost:8080/$1 [P,L]
+        
+        # Headers pour API
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+        EOF
+        
+        echo "✅ API prête pour déploiement (app.js + package.json + .env + .htaccess)"
 
     - name: Test FTP connection
       run: |
