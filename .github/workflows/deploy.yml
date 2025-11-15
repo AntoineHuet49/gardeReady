@@ -92,37 +92,20 @@ jobs:
         fi
         
         echo "✅ Dossiers de build trouvés"
-        echo "📊 Tailles des builds:"
-        du -sh Sources/api/dist
-        du -sh Sources/client/dist
+        echo "📊 Fichiers à déployer:"
+        echo "API: $(ls -1 Sources/api/dist/ | wc -l) fichiers"
+        echo "Client: $(ls -1 Sources/client/dist/ | wc -l) fichiers"
         
-        # Copier l'API dans le sous-dossier api/
-        if [ -d "Sources/api/dist" ]; then
-          cp -r Sources/api/dist/* deploy/api/
-          echo "✅ API build copié dans deploy/api/"
-        else
-          echo "❌ Dossier Sources/api/dist non trouvé"
-          exit 1
-        fi
-        
+        # Créer un bundle API minimal (seulement les fichiers essentiels)
+        cp Sources/api/dist/app.js deploy/api/app.js
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
+        echo "✅ API bundle minimal créé (app.js + package.json + .env)"
+        
 
         
-        # Créer un .htaccess optimisé pour l'API Node.js O2switch
-        cat > deploy/api/.htaccess << 'EOF'
-        # Configuration pour API Node.js sur O2switch
-        RewriteEngine On
-        
-        # Permettre l'accès direct aux fichiers statiques (logs, assets, etc.)
-        RewriteCond %{REQUEST_FILENAME} -f
-        RewriteRule .* - [L]
-        
-        # L'application Node.js est configurée dans le panel O2switch
-        # Elle gère automatiquement les requêtes vers /api/*
-        # Pas besoin de redirection ici, O2switch s'en charge
-        EOF
+
         
         # Copier le client directement à la racine de deploy/
         if [ -d "Sources/client/dist" ]; then
@@ -148,6 +131,11 @@ jobs:
         RewriteRule . /index.html [L]
         EOF
 
+    - name: Test FTP connection first
+      run: |
+        echo "🔍 Test de connexion FTP..."
+        timeout 10 curl -v ftp://${{ secrets.FTP_SERVER }}:21 --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" || echo "❌ Connexion FTP échouée"
+        
     - name: Deploy to O2switch via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -157,9 +145,11 @@ jobs:
         local-dir: './deploy/'
         server-dir: '/public_html/'
         port: 21
-        timeout: 60000
-        log-level: verbose
-        security: loose
+        timeout: 30000
+        log-level: minimal
+        security: strict
+        dangerous-clean-slate: false
+        dry-run: false
         exclude: |
           **/.git*
           **/.git*/**
@@ -172,12 +162,6 @@ jobs:
         echo "✅ Déploiement terminé sur O2switch!"
         echo "🚀 API et Client déployés avec succès"
         echo ""
-        echo "� Actions post-déploiement :"
-        echo "1. Panel O2switch → Applications Node.js → Redémarrer l'application"
-        echo "2. Tester le frontend : https://verifeu.fr"
-        echo "3. Tester l'API : https://verifeu.fr/api"
-        echo ""
-        echo "🔧 En cas de problème :"
-        echo "- Vérifier les logs Node.js dans le panel O2switch"
-        echo "- Vérifier que les variables d'environnement sont bien configurées"
-        echo "- Consulter le fichier README_DEPLOYMENT.md dans /api/"
+        echo "📋 Actions post-déploiement :"
+        echo "1. Panel O2switch → Applications Node.js → Redémarrer"
+        echo "2. Tester : https://verifeu.fr et https://verifeu.fr/api"
