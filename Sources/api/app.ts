@@ -19,6 +19,10 @@ const allowedOrigins = [
 const app = express();
 app.use(cors({
     origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+        console.log(`🌐 CORS request from origin: ${origin}`);
+        console.log(`🔧 Environment: ${process.env.NODE_ENV}`);
+        console.log(`📋 Allowed origins:`, allowedOrigins);
+        
         // Permet les requêtes sans origin (comme les apps mobiles) en développement
         if (!origin && process.env.NODE_ENV === 'development') return callback(null, true);
         
@@ -26,13 +30,18 @@ app.use(cors({
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.warn(`❌ CORS blocked origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true
 }));
 
-connectDatabase();
+// Initialiser la base de données de manière asynchrone
+connectDatabase().catch(error => {
+    console.error('💥 Failed to connect to database on startup:', error);
+    process.exit(1); // Arrêter l'application si la DB n'est pas accessible
+});
 
 const PORT = process.env.PORT ?? 3000;
 
