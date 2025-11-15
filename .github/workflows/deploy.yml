@@ -129,6 +129,23 @@ jobs:
         cp Sources/api/package.json deploy-api/
         cp Sources/api/.env deploy-api/
         
+        # Créer un script de démarrage pour debug
+        cat > deploy-api/start.sh << 'EOF'
+        #!/bin/bash
+        echo "🚀 Démarrage de l'API GardeReady"
+        echo "📁 Dossier de travail: $(pwd)"
+        echo "📋 Fichiers présents:"
+        ls -la
+        echo "📊 Taille du bundle:"
+        ls -lh app.js
+        echo "🔧 Variables d'environnement:"
+        echo "NODE_ENV=$NODE_ENV"
+        echo "PORT=$PORT"
+        echo "🚀 Lancement de l'API..."
+        NODE_ENV=production npm run start:prod
+        EOF
+        chmod +x deploy-api/start.sh
+        
         # Créer un .htaccess pour l'API (redirection vers Node.js)
         cat > deploy-api/.htaccess << 'EOF'
         # Configuration pour API Node.js sur O2switch
@@ -145,7 +162,7 @@ jobs:
         Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
         EOF
         
-        echo "✅ API prête pour déploiement (app.js + package.json + .env + .htaccess)"
+        echo "✅ API prête pour déploiement (app.js + package.json + .env + .htaccess + start.sh)"
 
     - name: Test FTP connection
       run: |
