@@ -1,4 +1,4 @@
-name: CI/CD Railway
+name: CI/CD O2switch
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy to Railway
+    name: Deploy to O2switch
     
     steps:
     - name: Checkout code
@@ -45,45 +45,49 @@ jobs:
       run: |
         cd Sources/client
         npm run build || echo "⚠️ Build client a des warnings mais continue"
+        # Copier .htaccess dans le build
+        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé"
       continue-on-error: true
 
-    - name: Install Railway CLI
-      run: npm install -g @railway/cli
-
-    - name: Verify Railway Token
+    - name: Create production environment files
       run: |
-        if [ -z "$RAILWAY_TOKEN" ]; then
-          echo "❌ RAILWAY_TOKEN not set"
-          echo "👉 Add RAILWAY_TOKEN secret in GitHub repository settings"
-          exit 1
-        else
-          echo "✅ RAILWAY_TOKEN is set"
-        fi
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-    - name: Deploy API to Railway
-      run: |
+        # Créer .env pour l'API
         cd Sources/api
-        railway up --detach || echo "⚠️ Railway API deployment failed - check Railway configuration"
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-        RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_API_SERVICE_ID }}
-      continue-on-error: true
+        cat > .env << EOF
+        NODE_ENV=production
+        PORT=3000
+        DATABASE_URL=${{ secrets.DATABASE_URL }}
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+        MAILJET_API_KEY=${{ secrets.MAILJET_API_KEY }}
+        MAILJET_SECRET_KEY=${{ secrets.MAILJET_SECRET_KEY }}
+        EOF
+        
+        # Créer .env pour le client
+        cd ../client
+        cat > .env << EOF
+        NODE_ENV=production
+        VITE_API_URL=${{ secrets.API_URL }}
+        EOF
 
-    - name: Deploy Client to Railway
-      run: |
-        cd Sources/client
-        railway up --detach || echo "⚠️ Railway Client deployment failed - check Railway configuration"
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-        RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_CLIENT_SERVICE_ID }}
-      continue-on-error: true
+    - name: Deploy to O2switch via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './Sources/'
+        server-dir: '/www/'
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.env.example
+          **/README.md
+          **/.gitignore
 
     - name: Deployment complete
       run: |
-        echo "✅ Déploiement terminé sur Railway!"
+        echo "✅ Déploiement terminé sur O2switch!"
         echo "🚀 API et Client déployés avec succès"
-        echo "📊 Vérifiez vos services sur https://railway.app"
+        echo "📊 Vérifiez votre site sur votre domaine O2switch"
