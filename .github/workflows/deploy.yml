@@ -32,7 +32,10 @@ jobs:
     - name: Build API
       run: |
         cd Sources/api
+        echo "🔨 Building API..."
         npm run build
+        echo "✅ API build terminé"
+        ls -la dist/
       continue-on-error: false
 
     - name: Install dependencies Client
@@ -44,10 +47,13 @@ jobs:
     - name: Build Client
       run: |
         cd Sources/client
-        npm run build || echo "⚠️ Build client a des warnings mais continue"
-        # Copier .htaccess dans le build
-        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé"
-      continue-on-error: true
+        echo "🔨 Building Client..."
+        npm run build
+        echo "✅ Client build terminé"
+        ls -la dist/
+        # Copier .htaccess dans le build si il existe
+        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
+      continue-on-error: false
 
     - name: Create production environment files
       run: |
@@ -76,13 +82,32 @@ jobs:
         mkdir -p deploy/api
         mkdir -p deploy/client
         
+        # Vérifier que les dossiers de build existent
+        echo "📁 Vérification des dossiers de build..."
+        ls -la Sources/api/
+        ls -la Sources/client/
+        
         # Copier seulement les fichiers buildés pour l'API
-        cp -r Sources/api/dist/* deploy/api/
+        if [ -d "Sources/api/dist" ]; then
+          cp -r Sources/api/dist/* deploy/api/
+          echo "✅ API build copié"
+        else
+          echo "❌ Dossier Sources/api/dist non trouvé"
+          exit 1
+        fi
+        
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
         # Copier seulement le build du client
-        cp -r Sources/client/dist/* deploy/client/
+        if [ -d "Sources/client/dist" ]; then
+          cp -r Sources/client/dist/* deploy/client/
+          echo "✅ Client build copié"
+        else
+          echo "❌ Dossier Sources/client/dist non trouvé"
+          exit 1
+        fi
+        
         cp Sources/client/.env deploy/client/
         
         # Créer un .htaccess pour le client React
