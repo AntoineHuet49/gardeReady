@@ -82,8 +82,19 @@ jobs:
         
         # Vérifier que les dossiers de build existent
         echo "📁 Vérification des dossiers de build..."
-        ls -la Sources/api/
-        ls -la Sources/client/
+        if [ ! -d "Sources/api/dist" ]; then
+          echo "❌ Sources/api/dist non trouvé"
+          exit 1
+        fi
+        if [ ! -d "Sources/client/dist" ]; then
+          echo "❌ Sources/client/dist non trouvé"
+          exit 1
+        fi
+        
+        echo "✅ Dossiers de build trouvés"
+        echo "📊 Tailles des builds:"
+        du -sh Sources/api/dist
+        du -sh Sources/client/dist
         
         # Copier l'API dans le sous-dossier api/
         if [ -d "Sources/api/dist" ]; then
@@ -97,22 +108,20 @@ jobs:
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
-        # Créer un script de démarrage pour Node.js
-        cat > deploy/api/start.sh << 'EOF'
-        #!/bin/bash
-        cd /www/api
-        npm install --production
-        node app.js
-        EOF
-        chmod +x deploy/api/start.sh
+
         
-        # Créer un .htaccess pour rediriger les requêtes API vers Node.js
+        # Créer un .htaccess optimisé pour l'API Node.js O2switch
         cat > deploy/api/.htaccess << 'EOF'
-        # Configuration pour proxy vers Node.js
+        # Configuration pour API Node.js sur O2switch
         RewriteEngine On
-        RewriteCond %{REQUEST_FILENAME} !-f
-        RewriteCond %{REQUEST_FILENAME} !-d
-        RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+        
+        # Permettre l'accès direct aux fichiers statiques (logs, assets, etc.)
+        RewriteCond %{REQUEST_FILENAME} -f
+        RewriteRule .* - [L]
+        
+        # L'application Node.js est configurée dans le panel O2switch
+        # Elle gère automatiquement les requêtes vers /api/*
+        # Pas besoin de redirection ici, O2switch s'en charge
         EOF
         
         # Copier le client directement à la racine de deploy/
@@ -148,9 +157,27 @@ jobs:
         local-dir: './deploy/'
         server-dir: '/public_html/'
         port: 21
+        timeout: 60000
+        log-level: verbose
+        security: loose
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.DS_Store
+          **/Thumbs.db
 
     - name: Deployment complete
       run: |
         echo "✅ Déploiement terminé sur O2switch!"
         echo "🚀 API et Client déployés avec succès"
-        echo "📊 Vérifiez votre site sur votre domaine O2switch"
+        echo ""
+        echo "� Actions post-déploiement :"
+        echo "1. Panel O2switch → Applications Node.js → Redémarrer l'application"
+        echo "2. Tester le frontend : https://verifeu.fr"
+        echo "3. Tester l'API : https://verifeu.fr/api"
+        echo ""
+        echo "🔧 En cas de problème :"
+        echo "- Vérifier les logs Node.js dans le panel O2switch"
+        echo "- Vérifier que les variables d'environnement sont bien configurées"
+        echo "- Consulter le fichier README_DEPLOYMENT.md dans /api/"
