@@ -77,7 +77,8 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: './Sources/'
-        server-dir: '/www/'
+        server-dir: '/public_html/'
+        port: 21
         exclude: |
           **/.git*
           **/.git*/**

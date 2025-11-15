@@ -9,33 +9,36 @@ Votre application est maintenant configurée pour se déployer automatiquement s
 Dans **Settings** → **Secrets and variables** → **Actions**, ajoutez :
 
 ### Connexion FTP
-- `FTP_SERVER` : ftp.votre-domaine.com
-- `FTP_USERNAME` : votre nom d'utilisateur FTP
-- `FTP_PASSWORD` : votre mot de passe FTP
+- `FTP_SERVER` : cerisier.o2switch.net
+- `FTP_USERNAME` : pidu0234
+- `FTP_PASSWORD` : u9RY-VVYg-3t8@
 
 ### Base de données O2switch
-- `DATABASE_URL` : postgresql://user:pass@localhost:5432/db_name
+   - `DATABASE_URL` : `postgresql://pidu0234_verifeu_user:quwbuz-zuFty8-wordas@localhost:5432/pidu0234_verifeu`
 
 ### Application
 - `JWT_SECRET` : clé sécurisée de 32+ caractères
-- `API_URL` : https://votre-domaine.com/api
-- `FRONTEND_URL` : https://votre-domaine.com
+- `API_URL` : https://verifeu.fr/api
+- `FRONTEND_URL` : https://verifeu.fr
 
-### Email (optionnel)
-- `MAILJET_API_KEY` : clé API Mailjet
-- `MAILJET_SECRET_KEY` : clé secrète Mailjet
+### Email Mailjet
+- `MAILJET_API_KEY` : 13e46336d45ba9cd09447b6b15646432
+- `MAILJET_SECRET_KEY` : fbca50e39145d22541608640e8709b58
 
 ## 🏗️ Ce qui sera déployé
 
 ```
-votre-serveur.com/
-├── api/                   # Backend Node.js
-│   ├── dist/             # Code compilé
-│   ├── .env              # Variables d'environnement
-│   └── start.sh          # Script de démarrage
-└── client/               # Frontend React
-    ├── dist/             # Site web optimisé
-    └── .htaccess         # Configuration Apache
+/public_html/             # Racine web O2switch
+├── api/                  # Backend Node.js
+│   ├── dist/            # Code compilé
+│   ├── .env             # Variables d'environnement
+│   └── start.sh         # Script de démarrage
+├── client/              # Frontend React
+│   ├── dist/            # Site web optimisé
+│   └── .htaccess        # Configuration Apache
+└── database/            # Scripts SQL
+    └── initdb/
+        └── init-deployment.sql
 ```
 
 ## 🚀 Déploiement
@@ -53,7 +56,8 @@ votre-serveur.com/
 ## 📊 Après le déploiement
 
 ### Sur O2switch
-1. **Base de données** : Importez `database/initdb/init-deployment.sql`
+3. **Importer la structure de base de données** dans le panneau O2switch :
+   - Utiliser le fichier `Sources/database/initdb/init-postgresql-o2switch.sql`
 2. **Node.js** : Démarrez l'API avec `bash /www/api/start.sh`
 3. **Apache** : Le client sera accessible automatiquement
 
@@ -74,4 +78,4 @@ votre-serveur.com/
 
 **Documentation complète** : Consultez `O2SWITCH_SETUP.md` pour plus de détails.
 
-**Votre application sera accessible sur `https://votre-domaine.com` ! 🎉**
+**Votre application sera accessible sur `https://verifeu.fr` ! 🎉**

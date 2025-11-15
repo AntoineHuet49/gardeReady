@@ -13,6 +13,11 @@ build/
 .env.test.local
 .env.production.local
 
+# Fichiers contenant des secrets sensibles
+configure-github-secrets.sh
+secrets.txt
+config-secrets.*
+
 # IDE
 .vscode/
 .idea/

@@ -21,8 +21,8 @@ DATABASE_URL=mysql://utilisateur:motdepasse@localhost:3306/nom_base
 ### 🔑 Application
 ```
 JWT_SECRET=votre-clé-jwt-très-sécurisée-32-caractères-minimum
-API_URL=https://votre-domaine.com/api
-FRONTEND_URL=https://votre-domaine.com
+API_URL=https://verifeu.fr/api
+FRONTEND_URL=https://verifeu.fr
 ```
 
 ### 📧 Mailjet (optionnel)
@@ -74,11 +74,11 @@ O2switch supporte Node.js. Vérifiez que votre hébergement inclut :
 ### 3. Configuration du domaine
 
 #### API Backend
-- URL : `https://votre-domaine.com/api`
+- URL : `https://verifeu.fr/api`
 - Point d'entrée : `/www/api/dist/app.js`
 
 #### Client Frontend  
-- URL : `https://votre-domaine.com`
+- URL : `https://verifeu.fr`
 - Répertoire : `/www/client/dist/`
 
 ### 4. Fichier .htaccess pour le client
