@@ -1,0 +1,157 @@
+name: CI/CD O2switch
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to O2switch
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: |
+          Sources/api/package-lock.json
+          Sources/client/package-lock.json
+
+    - name: Install dependencies API
+      run: |
+        cd Sources/api
+        npm ci
+      continue-on-error: false
+
+    - name: Build API
+      run: |
+        cd Sources/api
+        echo "🔨 Building API..."
+        npm run build
+        echo "✅ API build terminé"
+        ls -la dist/
+      continue-on-error: false
+
+    - name: Install dependencies Client
+      run: |
+        cd Sources/client
+        npm ci
+      continue-on-error: false
+
+    - name: Build Client
+      run: |
+        cd Sources/client
+        echo "🔨 Building Client..."
+        npm run build
+        echo "✅ Client build terminé"
+        ls -la dist/
+        # Copier .htaccess dans le build si il existe
+        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
+      continue-on-error: false
+
+    - name: Create production environment files
+      run: |
+        # Créer .env pour l'API
+        cd Sources/api
+        cat > .env << EOF
+        NODE_ENV=production
+        PORT=3000
+        DATABASE_URL=${{ secrets.DATABASE_URL }}
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+        MAILJET_API_KEY=${{ secrets.MAILJET_API_KEY }}
+        MAILJET_SECRET_KEY=${{ secrets.MAILJET_SECRET_KEY }}
+        EOF
+        
+        # Créer .env pour le client
+        cd ../client
+        cat > .env << EOF
+        NODE_ENV=production
+        VITE_API_URL=${{ secrets.API_URL }}
+        EOF
+
+    - name: Prepare deployment folder
+      run: |
+        # Créer un dossier de déploiement propre
+        mkdir -p deploy/api
+        
+        # Vérifier que les dossiers de build existent
+        echo "📁 Vérification des dossiers de build..."
+        ls -la Sources/api/
+        ls -la Sources/client/
+        
+        # Copier l'API dans le sous-dossier api/
+        if [ -d "Sources/api/dist" ]; then
+          cp -r Sources/api/dist/* deploy/api/
+          echo "✅ API build copié dans deploy/api/"
+        else
+          echo "❌ Dossier Sources/api/dist non trouvé"
+          exit 1
+        fi
+        
+        cp Sources/api/package.json deploy/api/
+        cp Sources/api/.env deploy/api/
+        
+        # Créer un script de démarrage pour Node.js
+        cat > deploy/api/start.sh << 'EOF'
+        #!/bin/bash
+        cd /www/api
+        npm install --production
+        node app.js
+        EOF
+        chmod +x deploy/api/start.sh
+        
+        # Créer un .htaccess pour rediriger les requêtes API vers Node.js
+        cat > deploy/api/.htaccess << 'EOF'
+        # Configuration pour proxy vers Node.js
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+        EOF
+        
+        # Copier le client directement à la racine de deploy/
+        if [ -d "Sources/client/dist" ]; then
+          cp -r Sources/client/dist/* deploy/
+          echo "✅ Client build copié à la racine de deploy/"
+        else
+          echo "❌ Dossier Sources/client/dist non trouvé"
+          exit 1
+        fi
+        
+        cp Sources/client/.env deploy/
+        
+        # Créer un .htaccess à la racine pour le client React
+        cat > deploy/.htaccess << 'EOF'
+        # Configuration pour React Router (SPA)
+        RewriteEngine On
+        RewriteRule ^index\.html$ - [L]
+        
+        # Ne pas rediriger les requêtes vers l'API
+        RewriteCond %{REQUEST_URI} !^/api/
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+        EOF
+
+    - name: Deploy to O2switch via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './deploy/'
+        server-dir: '/public_html/'
+        port: 21
+
+    - name: Deployment complete
+      run: |
+        echo "✅ Déploiement terminé sur O2switch!"
+        echo "🚀 API et Client déployés avec succès"
+        echo "📊 Vérifiez votre site sur votre domaine O2switch"
