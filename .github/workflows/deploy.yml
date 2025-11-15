@@ -134,7 +134,43 @@ jobs:
         echo "🔍 Test de connexion FTP..."
         timeout 10 curl -v ftp://${{ secrets.FTP_SERVER }}:21 --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" || echo "❌ Connexion FTP échouée"
 
-    - name: Deploy Frontend to public_html
+    - name: Clean problematic files via FTP
+      run: |
+        echo "🧹 Nettoyage des fichiers problématiques..."
+        # Supprimer l'ancien dossier api dans public_html et le fichier .env
+        curl -s --connect-timeout 10 --max-time 30 \
+          ftp://${{ secrets.FTP_SERVER }}/public_html/ \
+          --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+          -Q "DELE .env" \
+          -Q "RMD api" \
+          || echo "⚠️ Nettoyage terminé (certains fichiers n'existaient peut-être pas)"
+
+    - name: Deploy Frontend to public_html (with retry)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      continue-on-error: true
+      id: frontend-deploy
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './deploy-frontend/'
+        server-dir: '/public_html/'
+        port: 21
+        timeout: 60000
+        log-level: verbose
+        security: loose
+        dangerous-clean-slate: false
+        dry-run: false
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.DS_Store
+          **/Thumbs.db
+          **/*.env
+          
+    - name: Retry Frontend deployment if failed
+      if: steps.frontend-deploy.outcome == 'failure'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
@@ -143,9 +179,26 @@ jobs:
         local-dir: './deploy-frontend/'
         server-dir: '/public_html/'
         port: 21
-        timeout: 30000
+        timeout: 120000
         log-level: minimal
-        security: strict
+        security: loose
+        dangerous-clean-slate: false
+        dry-run: false
+
+    - name: Deploy API to api folder (with retry)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      continue-on-error: true
+      id: api-deploy
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './deploy-api/'
+        server-dir: '/api/'
+        port: 21
+        timeout: 60000
+        log-level: verbose
+        security: loose
         dangerous-clean-slate: false
         dry-run: false
         exclude: |
@@ -154,8 +207,9 @@ jobs:
           **/node_modules/**
           **/.DS_Store
           **/Thumbs.db
-
-    - name: Deploy API to api folder
+          
+    - name: Retry API deployment if failed
+      if: steps.api-deploy.outcome == 'failure'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
@@ -164,17 +218,11 @@ jobs:
         local-dir: './deploy-api/'
         server-dir: '/api/'
         port: 21
-        timeout: 30000
+        timeout: 120000
         log-level: minimal
-        security: strict
+        security: loose
         dangerous-clean-slate: false
         dry-run: false
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/.DS_Store
-          **/Thumbs.db
 
     - name: Deployment complete
       run: |
