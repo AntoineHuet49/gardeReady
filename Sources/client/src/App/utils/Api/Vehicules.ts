@@ -1,5 +1,5 @@
+import { Vehicule } from "../../../Types/Vehicule";
 import { apiUrl } from "../constants";
-import { Vehicule } from "../../Types/Vehicule";
 import { instance } from "./axios";
 
 export async function getAllVehicules() {
