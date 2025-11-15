@@ -1,5 +1,4 @@
-name: CI/CD O2switch SSH
-
+name: CI/CD O2switch FTP
 on:
   push:
     branches: [ main ]
@@ -8,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy to O2switch via SSH
+    name: Deploy to O2switch
     
     steps:
     - name: Checkout code
@@ -51,6 +50,8 @@ jobs:
         npm run build
         echo "✅ Client build terminé"
         ls -la dist/
+        # Copier .htaccess dans le build si il existe
+        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
       continue-on-error: false
 
     - name: Create production environment files
@@ -74,76 +75,82 @@ jobs:
         VITE_API_URL=${{ secrets.API_URL }}
         EOF
 
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    - name: Deploy via SSH and rsync
+    - name: Prepare deployment folder
       run: |
-        # Créer le répertoire .ssh s'il n'existe pas
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
+        # Créer un dossier de déploiement propre
+        mkdir -p deploy/api
         
-        # Ajouter le serveur aux known_hosts avec gestion d'erreur
-        echo "🔍 Ajout du serveur ${{ secrets.SSH_HOST }} aux known_hosts..."
-        ssh-keyscan -H -t rsa,ed25519 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || {
-          echo "⚠️ ssh-keyscan a échoué, essai avec une méthode alternative..."
-          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || {
-            echo "⚠️ Impossible d'obtenir les clés du serveur, connexion en mode strict désactivé"
-            echo "Host ${{ secrets.SSH_HOST }}" >> ~/.ssh/config
-            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
-            echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
-          }
-        }
-        
-        # Tester la connexion SSH
-        echo "🔐 Test de connexion SSH..."
-        ssh -o ConnectTimeout=10 -o BatchMode=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} echo "✅ Connexion SSH réussie" || {
-          echo "❌ Connexion SSH échouée"
-          exit 1
-        }
-        
-        # Créer le dossier de déploiement
-        mkdir -p deploy
-        
-        # Copier le client à la racine
-        cp -r Sources/client/dist/* deploy/
-        cp Sources/client/.env deploy/
+        # Vérifier que les dossiers de build existent
+        echo "📁 Vérification des dossiers de build..."
+        ls -la Sources/api/
+        ls -la Sources/client/
         
         # Copier l'API dans le sous-dossier api/
-        mkdir -p deploy/api
-        cp -r Sources/api/dist/* deploy/api/
+        if [ -d "Sources/api/dist" ]; then
+          cp -r Sources/api/dist/* deploy/api/
+          echo "✅ API build copié dans deploy/api/"
+        else
+          echo "❌ Dossier Sources/api/dist non trouvé"
+          exit 1
+        fi
+        
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
-        # Créer .htaccess pour React Router
+        # Créer un script de démarrage pour Node.js
+        cat > deploy/api/start.sh << 'EOF'
+        #!/bin/bash
+        cd /www/api
+        npm install --production
+        node app.js
+        EOF
+        chmod +x deploy/api/start.sh
+        
+        # Créer un .htaccess pour rediriger les requêtes API vers Node.js
+        cat > deploy/api/.htaccess << 'EOF'
+        # Configuration pour proxy vers Node.js
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+        EOF
+        
+        # Copier le client directement à la racine de deploy/
+        if [ -d "Sources/client/dist" ]; then
+          cp -r Sources/client/dist/* deploy/
+          echo "✅ Client build copié à la racine de deploy/"
+        else
+          echo "❌ Dossier Sources/client/dist non trouvé"
+          exit 1
+        fi
+        
+        cp Sources/client/.env deploy/
+        
+        # Créer un .htaccess à la racine pour le client React
         cat > deploy/.htaccess << 'EOF'
+        # Configuration pour React Router (SPA)
         RewriteEngine On
         RewriteRule ^index\.html$ - [L]
+        
+        # Ne pas rediriger les requêtes vers l'API
         RewriteCond %{REQUEST_URI} !^/api/
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule . /index.html [L]
         EOF
-        
-        # Déployer via rsync (plus efficace que scp)
-        rsync -avz --delete deploy/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/public_html/
-        
-        # Installer les dépendances et redémarrer l'API
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-        cd /public_html/api
-        npm install --production
-        
-        # Redémarrer l'application Node.js (selon la configuration O2switch)
-        pkill -f "node.*app.js" || true
-        nohup node app.js > api.log 2>&1 &
-        
-        echo "✅ Déploiement terminé !"
-        EOF
+
+    - name: Deploy to O2switch via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './deploy/'
+        server-dir: '/public_html/'
+        port: 21
 
     - name: Deployment complete
       run: |
-        echo "✅ Déploiement SSH terminé sur O2switch!"
+        echo "✅ Déploiement terminé sur O2switch!"
         echo "🚀 API et Client déployés avec succès"
-        echo "📊 Vérifiez votre site sur https://verifeu.fr"
+        echo "📊 Vérifiez votre site sur votre domaine O2switch"
