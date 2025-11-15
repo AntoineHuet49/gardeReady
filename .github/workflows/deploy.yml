@@ -70,22 +70,39 @@ jobs:
         VITE_API_URL=${{ secrets.API_URL }}
         EOF
 
+    - name: Prepare deployment folder
+      run: |
+        # Créer un dossier de déploiement propre
+        mkdir -p deploy/api
+        mkdir -p deploy/client
+        
+        # Copier seulement les fichiers buildés pour l'API
+        cp -r Sources/api/dist/* deploy/api/
+        cp Sources/api/package.json deploy/api/
+        cp Sources/api/.env deploy/api/
+        
+        # Copier seulement le build du client
+        cp -r Sources/client/dist/* deploy/client/
+        cp Sources/client/.env deploy/client/
+        
+        # Créer un .htaccess pour le client React
+        cat > deploy/client/.htaccess << 'EOF'
+        RewriteEngine On
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+        EOF
+
     - name: Deploy to O2switch via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: './Sources/'
+        local-dir: './deploy/'
         server-dir: '/public_html/'
         port: 21
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/.env.example
-          **/README.md
-          **/.gitignore
 
     - name: Deployment complete
       run: |
