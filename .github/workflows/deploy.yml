@@ -43,21 +43,17 @@ jobs:
         npm ci
       continue-on-error: false
 
-    - name: Build Client
-      run: |
-        cd Sources/client
-        echo "🔨 Building Client..."
-        npm run build
-        echo "✅ Client build terminé"
-        ls -la dist/
-        # Copier .htaccess dans le build si il existe
-        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
-      continue-on-error: false
-
     - name: Create production environment files
       run: |
+        # Créer .env pour le client AVANT le build
+        cd Sources/client
+        cat > .env << EOF
+        NODE_ENV=production
+        VITE_API_URL=${{ secrets.API_URL }}
+        EOF
+        
         # Créer .env pour l'API
-        cd Sources/api
+        cd ../api
         cat > .env << EOF
         NODE_ENV=production
         PORT=3000
@@ -67,13 +63,20 @@ jobs:
         MAILJET_API_KEY=${{ secrets.MAILJET_API_KEY }}
         MAILJET_SECRET_KEY=${{ secrets.MAILJET_SECRET_KEY }}
         EOF
-        
-        # Créer .env pour le client
-        cd ../client
-        cat > .env << EOF
-        NODE_ENV=production
-        VITE_API_URL=${{ secrets.API_URL }}
-        EOF
+
+    - name: Build Client
+      run: |
+        cd Sources/client
+        echo "🔨 Building Client..."
+        echo "📋 Variables d'environnement disponibles:"
+        cat .env
+        echo "🚀 Démarrage du build..."
+        npm run build
+        echo "✅ Client build terminé"
+        ls -la dist/
+        # Copier .htaccess dans le build si il existe
+        cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
+      continue-on-error: false
 
     - name: Prepare deployment folder
       run: |
