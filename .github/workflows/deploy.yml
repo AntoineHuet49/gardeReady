@@ -80,17 +80,16 @@ jobs:
       run: |
         # Créer un dossier de déploiement propre
         mkdir -p deploy/api
-        mkdir -p deploy/client
         
         # Vérifier que les dossiers de build existent
         echo "📁 Vérification des dossiers de build..."
         ls -la Sources/api/
         ls -la Sources/client/
         
-        # Copier seulement les fichiers buildés pour l'API
+        # Copier l'API dans le sous-dossier api/
         if [ -d "Sources/api/dist" ]; then
           cp -r Sources/api/dist/* deploy/api/
-          echo "✅ API build copié"
+          echo "✅ API build copié dans deploy/api/"
         else
           echo "❌ Dossier Sources/api/dist non trouvé"
           exit 1
@@ -99,21 +98,25 @@ jobs:
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
-        # Copier seulement le build du client
+        # Copier le client directement à la racine de deploy/
         if [ -d "Sources/client/dist" ]; then
-          cp -r Sources/client/dist/* deploy/client/
-          echo "✅ Client build copié"
+          cp -r Sources/client/dist/* deploy/
+          echo "✅ Client build copié à la racine de deploy/"
         else
           echo "❌ Dossier Sources/client/dist non trouvé"
           exit 1
         fi
         
-        cp Sources/client/.env deploy/client/
+        cp Sources/client/.env deploy/
         
-        # Créer un .htaccess pour le client React
-        cat > deploy/client/.htaccess << 'EOF'
+        # Créer un .htaccess à la racine pour le client React
+        cat > deploy/.htaccess << 'EOF'
+        # Configuration pour React Router (SPA)
         RewriteEngine On
         RewriteRule ^index\.html$ - [L]
+        
+        # Ne pas rediriger les requêtes vers l'API
+        RewriteCond %{REQUEST_URI} !^/api/
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule . /index.html [L]
