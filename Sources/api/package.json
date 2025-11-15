@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx nodemon ./app.ts",
+    "build": "tsc",
     "start": "node app.js",
     "postinstall": "npm run build"
   },
