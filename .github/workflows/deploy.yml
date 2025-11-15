@@ -81,8 +81,28 @@ jobs:
 
     - name: Deploy via SSH and rsync
       run: |
-        # Ajouter le serveur aux known_hosts
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        # Créer le répertoire .ssh s'il n'existe pas
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        
+        # Ajouter le serveur aux known_hosts avec gestion d'erreur
+        echo "🔍 Ajout du serveur ${{ secrets.SSH_HOST }} aux known_hosts..."
+        ssh-keyscan -H -t rsa,ed25519 ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || {
+          echo "⚠️ ssh-keyscan a échoué, essai avec une méthode alternative..."
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || {
+            echo "⚠️ Impossible d'obtenir les clés du serveur, connexion en mode strict désactivé"
+            echo "Host ${{ secrets.SSH_HOST }}" >> ~/.ssh/config
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          }
+        }
+        
+        # Tester la connexion SSH
+        echo "🔐 Test de connexion SSH..."
+        ssh -o ConnectTimeout=10 -o BatchMode=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} echo "✅ Connexion SSH réussie" || {
+          echo "❌ Connexion SSH échouée"
+          exit 1
+        }
         
         # Créer le dossier de déploiement
         mkdir -p deploy
