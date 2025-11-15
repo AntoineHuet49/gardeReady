@@ -78,51 +78,24 @@ jobs:
         cp .htaccess dist/ 2>/dev/null || echo "⚠️ .htaccess non trouvé, sera créé plus tard"
       continue-on-error: false
 
-    - name: Prepare deployment folder
+    - name: Prepare Frontend deployment
       run: |
-        # Créer un dossier de déploiement propre
-        mkdir -p deploy/api
+        # Créer un dossier de déploiement pour le frontend
+        mkdir -p deploy-frontend
         
-        # Vérifier que les dossiers de build existent
-        echo "📁 Vérification des dossiers de build..."
-        if [ ! -d "Sources/api/dist" ]; then
-          echo "❌ Sources/api/dist non trouvé"
-          exit 1
-        fi
+        # Vérifier que le build du client existe
         if [ ! -d "Sources/client/dist" ]; then
           echo "❌ Sources/client/dist non trouvé"
           exit 1
         fi
         
-        echo "✅ Dossiers de build trouvés"
-        echo "📊 Fichiers à déployer:"
-        echo "API: $(ls -1 Sources/api/dist/ | wc -l) fichiers"
-        echo "Client: $(ls -1 Sources/client/dist/ | wc -l) fichiers"
+        echo "📊 Frontend - Fichiers à déployer: $(ls -1 Sources/client/dist/ | wc -l) fichiers"
         
-        # Créer un bundle API minimal (seulement les fichiers essentiels)
-        cp Sources/api/dist/app.js deploy/api/app.js
-        cp Sources/api/package.json deploy/api/
-        cp Sources/api/.env deploy/api/
+        # Copier le client
+        cp -r Sources/client/dist/* deploy-frontend/
         
-        echo "✅ API bundle minimal créé (app.js + package.json + .env)"
-        
-
-        
-
-        
-        # Copier le client directement à la racine de deploy/
-        if [ -d "Sources/client/dist" ]; then
-          cp -r Sources/client/dist/* deploy/
-          echo "✅ Client build copié à la racine de deploy/"
-        else
-          echo "❌ Dossier Sources/client/dist non trouvé"
-          exit 1
-        fi
-        
-        cp Sources/client/.env deploy/
-        
-        # Créer un .htaccess à la racine pour le client React
-        cat > deploy/.htaccess << 'EOF'
+        # Créer un .htaccess pour React Router (SPA)
+        cat > deploy-frontend/.htaccess << 'EOF'
         # Configuration pour React Router (SPA)
         RewriteEngine On
         RewriteRule ^index\.html$ - [L]
@@ -133,20 +106,63 @@ jobs:
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule . /index.html [L]
         EOF
+        
+        echo "✅ Frontend prêt pour déploiement"
 
-    - name: Test FTP connection first
+    - name: Prepare API deployment
+      run: |
+        # Créer un dossier de déploiement pour l'API
+        mkdir -p deploy-api
+        
+        # Vérifier que le build de l'API existe
+        if [ ! -d "Sources/api/dist" ]; then
+          echo "❌ Sources/api/dist non trouvé"
+          exit 1
+        fi
+        
+        echo "📊 API - Fichiers à déployer: $(ls -1 Sources/api/dist/ | wc -l) fichiers"
+        
+        # Créer un bundle API minimal
+        cp Sources/api/dist/app.js deploy-api/app.js
+        cp Sources/api/package.json deploy-api/
+        cp Sources/api/.env deploy-api/
+        
+        echo "✅ API prête pour déploiement (app.js + package.json + .env)"
+
+    - name: Test FTP connection
       run: |
         echo "🔍 Test de connexion FTP..."
         timeout 10 curl -v ftp://${{ secrets.FTP_SERVER }}:21 --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" || echo "❌ Connexion FTP échouée"
-        
-    - name: Deploy to O2switch via FTP
+
+    - name: Deploy Frontend to public_html
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: './deploy/'
+        local-dir: './deploy-frontend/'
         server-dir: '/public_html/'
+        port: 21
+        timeout: 30000
+        log-level: minimal
+        security: strict
+        dangerous-clean-slate: false
+        dry-run: false
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.DS_Store
+          **/Thumbs.db
+
+    - name: Deploy API to api folder
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: './deploy-api/'
+        server-dir: '/api/'
         port: 21
         timeout: 30000
         log-level: minimal
@@ -163,8 +179,9 @@ jobs:
     - name: Deployment complete
       run: |
         echo "✅ Déploiement terminé sur O2switch!"
-        echo "🚀 API et Client déployés avec succès"
-        echo ""
+        echo "🌐 Frontend déployé dans: /public_html/ (accessible via https://verifeu.fr)"
+        echo "🔧 API déployée dans: /api/ (accessible via https://verifeu.fr/api)"
+        echo "🚀 Déploiement en 2 étapes terminé avec succès!"
         echo "📋 Actions post-déploiement :"
         echo "1. Panel O2switch → Applications Node.js → Redémarrer"
         echo "2. Tester : https://verifeu.fr et https://verifeu.fr/api"
