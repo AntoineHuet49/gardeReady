@@ -98,6 +98,24 @@ jobs:
         cp Sources/api/package.json deploy/api/
         cp Sources/api/.env deploy/api/
         
+        # Créer un script de démarrage pour Node.js
+        cat > deploy/api/start.sh << 'EOF'
+        #!/bin/bash
+        cd /www/api
+        npm install --production
+        node app.js
+        EOF
+        chmod +x deploy/api/start.sh
+        
+        # Créer un .htaccess pour rediriger les requêtes API vers Node.js
+        cat > deploy/api/.htaccess << 'EOF'
+        # Configuration pour proxy vers Node.js
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+        EOF
+        
         # Copier le client directement à la racine de deploy/
         if [ -d "Sources/client/dist" ]; then
           cp -r Sources/client/dist/* deploy/
