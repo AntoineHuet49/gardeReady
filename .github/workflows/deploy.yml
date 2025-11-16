@@ -188,7 +188,15 @@ jobs:
           --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
           -Q "DELE .env" \
           -Q "RMD api" \
-          || echo "⚠️ Nettoyage terminé (certains fichiers n'existaient peut-être pas)"
+          || echo "⚠️ Nettoyage public_html terminé"
+        
+        # Supprimer l'ancien app.js dans le dossier api pour forcer la mise à jour
+        echo "🔄 Suppression de l'ancien app.js pour forcer la mise à jour..."
+        curl -s --connect-timeout 10 --max-time 30 \
+          ftp://${{ secrets.FTP_SERVER }}/api/ \
+          --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+          -Q "DELE app.js" \
+          || echo "⚠️ app.js n'existait pas ou déjà supprimé"
 
     - name: Deploy Frontend to public_html (with retry)
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
