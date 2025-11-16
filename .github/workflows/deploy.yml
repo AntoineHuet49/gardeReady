@@ -162,6 +162,16 @@ jobs:
         echo "NODE_ENV=$NODE_ENV"
         echo "PORT=$PORT"
         echo "DATABASE_URL=${DATABASE_URL:0:30}..." # Affiche juste le début pour sécurité
+        echo "JWT_SECRET=${JWT_SECRET:0:10}..."
+        echo "FRONTEND_URL=$FRONTEND_URL"
+        
+        # Test de connexion à la base de données
+        echo "🔍 Test de résolution DNS pour la base de données..."
+        if [ ! -z "$DATABASE_URL" ]; then
+            echo "✅ DATABASE_URL est définie"
+        else
+            echo "❌ DATABASE_URL est vide ou non définie!"
+        fi
         
         echo "🚀 Lancement direct de l'API..."
         # Lancer directement avec node (pas npm qui n'est pas disponible)
