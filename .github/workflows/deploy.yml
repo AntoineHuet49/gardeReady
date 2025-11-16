@@ -129,6 +129,16 @@ jobs:
         cp Sources/api/package.json deploy-api/
         cp Sources/api/.env deploy-api/
         
+        # Vérifier que les fichiers sont bien copiés
+        echo "📋 Contenu du dossier deploy-api après copie:"
+        ls -lha deploy-api/
+        echo "📊 Taille du app.js dans deploy-api:"
+        ls -lh deploy-api/app.js
+        
+        # Créer un fichier de test avec timestamp pour vérifier le déploiement
+        echo "# Déploiement du $(date)" > deploy-api/DEPLOY_TEST.txt
+        echo "Bundle app.js: $(ls -lh deploy-api/app.js | awk '{print $5}')" >> deploy-api/DEPLOY_TEST.txt
+        
         # Créer un script de démarrage pour debug
         cat > deploy-api/start.sh << 'EOF'
         #!/bin/bash
