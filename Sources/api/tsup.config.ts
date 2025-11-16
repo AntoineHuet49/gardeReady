@@ -22,7 +22,10 @@ export default defineConfig({
     'jsonwebtoken',
     'cookie-parser',
     'node-mailjet',
-    'morgan'
+    'morgan',
+    'jspdf',
+    'jspdf-autotable',
+    'moment'
   ],
   esbuildOptions(options) {
     // Résoudre les chemins personnalisés ~/ et ~~/
