@@ -31,9 +31,12 @@ jobs:
     - name: Build API
       run: |
         cd Sources/api
-        echo "🔨 Building API..."
-        npx tsc
+        echo "🔨 Building API avec tsup..."
+        npm run build
         echo "✅ API build terminé"
+        echo "📊 Taille du bundle généré:"
+        ls -lh dist/app.js
+        echo "📋 Contenu du dossier dist:"
         ls -la dist/
       continue-on-error: false
 
