@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "npx nodemon ./app.ts",
-        "build": "npx tsup app.ts --format cjs --target node16 --clean",
+        "build": "npx tsup app.ts --format cjs --target node20 --clean",
         "start": "node dist/app.js",
         "start:prod" : "node app.js",
         "postinstall": ""
@@ -15,7 +15,7 @@
         "@types/jsonwebtoken": "^9.0.9",
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.1",
-        "@types/node": "^22.14.0",
+        "@types/node": "^20.0.0",
         "bcrypt": "^6.0.0",
         "cookie-parser": "~1.4.4",
         "cors": "^2.8.5",
