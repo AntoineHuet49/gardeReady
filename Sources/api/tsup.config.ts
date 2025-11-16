@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: ['app.ts'],
   format: ['cjs'],
-  target: 'node20',
+  target: 'node18',
   clean: true,
   outDir: 'dist',
   splitting: false,
