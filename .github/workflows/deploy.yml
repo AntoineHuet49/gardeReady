@@ -138,11 +138,21 @@ jobs:
         ls -la
         echo "📊 Taille du bundle:"
         ls -lh app.js
-        echo "🔧 Variables d'environnement:"
+        
+        # Charger les variables d'environnement depuis .env
+        if [ -f .env ]; then
+            echo "🔧 Chargement du fichier .env..."
+            export $(cat .env | grep -v '^#' | xargs)
+        fi
+        
+        echo "🔧 Variables d'environnement après chargement:"
         echo "NODE_ENV=$NODE_ENV"
         echo "PORT=$PORT"
-        echo "🚀 Lancement de l'API..."
-        NODE_ENV=production npm run start:prod
+        echo "DATABASE_URL=${DATABASE_URL:0:30}..." # Affiche juste le début pour sécurité
+        
+        echo "🚀 Lancement direct de l'API..."
+        # Lancer directement avec node (pas npm qui n'est pas disponible)
+        NODE_ENV=production
         EOF
         chmod +x deploy-api/start.sh
         
