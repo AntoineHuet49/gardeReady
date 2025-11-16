@@ -13,10 +13,7 @@ export const dbContext = databaseUrl
         dialect: "postgres",
         logging: process.env.NODE_ENV === 'development' ? console.log : false,
         dialectOptions: {
-            ssl: process.env.NODE_ENV === 'production' ? {
-                require: true,
-                rejectUnauthorized: false
-            } : false
+            ssl: false // O2switch ne supporte pas SSL pour les connexions locales
         }
     })
     : new Sequelize("gardeready", "root", "root", {
