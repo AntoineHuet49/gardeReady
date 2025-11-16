@@ -1,8 +1,0 @@
-# Railway project configuration for API
-# Remplacez ces valeurs par vos IDs réels
-
-[project]
-id = "your-project-id"
-
-[service]
-id = "your-api-service-id"

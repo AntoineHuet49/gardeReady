@@ -8,6 +8,12 @@ import SectionsController from '~~/Controllers/SectionsController';
 
 const router = express.Router();
 
+// Default route
+router.get("/", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify({ status: "ok", version: "1.0" }));
+});
+
 // Auth
 router.post("/auth/register", AuthController.register)
 router.post("/auth/login", AuthController.login)
