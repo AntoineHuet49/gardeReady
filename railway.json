@@ -1,9 +1,8 @@
 {
   "build": {
-    "builder": "nixpacks",
-    "buildCommand": "cd Sources/api && npm install && npm run build"
+    "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "node Sources/api/dist/app.js"
+    "restartPolicyMaxRetries": 5
   }
 }
