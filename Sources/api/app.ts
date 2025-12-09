@@ -45,8 +45,18 @@ connectDatabase().catch(error => {
 
 const PORT = process.env.PORT ?? 3000;
 
-app.use(express.json())
+app.use(express.json());
+
+// Serve static files du frontend buildé
+app.use(express.static('Sources/api/public'));
+
+// Routes API
 app.use("/api", router);
+
+// Fallback pour SPA - redirige toutes les routes vers index.html
+app.get('*', (req, res) => {
+    res.sendFile('Sources/api/public/index.html', { root: '.' });
+});
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
