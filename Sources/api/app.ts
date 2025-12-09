@@ -47,14 +47,15 @@ const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
 
+// Routes API (doit être avant le fallback SPA)
+app.use("/api", router);
+
 // Serve static files du frontend buildé
 app.use(express.static('Sources/api/public'));
 
-// Routes API
-app.use("/api", router);
-
 // Fallback pour SPA - redirige toutes les routes vers index.html
-app.get('*', (req, res) => {
+// IMPORTANT: Doit être APRÈS les autres routes
+app.get('/', (req, res) => {
     res.sendFile('Sources/api/public/index.html', { root: '.' });
 });
 
