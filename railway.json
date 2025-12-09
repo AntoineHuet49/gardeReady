@@ -1,9 +1,9 @@
 {
   "build": {
-    "builder": "nixpacks"
+    "builder": "nixpacks",
+    "buildCommand": "cd Sources/api && npm install && npm run build"
   },
   "deploy": {
-    "startCommand": "node Sources/api/dist/app.js",
-    "buildCommand": "cd Sources/api && npm install && npm run build && cd ../client && npm install && npm run build"
+    "startCommand": "node Sources/api/dist/app.js"
   }
 }
