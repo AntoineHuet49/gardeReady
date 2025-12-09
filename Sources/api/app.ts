@@ -23,8 +23,8 @@ app.use(cors({
         console.log(`🔧 Environment: ${process.env.NODE_ENV}`);
         console.log(`📋 Allowed origins:`, allowedOrigins);
         
-        // Permet les requêtes sans origin (comme les apps mobiles) en développement
-        if (!origin && process.env.NODE_ENV === 'development') return callback(null, true);
+        // Permet les requêtes sans origin (comme le frontend servi depuis le même domaine)
+        if (!origin) return callback(null, true);
         
         // Vérifie si l'origin est dans la liste autorisée
         if (allowedOrigins.indexOf(origin) !== -1) {
