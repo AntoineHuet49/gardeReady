@@ -10,8 +10,9 @@ export const instance = axios.create({
 instance.interceptors.response.use((response) => {
     return response
 }, (error) => {
-    if (error.status === 401) {
+    if (error.response?.status === 401) {
         removeCookie('token');
         document.location.href = "/";
     }
+    return Promise.reject(error);
 })

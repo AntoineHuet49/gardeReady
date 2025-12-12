@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app/Sources/client
 
@@ -16,7 +16,7 @@ COPY Sources/client .
 RUN npm run build
 
 # Stage 2: Build API
-FROM node:18-alpine AS api-builder
+FROM node:22-alpine AS api-builder
 
 WORKDIR /app/Sources/api
 
@@ -33,7 +33,7 @@ COPY Sources/api .
 RUN npm run build
 
 # Stage 3: Runtime
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 

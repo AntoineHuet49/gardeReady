@@ -3,5 +3,9 @@
         "sdis",
         "smtps",
         "uuidv"
-    ]
+    ],
+    "editor.tokenColorCustomizations": {
+        "comments": "",
+        "textMateRules": []
+    }
 }

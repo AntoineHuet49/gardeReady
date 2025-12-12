@@ -4,14 +4,12 @@ import TextInput from "../../Components/Input/TextInput";
 import { LoginValues } from "../../Types/formValues";
 import MailIcon from "../../assets/icons/mail.svg";
 import PasswordIcon from "../../assets/icons/password.svg";
-import Alert from "../../Components/Alert/Alert";
 
 type HomeProps = {
     handleStartClick: () => void;
     register: UseFormRegister<LoginValues>;
     handleSubmit: UseFormHandleSubmit<LoginValues>;
     handleSubmitForm: (data: LoginValues) => void;
-    isError: boolean;
     errors: FieldErrors<LoginValues>;
 };
 
@@ -20,7 +18,6 @@ function Home({
     register,
     handleSubmit,
     handleSubmitForm,
-    isError,
     errors,
 }: HomeProps) {
     return (
@@ -39,7 +36,6 @@ function Home({
                 onSubmit={handleSubmit(handleSubmitForm)}
             >
                 <h2 className="text-3xl mb-4">Connexion</h2>
-                <Alert type="error" display={isError} message="Email ou mot de passe incorrect" />
                 <TextInput
                     placeholder="email"
                     icon={MailIcon}
