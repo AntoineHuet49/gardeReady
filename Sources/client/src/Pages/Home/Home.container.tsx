@@ -6,6 +6,8 @@ import { useNavigate } from "react-router";
 import { useUser } from "../../App/Provider/UserProvider";
 import { login } from "../../App/utils/Api/Auth";
 import { routePath } from "../../App/Routes/routeConstants";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
 
 function HomeContainer() {
     const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>();
@@ -15,6 +17,16 @@ function HomeContainer() {
     const navigate = useNavigate();
 
     const { refreshUser } = useUser();
+
+    // Afficher un toast d'erreur lorsque l'authentification échoue
+    useEffect(() => {
+        if (mutation.isError) {
+            toast.error("Email ou mot de passe incorrect", {
+                position: "top-right",
+                autoClose: 3000,
+            });
+        }
+    }, [mutation.isError]);
 
     const handleSubmitForm = async (loginValues: LoginValues) => {
         const response = await mutation.mutateAsync(loginValues);
