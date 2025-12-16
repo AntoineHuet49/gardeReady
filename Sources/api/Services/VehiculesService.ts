@@ -22,6 +22,33 @@ export default class VehiculesService {
         return vehicule?.toJSON();
     }
 
+    public static async createVehicule(name: string) {
+        try {
+            if (!name || name.trim() === "") {
+                throw new Error("Le nom du véhicule est requis");
+            }
+
+            const vehicule = await VehiculesRepository.createVehicule({ name });
+            return vehicule;
+        } catch (error) {
+            console.error("Erreur lors de la création du véhicule:", error);
+            throw error;
+        }
+    }
+
+    public static async deleteVehicule(id: number) {
+        try {
+            const result = await VehiculesRepository.deleteVehicule(id);
+            if (!result) {
+                throw new Error("Véhicule non trouvé");
+            }
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la suppression du véhicule:", error);
+            throw error;
+        }
+    }
+
     public static async generatePdf(
         vehicule: TVehicules,
         verification: verificationDTO[],

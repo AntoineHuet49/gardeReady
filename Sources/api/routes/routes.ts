@@ -22,6 +22,7 @@ router.post("/auth/login", AuthController.login)
 router.get('/vehicules', VehiculesController.getAllVehicules);
 router.get('/vehicules/:id', VehiculesController.getOneVehiculeWithElements);
 router.post('/vehicules', VehiculesController.addVehicule);
+router.delete('/vehicules/:id', VehiculesController.deleteVehicule);
 router.post('/vehicules/verifications/:id', VehiculesController.validateVehicule);
 
 // Elements

@@ -47,6 +47,20 @@ export default class VehiculesRepository {
         return vehicule;
     }
 
+    public static async createVehicule(data: { name: string }) {
+        const vehicule = await Vehicules.create(data);
+        return vehicule?.toJSON();
+    }
+
+    public static async deleteVehicule(id: number) {
+        const vehicule = await Vehicules.findByPk(id);
+        if (!vehicule) {
+            return null;
+        }
+        await vehicule.destroy();
+        return true;
+    }
+
     // Méthode de compatibilité (à supprimer plus tard)
     public static async getOneByIdWithElements(id: number) {
         return this.getOneByIdWithSections(id);

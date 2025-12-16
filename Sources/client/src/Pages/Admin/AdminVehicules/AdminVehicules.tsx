@@ -7,9 +7,11 @@ import Alert from "../../../Components/Alert/Alert";
 import Collapse from "../../../Components/Collapse/Collapse";
 import AddElementModal from "../../../Components/Modal/AddElementModal";
 import AddSectionModal from "../../../Components/Modal/AddSectionModal";
+import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
+import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
 
 type AdminVehiculesProps = {
     vehicules: Vehicule[];
@@ -21,6 +23,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; name: string } | null>(null);
     const [sectionModalOpen, setSectionModalOpen] = useState(false);
+    const [vehiculeModalOpen, setVehiculeModalOpen] = useState(false);
     const [selectedContext, setSelectedContext] = useState<{ 
         vehiculeId?: number; 
         parentSectionId?: number; 
@@ -29,6 +32,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     
     const { deleteElementMutation } = useElementMutations();
     const { deleteSectionMutation } = useSectionMutations();
+    const { deleteVehiculeMutation } = useVehiculeMutations();
 
     const openModal = (sectionId: number, sectionName: string) => {
         setSelectedSection({ id: sectionId, name: sectionName });
@@ -50,6 +54,14 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         setSelectedContext(null);
     };
 
+    const openVehiculeModal = () => {
+        setVehiculeModalOpen(true);
+    };
+
+    const closeVehiculeModal = () => {
+        setVehiculeModalOpen(false);
+    };
+
     const handleDeleteElement = (elementId: number, elementName: string) => {
         if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'équipement "${elementName}" ?`)) {
             deleteElementMutation.mutate(elementId);
@@ -59,6 +71,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const handleDeleteSection = (sectionId: number, sectionName: string) => {
         if (window.confirm(`Êtes-vous sûr de vouloir supprimer la section "${sectionName}" et tout son contenu ?`)) {
             deleteSectionMutation.mutate(sectionId);
+        }
+    };
+
+    const handleDeleteVehicule = (vehiculeId: number, vehiculeName: string) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer le véhicule "${vehiculeName}" et tout son contenu ?`)) {
+            deleteVehiculeMutation.mutate(vehiculeId);
         }
     };
 
@@ -158,9 +176,14 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         <div className="container mx-auto p-6">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestion des Véhicules</h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-4">
                     Vue d'ensemble des véhicules et de leurs équipements organisés par sections
                 </p>
+                <Button
+                    text="+ Ajouter un véhicule"
+                    onClick={openVehiculeModal}
+                    className="btn btn-primary"
+                />
             </div>
 
             {vehicules.length === 0 ? (
@@ -179,12 +202,21 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                 <div className="text-sm text-gray-600">
                                                     <strong>Sections :</strong> {vehicule.sections.length} section(s) principale(s)
                                                 </div>
-                                                <Button
-                                                    text="+ Section"
-                                                    onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
-                                                    className="btn-sm bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
-                                                    title="Ajouter une section au véhicule"
-                                                />
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        text="+ Section"
+                                                        onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
+                                                        className="btn-sm bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+                                                        title="Ajouter une section au véhicule"
+                                                    />
+                                                    <Button
+                                                        text={deleteVehiculeMutation.isPending ? "..." : "✕"}
+                                                        onClick={() => handleDeleteVehicule(vehicule.id, vehicule.name)}
+                                                        className="btn-sm bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                                        title="Supprimer ce véhicule"
+                                                        disabled={deleteVehiculeMutation.isPending}
+                                                    />
+                                                </div>
                                             </div>
                                             {vehicule.sections.map((section: Section) => 
                                                 renderSection(section, 0)
@@ -194,11 +226,20 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                         <div className="text-center py-8 text-gray-500">
                                             <p>Ce véhicule n'a aucune section configurée</p>
                                             <p className="text-sm mt-2 mb-4">Ajoutez des sections pour organiser les équipements</p>
-                                            <Button
-                                                text="+ Ajouter une section"
-                                                onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
-                                                className="btn-primary"
-                                            />
+                                            <div className="flex gap-2 justify-center">
+                                                <Button
+                                                    text="+ Ajouter une section"
+                                                    onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
+                                                    className="btn-primary"
+                                                />
+                                                <Button
+                                                    text={deleteVehiculeMutation.isPending ? "..." : "Supprimer"}
+                                                    onClick={() => handleDeleteVehicule(vehicule.id, vehicule.name)}
+                                                    className="btn btn-error"
+                                                    title="Supprimer ce véhicule"
+                                                    disabled={deleteVehiculeMutation.isPending}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -228,6 +269,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     contextName={selectedContext.contextName}
                 />
             )}
+
+            {/* Modal d'ajout de véhicule */}
+            <AddVehiculeModal
+                isOpen={vehiculeModalOpen}
+                onClose={closeVehiculeModal}
+            />
         </div>
     );
 };
