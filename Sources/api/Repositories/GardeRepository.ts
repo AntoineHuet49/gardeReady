@@ -3,7 +3,13 @@ import { TUser } from "~~/Types/User";
 
 export class GardesRepository {
     public static async GetAll() {
-        const gardes = await Gardes.findAll();
+        const gardes = await Gardes.findAll({
+            include: [{
+                model: Users,
+                as: 'responsableUser',
+                attributes: ['id', 'firstname', 'lastname', 'email']
+            }]
+        });
         return gardes
     }
 

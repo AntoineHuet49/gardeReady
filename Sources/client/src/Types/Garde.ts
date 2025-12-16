@@ -3,4 +3,10 @@ export type Garde = {
     name: string;
     color: string;
     responsable: number;
+    responsableUser?: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+    };
 }

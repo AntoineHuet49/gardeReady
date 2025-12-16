@@ -56,21 +56,5 @@ import {
       timestamps: false,
     }
   );
-  
-  // Associations
-  Gardes.belongsTo(Users, {
-    foreignKey: 'responsable',
-    as: 'responsableUser', // pour accéder à `garde.getResponsableUser()`
-  });
-  
-  Users.hasMany(Gardes, {
-    foreignKey: 'responsable',
-    as: 'gardesResponsable', // pour accéder à `user.getGardesResponsable()`
-  });
-  
-  Users.belongsTo(Gardes, {
-    foreignKey: 'garde_id',
-    as: 'garde',
-  });
 
   export type TGarde = InferAttributes<Gardes>;
