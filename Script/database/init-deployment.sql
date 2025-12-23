@@ -60,7 +60,7 @@ ADD CONSTRAINT fk_garde_responsable FOREIGN KEY (responsable) REFERENCES users(i
 -- Mot de passe: AdminReady2024!
 -- Hash généré avec bcrypt (coût 12)
 INSERT INTO users (email, password, firstname, lastname, role)
-VALUES ('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'admin');
+VALUES ('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'superAdmin');
 
 -- Création d'une garde par défaut et assignation de l'admin
 INSERT INTO gardes (name, color, responsable)

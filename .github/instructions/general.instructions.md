@@ -171,3 +171,4 @@ Voir le fichier `COMPTES_TEST.md` à la racine du projet pour les identifiants d
 3. **Implémenter** la gestion d'erreurs avec try/catch et codes HTTP appropriés
 4. **Tester** les modifications avec Docker Compose avant le déploiement
 5. **Maintenir** la cohérence entre les types TypeScript frontend/backend
+6. **Ne JAMAIS créer** de fichier Markdown pour documenter les changements effectués, sauf demande explicite de l'utilisateur

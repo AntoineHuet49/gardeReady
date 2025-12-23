@@ -1,6 +1,7 @@
 import Loader from "../../../Components/Loader/Loader";
 import { User } from "../../../Types/User";
 import AddUserModal from "./AddUserModal/AddUserModal";
+import { useUser } from "../../../App/Provider/UserProvider";
 
 type UsersProps = {
     users?: User[];
@@ -9,10 +10,23 @@ type UsersProps = {
 };
 
 function Users({ users, isLoading }: UsersProps) {
+    const { isSuperAdmin } = useUser();
+
+    // Filtrer les utilisateurs : les admins normaux ne voient pas les superAdmin
+    const filteredUsers = users?.filter(user => {
+        if (isSuperAdmin) {
+            // Les superAdmin voient tous les comptes
+            return true;
+        } else {
+            // Les admins normaux ne voient pas les superAdmin
+            return user.role !== "superAdmin";
+        }
+    });
+
     return (
         <>
             {isLoading && <Loader />}
-            {users && users.length > 0 && (
+            {filteredUsers && filteredUsers.length > 0 && (
                 <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 my-3.5">
                     <table className="table">
                         {/* head */}
@@ -25,7 +39,7 @@ function Users({ users, isLoading }: UsersProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                                 <tr className="hover:bg-base-300" key={user.id}>
                                     <th></th>
                                     <td>{user.firstname}</td>

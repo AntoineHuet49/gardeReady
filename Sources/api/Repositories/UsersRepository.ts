@@ -2,10 +2,22 @@ import { TUserWithPassword } from "~~/Models/Users";
 import { Users } from "~~/Models";
 import { TUser } from "~~/Types/User";
 import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
+import { Op } from "sequelize";
 
 export class UsersRepository {
     public static async getAllUsers() {
         const users = await Users.findAll();
+        return users;
+    }
+
+    public static async getAllUsersExcludingSuperAdmin() {
+        const users = await Users.findAll({
+            where: {
+                role: {
+                    [Op.ne]: "superAdmin"
+                }
+            }
+        });
         return users;
     }
 

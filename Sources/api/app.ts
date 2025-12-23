@@ -2,6 +2,7 @@ import express from 'express';
 import router from './routes/routes';
 import { connectDatabase } from './Utils/Database';
 import { configDotenv } from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 // Charge les variables globales
 configDotenv({path: '.env', override: true});
@@ -46,6 +47,7 @@ connectDatabase().catch(error => {
 const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes API (doit être avant le fallback SPA)
 app.use("/api", router);

@@ -57,10 +57,10 @@ ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON 
 
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
--- Admin: email=admin@gardeready.com, password=AdminReady2024!
+-- SuperAdmin: email=admin@gardeready.com, password=AdminReady2024!
 -- Users: email=user@sdis49.fr, password=User123!
 INSERT INTO users (email, password, firstname, lastname, role) VALUES
-('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'admin'),
+('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'superAdmin'),
 ('user@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'User', 'Test', 'user'),
 ('john.doe@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'John', 'Doe', 'user'),
 ('jane.smith@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'Jane', 'Smith', 'user');

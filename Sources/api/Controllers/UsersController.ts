@@ -4,7 +4,10 @@ import { CreateUserDTO } from '~~/Types/DTO/CreateUserDto';
 
 export class UsersController {
     public static async getAllUsers(req: Request, res: Response) {
-        const users = await UsersServices.getAllUsers();
+        // Récupérer le rôle de l'utilisateur connecté depuis req.user (injecté par le middleware)
+        const requestingUserRole = req.user?.role;
+        
+        const users = await UsersServices.getAllUsers(requestingUserRole);
         if (users) {
             res.status(200).json(users);
         }
@@ -40,6 +43,14 @@ export class UsersController {
             if (!passwordRegex.test(userData.password)) {
                 res.status(400).json({ 
                     message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" 
+                });
+                return;
+            }
+
+            // Empêcher les admins normaux de créer des superAdmin
+            if (userData.role === "superAdmin" && req.user?.role !== "superAdmin") {
+                res.status(403).json({ 
+                    message: "Seul un superAdmin peut créer un compte superAdmin" 
                 });
                 return;
             }

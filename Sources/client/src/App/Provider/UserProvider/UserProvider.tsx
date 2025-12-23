@@ -8,6 +8,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     const checkAndSetUser = () => {
@@ -22,17 +23,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const decoded: User = jwtDecode(token);
                 setUser(decoded);
                 setIsAuthenticated(true);
-                setIsAdmin(decoded.role === "admin");
+                setIsAdmin(decoded.role === "admin" || decoded.role === "superAdmin");
+                setIsSuperAdmin(decoded.role === "superAdmin");
             } catch (error) {
                 console.error("Erreur de décodage du token:", error);
                 setUser(null);
                 setIsAuthenticated(false);
                 setIsAdmin(false);
+                setIsSuperAdmin(false);
             }
         } else {
             setUser(null);
             setIsAuthenticated(false);
             setIsAdmin(false);
+            setIsSuperAdmin(false);
         }
     };
 
@@ -47,9 +51,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         setIsAuthenticated(false);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
     };
 
-    const refreshUser = (): { isAdmin: boolean; user: User | null } => {
+    const refreshUser = (): { isAdmin: boolean; isSuperAdmin: boolean; user: User | null } => {
         const token = document.cookie
             .split(";")
             .map(c => c.trim())
@@ -61,22 +66,26 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const decoded: User = jwtDecode(token);
                 setUser(decoded);
                 setIsAuthenticated(true);
-                const userIsAdmin = decoded.role === "admin";
+                const userIsAdmin = decoded.role === "admin" || decoded.role === "superAdmin";
+                const userIsSuperAdmin = decoded.role === "superAdmin";
                 setIsAdmin(userIsAdmin);
+                setIsSuperAdmin(userIsSuperAdmin);
                 
-                return { isAdmin: userIsAdmin, user: decoded };
+                return { isAdmin: userIsAdmin, isSuperAdmin: userIsSuperAdmin, user: decoded };
             } catch (error) {
                 console.error("Erreur de décodage du token:", error);
                 setUser(null);
                 setIsAuthenticated(false);
                 setIsAdmin(false);
-                return { isAdmin: false, user: null };
+                setIsSuperAdmin(false);
+                return { isAdmin: false, isSuperAdmin: false, user: null };
             }
         } else {
             setUser(null);
             setIsAuthenticated(false);
             setIsAdmin(false);
-            return { isAdmin: false, user: null };
+            setIsSuperAdmin(false);
+            return { isAdmin: false, isSuperAdmin: false, user: null };
         }
     };
 
@@ -85,7 +94,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return (
-        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, logout, refreshUser }}>
+        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, isSuperAdmin, logout, refreshUser }}>
             {children}
         </UserContext.Provider>
     );

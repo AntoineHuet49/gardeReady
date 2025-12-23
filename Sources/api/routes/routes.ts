@@ -5,6 +5,7 @@ import { UsersController } from '~~/Controllers/UsersController';
 import VehiculesController from '~~/Controllers/VehiculesController';
 import ElementsController from '~~/Controllers/ElementsController';
 import SectionsController from '~~/Controllers/SectionsController';
+import { verifyToken, requireAdmin } from '~~/Middlewares/AuthMiddleware';
 
 const router = express.Router();
 
@@ -14,32 +15,32 @@ router.get("/", (req, res) => {
   res.send(JSON.stringify({ status: "ok", version: "1.0" }));
 });
 
-// Auth
+// Auth (publiques)
 router.post("/auth/register", AuthController.register)
 router.post("/auth/login", AuthController.login)
 
-// Vehicules
-router.get('/vehicules', VehiculesController.getAllVehicules);
-router.get('/vehicules/:id', VehiculesController.getOneVehiculeWithElements);
-router.post('/vehicules', VehiculesController.addVehicule);
-router.delete('/vehicules/:id', VehiculesController.deleteVehicule);
-router.post('/vehicules/verifications/:id', VehiculesController.validateVehicule);
+// Vehicules (protégées - authentification requise)
+router.get('/vehicules', verifyToken, VehiculesController.getAllVehicules);
+router.get('/vehicules/:id', verifyToken, VehiculesController.getOneVehiculeWithElements);
+router.post('/vehicules', verifyToken, requireAdmin, VehiculesController.addVehicule);
+router.delete('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.deleteVehicule);
+router.post('/vehicules/verifications/:id', verifyToken, VehiculesController.validateVehicule);
 
-// Elements
-router.post('/elements', ElementsController.createElement);
-router.put('/elements/:id', ElementsController.updateElement);
-router.delete('/elements/:id', ElementsController.deleteElement);
+// Elements (protégées - admin requis)
+router.post('/elements', verifyToken, requireAdmin, ElementsController.createElement);
+router.put('/elements/:id', verifyToken, requireAdmin, ElementsController.updateElement);
+router.delete('/elements/:id', verifyToken, requireAdmin, ElementsController.deleteElement);
 
-// Sections
-router.post('/sections', SectionsController.createSection);
-router.put('/sections/:id', SectionsController.updateSection);
-router.delete('/sections/:id', SectionsController.deleteSection);
+// Sections (protégées - admin requis)
+router.post('/sections', verifyToken, requireAdmin, SectionsController.createSection);
+router.put('/sections/:id', verifyToken, requireAdmin, SectionsController.updateSection);
+router.delete('/sections/:id', verifyToken, requireAdmin, SectionsController.deleteSection);
 
-// Users
-router.get('/users', UsersController.getAllUsers);
-router.post('/users', UsersController.createUser);
+// Users (protégées - admin requis)
+router.get('/users', verifyToken, requireAdmin, UsersController.getAllUsers);
+router.post('/users', verifyToken, requireAdmin, UsersController.createUser);
 
-// Gardes
-router.get('/gardes', GardeController.getAllGardes);
+// Gardes (protégées - authentification requise)
+router.get('/gardes', verifyToken, GardeController.getAllGardes);
 
 export default router;
