@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import VehiculesService from "~~/Services/VehiculesService";
-import jwt from "jsonwebtoken";
 import { TUserPayload } from "~~/Types/User";
 import { BaseController } from "./BaseController";
 import * as path from 'path';

@@ -17,7 +17,7 @@ export class AuthService {
 
         const isPasswordValid = await this.comparePassword(body.password, userWithPassword.password);
         if(isPasswordValid) {
-            const secret = process.env.TOKEN_SECRET ?? "secret";
+            const secret = process.env.JWT_SECRET ?? "secret";
             const token = jwt.sign(user, secret, { expiresIn: "1d" });
             return OperationResult.ok(token, "Login successful");
         }
