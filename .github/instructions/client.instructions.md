@@ -715,8 +715,10 @@ GardesUsers/
 ├── GardesUsers.container.tsx         # Logique data fetching
 ├── GardesUsers.tsx                   # Composant principal
 ├── GardeCard.tsx                     # Card individuelle pour une garde
-└── AddGardeModal/
-    └── AddGardeModal.tsx            # Modal d'ajout de garde
+├── AddGardeModal/
+│   └── AddGardeModal.tsx            # Modal d'ajout de garde
+└── AddUserModal/
+    └── AddUserModal.tsx             # Modal d'ajout d'utilisateur
 ```
 
 ### Container (GardesUsers.container.tsx)

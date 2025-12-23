@@ -2,7 +2,7 @@ import Loader from "../../../Components/Loader/Loader";
 import { Garde } from "../../../Types/Garde";
 import { User } from "../../../Types/User";
 import GardeCard from "./GardeCard";
-import AddUserModal from "../Users/AddUserModal/AddUserModal";
+import AddUserModal from "./AddUserModal/AddUserModal";
 import AddGardeModal from "./AddGardeModal/AddGardeModal";
 
 type GardesUsersProps = {
