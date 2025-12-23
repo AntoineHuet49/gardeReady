@@ -2,8 +2,7 @@ import Tabs from "../../Components/Tabs/Tabs";
 import { Vehicules } from "../Vehicules";
 import { AdminVehicule } from "./AdminVehicules";
 import { AdminTabs } from "./constants";
-import { Gardes } from "./Gardes";
-import { Users } from "./Users";
+import { GardesUsers } from "./GardesUsers";
 
 type AdminProps = {
     tabs: string[];
@@ -18,8 +17,7 @@ function Admin({ tabs, activeTab, setActiveTab, tabToDisplay }: AdminProps) {
             <h1 className="text-6xl m-10">Tableau de bord</h1>
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab}/>
             <div id="tab-content" className="w-11/12">
-                {tabToDisplay === AdminTabs.USERS && <Users />}
-                {tabToDisplay === AdminTabs.GARDES && <Gardes />}
+                {tabToDisplay === AdminTabs.GARDES && <GardesUsers />}
                 {tabToDisplay === AdminTabs.VEHICULES && <AdminVehicule />}
                 {tabToDisplay === AdminTabs.VERIFEU && <Vehicules />}
             </div>

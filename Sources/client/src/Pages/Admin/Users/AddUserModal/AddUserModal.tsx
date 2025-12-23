@@ -11,15 +11,16 @@ import { toast } from "react-toastify";
 
 type AddUserModalProps = {
     buttonText: string;
+    defaultGardeId?: number;
 };
 
-function AddUserModal({ buttonText }: AddUserModalProps) {
+function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
     const [gardesOptions, setGardesOptions] = useState<Record<string, number>>(
         {}
     );
 
-    const modalId = "add-user-modal";
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<UsersValues>();
+    const modalId = defaultGardeId ? `add-user-modal-${defaultGardeId}` : "add-user-modal";
+    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<UsersValues>();
     const queryClient = useQueryClient();
 
     const gardes = useQuery({
@@ -43,14 +44,22 @@ function AddUserModal({ buttonText }: AddUserModalProps) {
 
     useEffect(() => {
         if (gardes) {
+            const sortedGardes = [...gardes].sort((a, b) => a.numero - b.numero);
             setGardesOptions(
-                gardes.reduce((acc, garde) => {
-                    acc[garde.name] = garde.id;
+                sortedGardes.reduce((acc, garde) => {
+                    acc[`Garde ${garde.numero}`] = garde.id;
                     return acc;
                 }, {} as Record<string, number>)
             );
         }
     }, [gardes]);
+
+    // Pré-sélectionner la garde si defaultGardeId est fourni
+    useEffect(() => {
+        if (defaultGardeId) {
+            setValue("garde_id", defaultGardeId);
+        }
+    }, [defaultGardeId, setValue]);
 
     const handleSubmitForm = async (data: UsersValues) => {
         // Vérification que les mots de passe correspondent

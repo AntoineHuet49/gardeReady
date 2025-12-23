@@ -42,5 +42,7 @@ router.post('/users', verifyToken, requireAdmin, UsersController.createUser);
 
 // Gardes (protégées - authentification requise)
 router.get('/gardes', verifyToken, GardeController.getAllGardes);
+router.post('/gardes', verifyToken, requireAdmin, GardeController.createGarde);
+router.delete('/gardes/:id', verifyToken, requireAdmin, GardeController.deleteGarde);
 
 export default router;

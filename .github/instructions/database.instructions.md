@@ -58,18 +58,30 @@ Représente les équipes de garde.
 ```sql
 CREATE TABLE gardes (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
+    numero INT NOT NULL UNIQUE,            -- Numéro de la garde (ex: 1, 2, 3)
     color VARCHAR(50) NOT NULL,            -- Code couleur pour l'interface
-    responsable INT NOT NULL,
+    responsable INT,                       -- Optionnel : peut être NULL
     CONSTRAINT fk_responsable FOREIGN KEY (responsable) 
-        REFERENCES users(id) ON DELETE CASCADE
+        REFERENCES users(id) ON DELETE SET NULL
 );
 ```
 
-**Contrainte circulaire**: Users ↔ Gardes
+**Points importants**:
+- Le champ `numero` remplace l'ancien champ `name` - Affichage : "Garde 1", "Garde 2", etc.
+- Le responsable est **optionnel** lors de la création (contrainte circulaire avec Users)
+- `ON DELETE SET NULL` : si le responsable est supprimé, la garde reste mais sans responsable
+- Tri par défaut : par `numero ASC`
+
+**Contrainte circulaire résolue**: Users ↔ Gardes
 - Un utilisateur appartient à une garde (`garde_id`)
-- Une garde a un responsable (`responsable`)
-- Cette relation circulaire nécessite une insertion en deux temps (voir scripts d'initialisation)
+- Une garde peut avoir un responsable (`responsable`)
+- **Solution** : Créer d'abord la garde sans responsable, puis créer les utilisateurs, puis assigner le responsable
+
+**Index recommandés**:
+```sql
+CREATE INDEX idx_gardes_numero ON gardes(numero);
+CREATE INDEX idx_gardes_responsable ON gardes(responsable);
+```
 
 ### Table `vehicules`
 

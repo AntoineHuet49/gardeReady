@@ -440,3 +440,162 @@ curl -X POST http://localhost:3000/api/vehicules \
   -H "Content-Type: application/json" \
   -d '{"name": "Nouveau véhicule"}'
 ```
+
+## Gestion des Gardes (Équipes)
+
+### Structure des Gardes
+
+Les gardes représentent les équipes de pompiers. Chaque garde a :
+- Un **numero** unique (ex: 1, 2, 3) qui remplace l'ancien champ `name`
+- Une **couleur** pour l'identification visuelle
+- Un **responsable** optionnel (peut être NULL)
+
+### Modèle Sequelize (Garde.ts)
+
+```typescript
+export class Gardes extends Model {
+  declare id: CreationOptional<number>;
+  declare numero: number;                              // Numéro unique de la garde
+  declare color: string;                               // Couleur d'identification
+  declare responsable: CreationOptional<ForeignKey<Users['id']>>; // Optionnel
+}
+
+Gardes.init({
+    numero: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
+    },
+    color: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+    },
+    responsable: {
+        type: DataTypes.INTEGER,
+        allowNull: true,              // ⚠️ Optionnel pour éviter la contrainte circulaire
+        references: { model: 'users', key: 'id' },
+        onDelete: 'SET NULL',         // ⚠️ SET NULL au lieu de CASCADE
+    }
+});
+```
+
+### DTO CreateGardeDto
+
+```typescript
+export type CreateGardeDto = {
+    numero: number;
+    color: string;
+    responsable?: number;  // Optionnel
+};
+```
+
+### Repository (GardeRepository.ts)
+
+```typescript
+export class GardesRepository {
+    // Récupérer toutes les gardes avec responsables (triées par numero)
+    static async GetAll() {
+        return await Gardes.findAll({
+            include: [{
+                model: Users,
+                as: 'responsableUser',
+                attributes: ['id', 'firstname', 'lastname', 'email']
+            }],
+            order: [['numero', 'ASC']]  // ⚠️ Tri par numéro
+        });
+    }
+
+    // Créer une garde
+    static async Create(data: CreateGardeDto) {
+        return await Gardes.create({
+            numero: data.numero,
+            color: data.color,
+            responsable: data.responsable || undefined
+        });
+    }
+
+    // Supprimer une garde
+    static async Delete(id: number) {
+        const garde = await Gardes.findByPk(id);
+        if (!garde) return null;
+        await garde.destroy();
+        return true;
+    }
+}
+```
+
+### Controller (GardeController.ts)
+
+**Validation lors de la création** :
+- `numero` : requis, doit être un nombre
+- `color` : requise, non vide
+- `responsable` : optionnel, mais si fourni doit être un nombre valide
+- Gestion de l'erreur de contrainte unique (numéro en doublon)
+
+```typescript
+public static createGarde = async (req: Request, res: Response) => {
+    const dto: CreateGardeDto = req.body;
+
+    // Validations
+    if (!dto.numero || typeof dto.numero !== 'number') {
+        res.status(400).json({ message: "Le numéro de garde est requis" });
+        return;
+    }
+
+    if (!dto.color || dto.color.trim() === "") {
+        res.status(400).json({ message: "La couleur est requise" });
+        return;
+    }
+
+    // Responsable optionnel
+    if (dto.responsable && typeof dto.responsable !== 'number') {
+        res.status(400).json({ message: "Le responsable doit être valide" });
+        return;
+    }
+
+    try {
+        const garde = await GardesService.createGarde(dto);
+        res.status(201).json(garde);
+    } catch (error: any) {
+        // Gestion contrainte unique
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            res.status(409).json({ message: "Ce numéro existe déjà" });
+            return;
+        }
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+```
+
+### Routes (routes.ts)
+
+```typescript
+// Gardes (protégées - authentification requise)
+router.get('/gardes', verifyToken, GardeController.getAllGardes);
+router.post('/gardes', verifyToken, requireAdmin, GardeController.createGarde);
+router.delete('/gardes/:id', verifyToken, requireAdmin, GardeController.deleteGarde);
+```
+
+### Contrainte circulaire Users ↔ Gardes
+
+**Problème** : Pour créer un user il faut une garde, pour créer une garde avec responsable il faut un user.
+
+**Solution** : 
+1. Créer la garde **sans responsable** (responsable = NULL)
+2. Créer les utilisateurs et les assigner à cette garde
+3. Mettre à jour la garde pour assigner un responsable (fonctionnalité future)
+
+**Workflow recommandé** :
+```typescript
+// 1. Créer la garde vide
+POST /gardes
+{ "numero": 1, "color": "Rouge" }
+
+// 2. Créer les utilisateurs
+POST /users
+{ "email": "user@sdis49.fr", "garde_id": 1, ... }
+
+// 3. (Future) Mettre à jour le responsable
+PUT /gardes/1
+{ "responsable": 2 }
+```

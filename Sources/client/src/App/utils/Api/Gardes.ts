@@ -7,3 +7,15 @@ export function getAllGardes() {
         return response.data;
     });
 }
+
+export function createGarde(data: { numero: number; color: string; responsable?: number }) {
+    return instance.post<Garde>(apiUrl.gardes, data).then((response) => {
+        return response.data;
+    });
+}
+
+export function deleteGarde(id: number) {
+    return instance.delete(`${apiUrl.gardes}/${id}`).then((response) => {
+        return response.data;
+    });
+}

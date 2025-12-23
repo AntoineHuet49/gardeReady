@@ -1,8 +1,8 @@
 export type Garde = {
     id: number;
-    name: string;
+    numero: number;
     color: string;
-    responsable: number;
+    responsable?: number;
     responsableUser?: {
         id: number;
         firstname: string;

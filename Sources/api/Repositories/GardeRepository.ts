@@ -1,5 +1,6 @@
 import { Gardes, Users } from "~~/Models";
 import { TUser } from "~~/Types/User";
+import { CreateGardeDto } from "~~/Types/DTO/CreateGardeDto";
 
 export class GardesRepository {
     public static async GetAll() {
@@ -8,9 +9,28 @@ export class GardesRepository {
                 model: Users,
                 as: 'responsableUser',
                 attributes: ['id', 'firstname', 'lastname', 'email']
-            }]
+            }],
+            order: [['numero', 'ASC']]
         });
         return gardes
+    }
+
+    public static async Create(data: CreateGardeDto) {
+        const garde = await Gardes.create({
+            numero: data.numero,
+            color: data.color,
+            responsable: data.responsable || undefined
+        });
+        return garde;
+    }
+
+    public static async Delete(id: number) {
+        const garde = await Gardes.findByPk(id);
+        if (!garde) {
+            return null;
+        }
+        await garde.destroy();
+        return true;
     }
 
     public static async getOneById(id: number) {

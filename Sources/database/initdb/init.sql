@@ -11,7 +11,7 @@ CREATE TABLE users (
 -- Création de la table gardes
 CREATE TABLE gardes (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque garde
-    name VARCHAR(50) NOT NULL UNIQUE, -- Numéro de la garde
+    numero INT NOT NULL UNIQUE, -- Numéro de la garde
     color VARCHAR(50) NOT NULL -- color de la garde
 );
 
@@ -52,8 +52,8 @@ ADD COLUMN garde_id INT,
 ADD CONSTRAINT fk_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DELETE CASCADE;
 
 ALTER TABLE gardes
-ADD COLUMN responsable INT NOT NULL,
-ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE CASCADE;
+ADD COLUMN responsable INT NULL,
+ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE SET NULL;
 
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
@@ -66,10 +66,10 @@ INSERT INTO users (email, password, firstname, lastname, role) VALUES
 ('jane.smith@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'Jane', 'Smith', 'user');
 
 -- Table gardes
-INSERT INTO gardes (name, color, responsable) VALUES
-('Garde 1', 'Rouge', 1), -- Responsable : Admin Test
-('Garde 2', 'jaune', 3), -- Responsable : John Doe
-('Garde 3', 'Vert', 4); -- Responsable : Jane Smith
+INSERT INTO gardes (numero, color, responsable) VALUES
+(1, 'Rouge', 1), -- Responsable : Admin Test
+(2, 'jaune', 3), -- Responsable : John Doe
+(3, 'Vert', 4); -- Responsable : Jane Smith
 
 SELECT * FROM users;
 

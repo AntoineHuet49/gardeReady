@@ -698,3 +698,390 @@ src/
 ```
 
 Framework recommandé: Vitest + React Testing Library
+
+## Gestion des Gardes et Utilisateurs
+
+### Architecture de la page GardesUsers
+
+**Dossier**: `Pages/Admin/GardesUsers/`
+
+La page affiche les utilisateurs regroupés par garde dans des cards disposées en grille responsive.
+
+#### Structure des fichiers
+
+```
+GardesUsers/
+├── index.ts                          # Export du container
+├── GardesUsers.container.tsx         # Logique data fetching
+├── GardesUsers.tsx                   # Composant principal
+├── GardeCard.tsx                     # Card individuelle pour une garde
+└── AddGardeModal/
+    └── AddGardeModal.tsx            # Modal d'ajout de garde
+```
+
+### Container (GardesUsers.container.tsx)
+
+```typescript
+import { useGardes } from "../../../hooks/useGardes";
+import { getAllUsers } from "../../../App/utils/Api/Users";
+
+function GardesUsersContainer() {
+    const { gardes, isLoading: isLoadingGardes } = useGardes();
+    const { data: usersData, isLoading: isLoadingUsers } = useQuery({
+        queryKey: ["users"],
+        queryFn: () => getAllUsers(),
+    });
+
+    // Regrouper les utilisateurs par garde_id
+    const usersByGarde = usersData?.data?.reduce((acc, user) => {
+        if (!acc[user.garde_id]) acc[user.garde_id] = [];
+        acc[user.garde_id].push(user);
+        return acc;
+    }, {});
+
+    // Trier les gardes par numéro
+    const sortedGardes = gardes ? [...gardes].sort((a, b) => a.numero - b.numero) : [];
+
+    return <GardesUsers gardes={sortedGardes} usersByGarde={usersByGarde} />;
+}
+```
+
+**Points importants** :
+- Récupère les gardes ET les utilisateurs en parallèle
+- Regroupe les users par `garde_id`
+- Trie les gardes par `numero` (croissant)
+- Gère les états de chargement combinés
+
+### Composant principal (GardesUsers.tsx)
+
+```typescript
+function GardesUsers({ gardes, usersByGarde, allUsers }) {
+    const unassignedUsers = allUsers.filter(user => !user.garde_id);
+
+    return (
+        <>
+            {/* Boutons d'action */}
+            <div className="flex justify-end gap-2 mb-4">
+                <AddGardeModal buttonText="+ Ajouter une garde" />
+                <AddUserModal buttonText="+ Ajouter un utilisateur" />
+            </div>
+
+            {/* Grille responsive de cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {gardes.map((garde) => (
+                    <GardeCard
+                        key={garde.id}
+                        garde={garde}
+                        users={usersByGarde[garde.id] || []}
+                    />
+                ))}
+            </div>
+
+            {/* Card pour utilisateurs non assignés */}
+            {unassignedUsers.length > 0 && (
+                <div className="mt-4">
+                    <div className="card bg-base-100 border border-base-content/10">
+                        <div className="card-body">
+                            <h3 className="card-title text-warning">
+                                ⚠️ Utilisateurs non assignés à une garde
+                            </h3>
+                            <ul>
+                                {unassignedUsers.map(user => (
+                                    <li key={user.id}>• {user.firstname} {user.lastname}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+```
+
+**Layout responsive** :
+- Mobile (< 768px) : 1 colonne
+- Tablette (768-1024px) : 2 colonnes
+- Desktop (> 1024px) : 3 colonnes
+
+### Card de garde (GardeCard.tsx)
+
+```typescript
+import Button from "../../../Components/Button/button";
+
+function GardeCard({ garde, users }) {
+    const { isSuperAdmin } = useUser();
+    const { deleteGarde } = useGardeMutations();
+
+    // Filtrer les superAdmin si non superAdmin
+    const filteredUsers = users.filter(user => {
+        if (isSuperAdmin) return true;
+        return user.role !== "superAdmin";
+    });
+
+    const responsable = garde.responsableUser;
+
+    const handleDelete = () => {
+        if (window.confirm(`Supprimer la Garde ${garde.numero} ?`)) {
+            deleteGarde.mutate(garde.id);
+        }
+    };
+
+    return (
+        <div 
+            className="card bg-base-100 border shadow-sm"
+            style={{ 
+                borderLeftWidth: '4px', 
+                borderLeftColor: garde.color  // Bordure colorée
+            }}
+        >
+            <div className="card-body">
+                {/* Header */}
+                <div className="flex justify-between items-center">
+                    <h2 className="card-title text-2xl">
+                        Garde {garde.numero}  {/* Affichage du numéro */}
+                    </h2>
+                    <Button
+                        text={deleteGarde.isPending ? "..." : "✕"}
+                        onClick={handleDelete}
+                        className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                        title="Supprimer cette garde"
+                        disabled={deleteGarde.isPending}
+                    />
+                </div>
+
+                {/* Responsable */}
+                {responsable ? (
+                    <div className="mt-2">
+                        <span className="font-semibold">Responsable : </span>
+                        <span>{responsable.firstname} {responsable.lastname}</span>
+                    </div>
+                ) : (
+                    <div className="mt-2 text-sm text-warning italic">
+                        Aucun responsable assigné
+                    </div>
+                )}
+
+                {/* Membres */}
+                <div className="mt-4">
+                    <h3 className="font-semibold mb-2">
+                        Membres ({filteredUsers.length}) :
+                    </h3>
+                    {filteredUsers.length > 0 ? (
+                        <ul className="space-y-2">
+                            {filteredUsers.map((user) => (
+                                <li key={user.id} className="text-sm">
+                                    • {user.firstname} {user.lastname}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-base-content/60 italic">
+                            Aucun membre
+                        </p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+```
+
+**Caractéristiques de la card** :
+- Bordure gauche colorée (4px, couleur de la garde)
+- Titre avec numéro de garde ("Garde 1", "Garde 2", etc.)
+- Affichage du responsable (ou message si absent)
+- Liste simple des membres (prénom nom)
+- Bouton de suppression style AdminVehicules
+- Filtrage des superAdmin pour les admins normaux
+
+### Hook useGardeMutations
+
+```typescript
+// hooks/useGardeMutations.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createGarde, deleteGarde } from "../App/utils/Api/Gardes";
+import { toast } from "react-toastify";
+
+export const useGardeMutations = () => {
+    const queryClient = useQueryClient();
+
+    const createGardeMutation = useMutation({
+        mutationFn: createGarde,
+        onSuccess: () => {
+            toast.success("Garde créée avec succès !");
+            queryClient.invalidateQueries({ queryKey: ["gardes"] });
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || "Erreur";
+            toast.error(message);
+        },
+    });
+
+    const deleteGardeMutation = useMutation({
+        mutationFn: deleteGarde,
+        onSuccess: () => {
+            toast.success("Garde supprimée avec succès !");
+            queryClient.invalidateQueries({ queryKey: ["gardes"] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });  // ⚠️ Important
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || "Erreur";
+            toast.error(message);
+        },
+    });
+
+    return { createGarde: createGardeMutation, deleteGarde: deleteGardeMutation };
+};
+```
+
+**⚠️ Important** : Invalider à la fois `gardes` ET `users` lors de la suppression car les utilisateurs sont affectés.
+
+### Modal d'ajout de garde (AddGardeModal.tsx)
+
+```typescript
+type GardeFormValues = {
+    numero: number;
+    color: string;
+};
+
+function AddGardeModal({ buttonText }) {
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<GardeFormValues>();
+    const { createGarde } = useGardeMutations();
+
+    const handleSubmitForm = (data: GardeFormValues) => {
+        createGarde.mutate(
+            { numero: Number(data.numero), color: data.color },
+            { onSuccess: () => {
+                reset();
+                document.getElementById(modalId)?.close();
+            }}
+        );
+    };
+
+    return (
+        <>
+            <Button text={buttonText} className="btn-primary" onClick={openModal} />
+            <dialog id={modalId} className="modal">
+                <div className="modal-box">
+                    <h3>Ajouter une garde</h3>
+                    <form onSubmit={handleSubmit(handleSubmitForm)}>
+                        <TextInput
+                            name="numero"
+                            placeholder="Numéro de la garde"
+                            register={register}
+                            errors={errors}
+                            options={{
+                                required: "Numéro requis",
+                                valueAsNumber: true,
+                                validate: {
+                                    positive: (v) => Number(v) > 0 || "Doit être positif",
+                                    isInteger: (v) => Number.isInteger(Number(v)) || "Doit être entier"
+                                }
+                            }}
+                        />
+                        <TextInput
+                            name="color"
+                            placeholder="Couleur (ex: Rouge, Bleu...)"
+                            register={register}
+                            errors={errors}
+                            options={{ required: "Couleur requise" }}
+                        />
+                        <div className="text-sm text-base-content/60 italic">
+                            Note : Le responsable pourra être assigné ultérieurement
+                        </div>
+                        <Button type="submit" text="Ajouter" disabled={createGarde.isPending} />
+                    </form>
+                </div>
+            </dialog>
+        </>
+    );
+}
+```
+
+**Points clés** :
+- Pas de champ responsable (optionnel lors de la création)
+- Validation du numéro (positif, entier)
+- Message informatif sur l'assignation ultérieure du responsable
+
+### API Gardes
+
+```typescript
+// App/utils/Api/Gardes.ts
+export function getAllGardes() {
+    return instance.get<Garde[]>(apiUrl.gardes).then(res => res.data);
+}
+
+export function createGarde(data: { numero: number; color: string; responsable?: number }) {
+    return instance.post<Garde>(apiUrl.gardes, data).then(res => res.data);
+}
+
+export function deleteGarde(id: number) {
+    return instance.delete(`${apiUrl.gardes}/${id}`).then(res => res.data);
+}
+```
+
+### Type Garde
+
+```typescript
+// Types/Garde.ts
+export type Garde = {
+    id: number;
+    numero: number;              // Numéro de la garde
+    color: string;               // Couleur d'identification
+    responsable?: number;        // ID du responsable (optionnel)
+    responsableUser?: {          // Relation incluse par Sequelize
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+    };
+};
+```
+
+### Modification de AddUserModal
+
+Le modal d'ajout d'utilisateur a été adapté pour afficher "Garde 1", "Garde 2" au lieu des anciens noms :
+
+```typescript
+useEffect(() => {
+    if (gardes) {
+        const sortedGardes = [...gardes].sort((a, b) => a.numero - b.numero);
+        setGardesOptions(
+            sortedGardes.reduce((acc, garde) => {
+                acc[`Garde ${garde.numero}`] = garde.id;  // ⚠️ Affichage du numéro
+                return acc;
+            }, {})
+        );
+    }
+}, [gardes]);
+```
+
+### Intégration dans Admin.tsx
+
+```typescript
+// Pages/Admin/constants.ts
+export enum AdminTabs {
+    GARDES = "Gardes",          // ⚠️ Tab unique (fusion Users + Gardes)
+    VEHICULES = "Véhicules",
+    VERIFEU = "Veri'feu",
+}
+
+// Pages/Admin/Admin.tsx
+import { GardesUsers } from "./GardesUsers";
+
+{tabToDisplay === AdminTabs.GARDES && <GardesUsers />}
+```
+
+**Changement** : Les anciens tabs "Utilisateurs" et "Gardes" ont été fusionnés en un seul tab "Gardes" affichant le composant `GardesUsers`.
+
+### Bonnes pratiques spécifiques
+
+1. **Toujours** trier les gardes par `numero` (ASC)
+2. **Toujours** afficher "Garde X" et non un nom textuel
+3. **Toujours** invalider `users` ET `gardes` lors des mutations
+4. **Filtrer** les superAdmin de l'affichage pour les admins normaux
+5. **Gérer** les utilisateurs non assignés (garde_id null)
+6. **Utiliser** la bordure colorée à gauche des cards (4px)
+7. **Valider** que le numéro est unique côté backend
+8. **Permettre** la création de garde sans responsable (contrainte circulaire)

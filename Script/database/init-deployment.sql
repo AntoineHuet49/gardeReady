@@ -22,9 +22,9 @@ CREATE TABLE users (
 -- Création de la table gardes
 CREATE TABLE gardes (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
+    numero INT NOT NULL UNIQUE,
     color VARCHAR(50) NOT NULL,
-    responsable INT
+    responsable INT NULL
 );
 
 -- Création de la table vehicules
@@ -63,8 +63,7 @@ INSERT INTO users (email, password, firstname, lastname, role)
 VALUES ('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'superAdmin');
 
 -- Création d'une garde par défaut et assignation de l'admin
-INSERT INTO gardes (name, color, responsable)
-VALUES ('Administration', 'Bleu', 1);
+INSERT INTO gardes (numero, color, responsable)
 
 -- Assignation de l'admin à la garde d'administration
 UPDATE users SET garde_id = 1 WHERE email = 'admin@gardeready.com';
@@ -76,6 +75,6 @@ SELECT
     u.firstname,
     u.lastname,
     u.role,
-    g.name as garde_name
+    g.numero as garde_numero
 FROM users u
 LEFT JOIN gardes g ON u.garde_id = g.id;
