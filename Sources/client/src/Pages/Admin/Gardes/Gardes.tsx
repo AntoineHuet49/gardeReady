@@ -26,7 +26,7 @@ function Gardes({ gardes, isLoading }: GardesProps) {
                             {gardes.map((garde) => (
                                 <tr className="hover:bg-base-300" key={garde.id}>
                                     <th>{garde.id}</th>
-                                    <td>{garde.name}</td>
+                                    <td>{garde.numero}</td>
                                     <td>
                                         {garde.responsableUser 
                                             ? `${garde.responsableUser.firstname} ${garde.responsableUser.lastname}`
