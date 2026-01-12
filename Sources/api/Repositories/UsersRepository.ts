@@ -40,4 +40,14 @@ export class UsersRepository {
         const user = await Users.findOne({ where: { email } });
         return !!user;
     }
+
+    public static async updateUserRole(userId: number, newRole: string): Promise<TUser | null> {
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            return null;
+        }
+        user.role = newRole as "user" | "admin" | "superAdmin";
+        await user.save();
+        return user.dataValues;
+    }
 }

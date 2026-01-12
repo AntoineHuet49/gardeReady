@@ -43,4 +43,29 @@ export class UsersServices {
             return OperationResult.fail("Erreur lors de la création de l'utilisateur");
         }
     }
+
+    public static async updateUserRole(userId: number, newRole: string, requestingUserRole?: string): Promise<OperationResult<TUser>> {
+        try {
+            // Vérifier que le rôle est valide
+            if (!["user", "admin", "superAdmin"].includes(newRole)) {
+                return OperationResult.fail("Rôle invalide");
+            }
+
+            // Seul un superAdmin peut attribuer le rôle superAdmin
+            if (newRole === "superAdmin" && requestingUserRole !== "superAdmin") {
+                return OperationResult.fail("Seul un superAdmin peut attribuer le rôle superAdmin");
+            }
+
+            const updatedUser = await UsersRepository.updateUserRole(userId, newRole);
+            
+            if (!updatedUser) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            return OperationResult.ok(updatedUser, "Rôle mis à jour avec succès");
+        } catch (error) {
+            console.error("Error updating user role:", error);
+            return OperationResult.fail("Erreur lors de la mise à jour du rôle");
+        }
+    }
 }

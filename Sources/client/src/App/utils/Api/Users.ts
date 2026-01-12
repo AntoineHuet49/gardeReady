@@ -18,3 +18,7 @@ export async function getAllUsers() {
 export async function createUser(userData: CreateUserData) {
     return await instance.post(apiUrl.users, userData);
 }
+
+export async function updateUserRole(userId: number, role: string) {
+    return await instance.patch(`${apiUrl.users}/${userId}/role`, { role });
+}

@@ -18,7 +18,7 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
     const unassignedUsers = allUsers.filter(user => !user.garde_id);
 
     return (
-        <>
+        <div className="container mx-auto p-6">
             {isLoading && <Loader />}
             
             {/* Boutons pour ajouter une garde et un utilisateur */}
@@ -63,7 +63,7 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 

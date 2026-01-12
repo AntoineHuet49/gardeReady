@@ -174,11 +174,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
 
     return (
         <div className="container mx-auto p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestion des Véhicules</h1>
-                <p className="text-gray-600 mb-4">
-                    Vue d'ensemble des véhicules et de leurs équipements organisés par sections
-                </p>
+            <div className="mb-6 flex justify-end">
                 <Button
                     text="+ Ajouter un véhicule"
                     onClick={openVehiculeModal}

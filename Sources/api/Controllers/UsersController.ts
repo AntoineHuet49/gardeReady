@@ -74,4 +74,35 @@ export class UsersController {
             });
         }
     }
+
+    public static async updateUserRole(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.params.id);
+            const { role: newRole } = req.body;
+            const requestingUserRole = req.user?.role;
+
+            if (!newRole) {
+                res.status(400).json({ message: "Le rôle est requis" });
+                return;
+            }
+
+            const result = await UsersServices.updateUserRole(userId, newRole, requestingUserRole);
+
+            if (result.success) {
+                res.status(200).json({
+                    message: result.message,
+                    user: result.data
+                });
+            } else {
+                res.status(400).json({
+                    message: result.message
+                });
+            }
+        } catch (error) {
+            console.error("Error in updateUserRole controller:", error);
+            res.status(500).json({
+                message: "Erreur interne du serveur"
+            });
+        }
+    }
 }
