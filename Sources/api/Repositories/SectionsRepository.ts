@@ -1,4 +1,7 @@
 import { Sections, Elements } from "~~/Models";
+import { createLogger } from "~~/Utils/Logger";
+
+const logger = createLogger('SectionsRepository');
 
 export class SectionsRepository {
     // Récupérer toutes les sections racines d'un véhicule avec leur hiérarchie complète
@@ -93,10 +96,25 @@ export class SectionsRepository {
     // Créer une nouvelle section
     public static async createSection(data: {
         name: string;
-        vehicule_id?: number;
-        parent_section_id?: number;
+        vehicule_id?: number | null;
+        parent_section_id?: number | null;
     }) {
-        return await Sections.create(data);
+        logger.debug("Début création section");
+        logger.received("Données reçues", data);
+        
+        try {
+            const section = await Sections.create(data);
+            logger.success("Section créée", {
+                id: section.id,
+                name: section.name,
+                vehicule_id: section.vehicule_id,
+                parent_section_id: section.parent_section_id
+            });
+            return section;
+        } catch (error) {
+            logger.sequelizeError("Erreur lors de la création", error);
+            throw error;
+        }
     }
 
     // Mettre à jour une section

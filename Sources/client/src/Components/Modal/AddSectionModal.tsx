@@ -3,6 +3,9 @@ import { useEffect } from "react";
 import { useSectionMutations } from "../../hooks/useSectionMutations";
 import Button from "../Button/button";
 import TextInput from "../Input/TextInput";
+import { createLogger } from "../../App/utils/Logger";
+
+const logger = createLogger('AddSectionModal');
 
 type AddSectionModalProps = {
     isOpen: boolean;
@@ -44,14 +47,26 @@ const AddSectionModal = ({
     }, [isOpen, setFocus]);
 
     const onSubmit = (data: FormData) => {
-        createSectionMutation.mutate({
+        logger.debug("Soumission formulaire");
+        logger.debug("Données formulaire", data);
+        logger.debug("Context", { vehiculeId, parentSectionId, contextName });
+        
+        const mutationData = {
             name: data.name,
             vehicule_id: vehiculeId,
             parent_section_id: parentSectionId
-        }, {
+        };
+        
+        logger.sent("Données mutation", mutationData);
+        
+        createSectionMutation.mutate(mutationData, {
             onSuccess: () => {
+                logger.success("Mutation réussie");
                 reset();
                 onClose();
+            },
+            onError: (error) => {
+                logger.error("Erreur mutation", error);
             }
         });
     };

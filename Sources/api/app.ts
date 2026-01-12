@@ -3,12 +3,18 @@ import router from './routes/routes';
 import { connectDatabase } from './Utils/Database';
 import { configDotenv } from 'dotenv';
 import cookieParser from 'cookie-parser';
+import { configureLogLevel, createLogger } from './Utils/Logger';
 
 // Charge les variables globales
 configDotenv({path: '.env', override: true});
 configDotenv({path: '.env.local', override: true});
 
-var cors = require('cors')
+// Configure le niveau de log
+configureLogLevel();
+
+const logger = createLogger('Application');
+
+var cors = require('cors');
 
 // Configuration CORS pour développement et production
 const allowedOrigins = [
@@ -20,9 +26,9 @@ const allowedOrigins = [
 const app = express();
 app.use(cors({
     origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-        console.log(`🌐 CORS request from origin: ${origin}`);
-        console.log(`🔧 Environment: ${process.env.NODE_ENV}`);
-        console.log(`📋 Allowed origins:`, allowedOrigins);
+        logger.debug(`CORS request from origin: ${origin}`);
+        logger.debug(`Environment: ${process.env.NODE_ENV}`);
+        logger.debug(`Allowed origins`, allowedOrigins);
         
         // Permet les requêtes sans origin (comme le frontend servi depuis le même domaine)
         if (!origin) return callback(null, true);
@@ -31,7 +37,7 @@ app.use(cors({
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            console.warn(`❌ CORS blocked origin: ${origin}`);
+            logger.warn(`CORS blocked origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -40,7 +46,7 @@ app.use(cors({
 
 // Initialiser la base de données de manière asynchrone
 connectDatabase().catch(error => {
-    console.error('💥 Failed to connect to database on startup:', error);
+    logger.error('Failed to connect to database on startup', error);
     process.exit(1); // Arrêter l'application si la DB n'est pas accessible
 });
 
@@ -62,5 +68,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+    logger.info(`Server listening on port ${PORT}`);
 });

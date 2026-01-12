@@ -20,6 +20,10 @@ gardeReady/
 │   └── database/     # Scripts et initialisation PostgreSQL
 ├── Script/
 │   └── database/     # Scripts de déploiement
+├── docs/             # Documentation du projet
+│   ├── README.md
+│   ├── LOGGING.md
+│   └── COMPTES_TEST.md
 ├── docker-compose.yml
 └── .github/
     └── instructions/ # Documentation pour GitHub Copilot
@@ -160,15 +164,45 @@ Le projet est conçu pour être déployé sur Railway avec:
 
 Le frontend buildé est servi en tant que SPA depuis `/Sources/api/public/` avec un fallback vers `index.html`.
 
-## Comptes de test
+## Documentation
 
-Voir le fichier `COMPTES_TEST.md` à la racine du projet pour les identifiants de test.
+Toute la documentation du projet se trouve dans le dossier `/docs/` :
+- **LOGGING.md** - Guide complet du système de logging
+- **COMPTES_TEST.md** - Comptes de test pour le développement
+- **README.md** - Index de la documentation
+
+## Système de logging
+
+Le projet utilise un système de logging personnalisé avec la classe `Logger` :
+
+**Utilisation:**
+```typescript
+import { createLogger } from '~~/Utils/Logger'; // Backend
+import { createLogger } from '../App/utils/Logger'; // Frontend
+
+const logger = createLogger('MonModule');
+
+logger.debug("Message de debug", { data: "optionnel" });
+logger.info("Information importante");
+logger.warn("Avertissement");
+logger.error("Erreur", error);
+logger.success("Opération réussie");
+```
+
+**Configuration:**
+- Backend: Variable d'environnement `LOG_LEVEL` (DEBUG, INFO, WARN, ERROR)
+- Frontend: Variable d'environnement `VITE_LOG_LEVEL` (DEBUG, INFO, WARN, ERROR, NONE)
+
+Voir `/docs/LOGGING.md` pour la documentation complète.
 
 ## Bonnes pratiques pour les modifications
 
 1. **Toujours** vérifier les associations Sequelize dans `setupAssociations.ts`
 2. **Utiliser** les DTOs pour valider les entrées
 3. **Implémenter** la gestion d'erreurs avec try/catch et codes HTTP appropriés
-4. **Tester** les modifications avec Docker Compose avant le déploiement
-5. **Maintenir** la cohérence entre les types TypeScript frontend/backend
-6. **Ne JAMAIS créer** de fichier Markdown pour documenter les changements effectués, sauf demande explicite de l'utilisateur
+4. **Utiliser** le système de logging au lieu de `console.log/error`
+5. **Tester** les modifications avec Docker Compose avant le déploiement
+6. **Maintenir** la cohérence entre les types TypeScript frontend/backend
+7. **Commenter** le code complexe pour faciliter la maintenance
+8. **Placer** toute documentation dans le dossier `/docs/`
+9. **Ne JAMAIS créer** de fichier Markdown pour documenter les changements effectués, sauf demande explicite de l'utilisateur et si c'est le cas , toujours placer ces fichiers dans le dossier `/docs/changes/`
