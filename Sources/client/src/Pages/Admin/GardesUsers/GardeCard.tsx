@@ -128,19 +128,19 @@ function GardeCard({ garde, users }: GardeCardProps) {
                                 return (
                                     <li 
                                         key={user.id}
-                                        className="flex items-center justify-between text-sm border border-base-content/10 rounded-lg p-2 hover:bg-base-200/50 transition-colors"
+                                        className="flex flex-col gap-2 text-sm border border-base-content/10 rounded-lg p-3 hover:bg-base-200/50 transition-colors"
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">
-                                                {user.firstname} {user.lastname}
-                                            </span>
-                                            {isResponsable && (
-                                                <span className="badge badge-primary badge-xs">
-                                                    Responsable
+                                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">
+                                                    {user.firstname} {user.lastname}
                                                 </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
+                                                {isResponsable && (
+                                                    <span className="badge badge-primary badge-xs">
+                                                        Responsable
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className={`dropdown dropdown-end ${isDropdownOpen ? 'dropdown-open' : ''}`}>
                                                 <button
                                                     tabIndex={0}
@@ -188,9 +188,9 @@ function GardeCard({ garde, users }: GardeCardProps) {
                                                         )}
                                                     </ul>
                                             </div>
-                                            <span className="text-xs text-base-content/60">
-                                                {user.email}
-                                            </span>
+                                        </div>
+                                        <div className="text-xs text-base-content/60 break-all">
+                                            {user.email}
                                         </div>
                                     </li>
                                 );
