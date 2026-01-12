@@ -70,4 +70,34 @@ export class GardeController {
             res.status(500).json({ message: "Erreur lors de la suppression de la garde" });
         }
     };
+
+    public static updateResponsable = async (req: Request, res: Response) => {
+        try {
+            const id = parseInt(req.params.id);
+            const { responsableId } = req.body;
+
+            if (isNaN(id)) {
+                res.status(400).json({ message: "ID de garde invalide" });
+                return;
+            }
+
+            // responsableId peut être null pour supprimer le responsable
+            if (responsableId !== null && (typeof responsableId !== 'number' || isNaN(responsableId))) {
+                res.status(400).json({ message: "ID de responsable invalide" });
+                return;
+            }
+
+            const garde = await GardesService.updateResponsable(id, responsableId);
+
+            if (!garde) {
+                res.status(404).json({ message: "Garde non trouvée" });
+                return;
+            }
+
+            res.status(200).json(garde);
+        } catch (error: any) {
+            console.error("Erreur lors de la mise à jour du responsable:", error);
+            res.status(500).json({ message: "Erreur lors de la mise à jour du responsable" });
+        }
+    };
 }

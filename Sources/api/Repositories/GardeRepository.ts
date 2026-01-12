@@ -43,4 +43,20 @@ export class GardesRepository {
         const responsable  = await Users.findByPk(garde?.dataValues.responsable);
         return responsable?.dataValues as TUser;
     }
+
+    public static async UpdateResponsable(id: number, responsableId: number | null) {
+        const garde = await Gardes.findByPk(id);
+        if (!garde) {
+            return null;
+        }
+        await garde.update({ responsable: responsableId === null ? undefined : responsableId });
+        // Recharger avec les associations
+        return await Gardes.findByPk(id, {
+            include: [{
+                model: Users,
+                as: 'responsableUser',
+                attributes: ['id', 'firstname', 'lastname', 'email']
+            }]
+        });
+    }
 }

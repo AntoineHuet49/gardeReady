@@ -12,7 +12,7 @@ type GardeCardProps = {
 
 function GardeCard({ garde, users }: GardeCardProps) {
     const { isSuperAdmin } = useUser();
-    const { deleteGarde } = useGardeMutations();
+    const { deleteGarde, updateResponsable } = useGardeMutations();
 
     // Filtrer les utilisateurs : les admins normaux ne voient pas les superAdmin
     const filteredUsers = users.filter(user => {
@@ -30,6 +30,11 @@ function GardeCard({ garde, users }: GardeCardProps) {
         if (window.confirm(`Êtes-vous sûr de vouloir supprimer la Garde ${garde.numero} ? Cette action est irréversible.`)) {
             deleteGarde.mutate(garde.id);
         }
+    };
+
+    const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const newResponsableId = event.target.value === "" ? null : Number(event.target.value);
+        updateResponsable.mutate({ id: garde.id, responsableId: newResponsableId });
     };
 
     return (
@@ -53,16 +58,27 @@ function GardeCard({ garde, users }: GardeCardProps) {
                 </div>
 
                 {/* Responsable */}
-                {responsable ? (
-                    <div className="mt-2">
-                        <span className="font-semibold">Responsable : </span>
-                        <span>{responsable.firstname} {responsable.lastname}</span>
-                    </div>
-                ) : (
-                    <div className="mt-2 text-sm text-warning italic">
-                        Aucun responsable assigné
-                    </div>
-                )}
+                <div className="mt-2">
+                    <label className="font-semibold block mb-1">Responsable :</label>
+                    <select
+                        value={responsable?.id || ""}
+                        onChange={handleResponsableChange}
+                        disabled={updateResponsable.isPending || filteredUsers.length === 0}
+                        className="select select-bordered select-sm w-full max-w-xs"
+                    >
+                        <option value="">Aucun responsable</option>
+                        {filteredUsers.map((user) => (
+                            <option key={user.id} value={user.id}>
+                                {user.firstname} {user.lastname}
+                            </option>
+                        ))}
+                    </select>
+                    {filteredUsers.length === 0 && (
+                        <p className="text-xs text-warning mt-1 italic">
+                            Ajoutez des membres pour assigner un responsable
+                        </p>
+                    )}
+                </div>
 
                 {/* Liste des membres */}
                 <div className="mt-4">

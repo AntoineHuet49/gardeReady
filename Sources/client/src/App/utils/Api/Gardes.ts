@@ -19,3 +19,9 @@ export function deleteGarde(id: number) {
         return response.data;
     });
 }
+
+export function updateGardeResponsable(id: number, responsableId: number | null) {
+    return instance.put<Garde>(`${apiUrl.gardes}/${id}/responsable`, { responsableId }).then((response) => {
+        return response.data;
+    });
+}

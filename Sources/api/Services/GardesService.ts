@@ -16,4 +16,9 @@ export class GardesService {
         const result = await GardesRepository.Delete(id);
         return result;
     }
+
+    public static async updateResponsable(id: number, responsableId: number | null) {
+        const garde = await GardesRepository.UpdateResponsable(id, responsableId);
+        return garde;
+    }
 }

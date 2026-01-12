@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createGarde, deleteGarde } from "../App/utils/Api/Gardes";
+import { createGarde, deleteGarde, updateGardeResponsable } from "../App/utils/Api/Gardes";
 import { toast } from "react-toastify";
 
 export const useGardeMutations = () => {
@@ -30,8 +30,22 @@ export const useGardeMutations = () => {
         },
     });
 
+    const updateResponsableMutation = useMutation({
+        mutationFn: ({ id, responsableId }: { id: number; responsableId: number | null }) => 
+            updateGardeResponsable(id, responsableId),
+        onSuccess: () => {
+            toast.success("Responsable mis à jour avec succès !");
+            queryClient.invalidateQueries({ queryKey: ["gardes"] });
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            const errorMessage = error.response?.data?.message || "Erreur lors de la mise à jour du responsable";
+            toast.error(errorMessage);
+        },
+    });
+
     return {
         createGarde: createGardeMutation,
         deleteGarde: deleteGardeMutation,
+        updateResponsable: updateResponsableMutation,
     };
 };
