@@ -15,7 +15,7 @@ export async function createSection(sectionData: {
     logger.http(`URL cible: ${apiUrl.base}/sections`);
     
     try {
-        const response = await instance.post<Section>(`${apiUrl.base}/sections`, sectionData);
+        const response = await instance.post<Section>('/sections', sectionData);
         logger.success("Section créée", response.data);
         return response;
     } catch (error: unknown) {
@@ -25,9 +25,9 @@ export async function createSection(sectionData: {
 }
 
 export async function updateSection(id: number, sectionData: { name: string }) {
-    return await instance.put<Section>(`${apiUrl.base}/sections/${id}`, sectionData);
+    return await instance.put<Section>(`/sections/${id}`, sectionData);
 }
 
 export async function deleteSection(id: number) {
-    return await instance.delete(`${apiUrl.base}/sections/${id}`);
+    return await instance.delete(`/sections/${id}`);
 }
