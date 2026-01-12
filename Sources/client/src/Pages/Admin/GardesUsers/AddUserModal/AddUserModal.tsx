@@ -32,9 +32,8 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
         mutationFn: createUser,
         onSuccess: () => {
             toast.success("Utilisateur créé avec succès !");
-            reset();
             queryClient.invalidateQueries({ queryKey: ["users"] });
-            (document.getElementById(modalId) as HTMLDialogElement)?.close();
+            handleClose();
         },
         onError: (error: Error & { response?: { data?: { message?: string } } }) => {
             const errorMessage = error.response?.data?.message || "Erreur lors de la création de l'utilisateur";
@@ -60,6 +59,11 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
             setValue("garde_id", defaultGardeId);
         }
     }, [defaultGardeId, setValue]);
+
+    const handleClose = () => {
+        reset();
+        (document.getElementById(modalId) as HTMLDialogElement)?.close();
+    };
 
     const handleSubmitForm = async (data: UsersValues) => {
         // Vérification que les mots de passe correspondent
@@ -95,7 +99,10 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
             <dialog id={modalId} className="modal">
                 <div className="modal-box">
                     <form method="dialog">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                        <button 
+                            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                            onClick={handleClose}
+                        >
                             ✕
                         </button>
                     </form>
@@ -176,9 +183,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                             className="ml-2 btn"
                             onClick={(e) => {
                                 e.preventDefault();
-                                (document.getElementById(
-                                    modalId
-                                ) as HTMLDialogElement)!.close();
+                                handleClose();
                             }}
                         />
                     </form>
