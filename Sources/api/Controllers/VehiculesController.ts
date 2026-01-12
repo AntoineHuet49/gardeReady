@@ -6,6 +6,9 @@ import * as path from 'path';
 import asyncHandler from "express-async-handler";
 import { HttpCode } from "~~/Helpers/HttpCode";
 import { CreateVehiculeDto } from "~~/Types/DTO/CreateVehiculeDto";
+import { createLogger } from "~~/Utils/Logger";
+
+const logger = createLogger("VehiculesController");
 
 export default class VehiculesController extends BaseController {
     public static async getAllVehicules(req: Request, res: Response): Promise<void> {
@@ -61,7 +64,12 @@ export default class VehiculesController extends BaseController {
         const id = parseInt(req.params.id);
         const body = req.body;
         const userPayload: TUserPayload = BaseController.getUserPayload(req);
-        const filePath = path.join(process.cwd(), '/public/verification.pdf');
+        
+        // Générer un nom de fichier unique pour éviter les conflits
+        const timestamp = Date.now();
+        const publicDir = path.join(process.cwd(), 'public');
+        const filePath = path.join(publicDir, `verification-${timestamp}.pdf`);
+        
         const vehicule = await VehiculesService.getOneById(id);
         
         if (vehicule === undefined) {
@@ -69,10 +77,21 @@ export default class VehiculesController extends BaseController {
             return;
         }
 
-        VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
-        VehiculesService.sendVerificationMail(userPayload, vehicule);
-        VehiculesService.removePdf(filePath);
-
-        res.send("Vehicule validated");
+        try {
+            // Générer le PDF
+            await VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
+            
+            // Envoyer l'email avec le PDF en pièce jointe
+            await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
+            
+            logger.success(`Vérification validée pour le véhicule ${vehicule.name} par ${userPayload.firstname} ${userPayload.lastname}`);
+            res.send("Vehicule validated");
+        } catch (error) {
+            logger.error("Erreur lors de la validation du véhicule", error);
+            res.status(500).send("Erreur lors de la validation du véhicule");
+        } finally {
+            // Supprimer le fichier temporaire
+            VehiculesService.removePdf(filePath);
+        }
     }
 }

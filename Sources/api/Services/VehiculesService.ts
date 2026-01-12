@@ -11,6 +11,9 @@ import { GardesRepository } from "~~/Repositories/GardeRepository";
 import { Attachments, Message } from "~~/Types/Mailer";
 import * as path from "path";
 import { MailerService } from "./MailerService";
+import { createLogger } from "~~/Utils/Logger";
+
+const logger = createLogger("VehiculesService");
 
 export default class VehiculesService {
     public static getAllVehicules() {
@@ -55,6 +58,15 @@ export default class VehiculesService {
         filePath: string,
         user: TUserPayload
     ) {
+        // Créer le dossier public s'il n'existe pas
+        const publicDir = path.dirname(filePath);
+        if (!fs.existsSync(publicDir)) {
+            fs.mkdirSync(publicDir, { recursive: true });
+            logger.info(`Dossier créé: ${publicDir}`);
+        }
+
+        logger.debug(`Génération du PDF pour le véhicule ${vehicule.name} par ${user.firstname} ${user.lastname}`);
+
         const doc = new jsPDF();
         doc.text("Date : " + this.getFormatDate(), 10, 10);
         doc.text("Garde : " + user.garde_id, 10, 20);
@@ -94,16 +106,28 @@ export default class VehiculesService {
 
         const pdfBuffer = doc.output("arraybuffer");
         fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
+        logger.info(`PDF généré avec succès: ${filePath}`);
     }
 
     public static async sendVerificationMail(
         userPayload: TUserPayload,
-        vehicule: TVehicules
+        vehicule: TVehicules,
+        filePath: string
     ) {
+        logger.debug(`Préparation de l'envoi d'email pour le véhicule ${vehicule.name}`);
+        
         const responsable = await GardesRepository.getResponsable(
             userPayload.garde_id
         );
         const recipient = responsable?.email;
+        
+        if (!recipient) {
+            logger.warn(`Aucun responsable trouvé pour la garde ${userPayload.garde_id}`);
+            throw new Error("Aucun responsable de garde trouvé");
+        }
+        
+        logger.debug(`Email sera envoyé à: ${recipient}`);
+        
         const message: Message = {
             to: recipient,
             subject: "Véhicule : " + vehicule.name,
@@ -114,22 +138,28 @@ export default class VehiculesService {
             {
                 ContentType: "application/pdf",
                 Filename: vehicule.name + ".pdf",
-                Base64Content: fs.readFileSync(
-                    path.join(process.cwd(), "/public/verification.pdf"),
-                    "base64"
-                ),
+                Base64Content: fs.readFileSync(filePath, "base64"),
             },
         ];
 
         message.attachments = attachments;
 
         const result = await MailerService.sendMailAsync(message);
+        logger.success(`Email de vérification envoyé avec succès à ${recipient} pour le véhicule ${vehicule.name}`);
 
         return result;
     }
 
     public static removePdf(filePath: string) {
-        fs.unlinkSync(filePath);
+        // Vérifier si le fichier existe avant de le supprimer
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+                logger.debug(`Fichier PDF temporaire supprimé: ${filePath}`);
+            } catch (error) {
+                logger.error(`Erreur lors de la suppression du fichier ${filePath}`, error);
+            }
+        }
     }
 
     private static getFormatDate() {

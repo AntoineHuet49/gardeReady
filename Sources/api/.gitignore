@@ -1,2 +1,6 @@
 node_modules
 .env.local
+
+# Ignorer les PDFs temporaires de vérification mais garder le dossier public/
+public/*.pdf
+!public/.gitkeep

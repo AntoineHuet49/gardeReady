@@ -7,6 +7,7 @@ type PrivateRouteProps = {
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
     let isAuthenticated = false;
 
+    // TODO: Check if token is valid
     document.cookie.split(";").forEach((cookie) => {
         const [name] = cookie.trim().split("=");
         if (name === "token") {
