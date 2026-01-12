@@ -5,6 +5,7 @@ import { Home } from "../../Pages/Home";
 import { Vehicules } from "../../Pages/Vehicules";
 import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
+import AdminRoutes from "./adminRoutes";
 
 function Router() {
     const routes: RouteObject[] = [
@@ -32,7 +33,9 @@ function Router() {
             path: routePath.admin,
             element: (
                 <PrivateRoute>
-                    <Admin />
+                    <AdminRoutes>
+                        <Admin />   
+                    </AdminRoutes>
                 </PrivateRoute>
             ),
         },
