@@ -59,11 +59,13 @@ ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON 
 -- Table users (mots de passe cryptés avec bcrypt)
 -- SuperAdmin: email=admin@gardeready.com, password=AdminReady2024!
 -- Users: email=user@sdis49.fr, password=User123!
+-- Antoine: email=antoine.huet@sdis49.fr, password=Antoine1
 INSERT INTO users (email, password, firstname, lastname, role) VALUES
 ('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUDfg.OdlRoE5piK', 'Admin', 'GardeReady', 'superAdmin'),
 ('user@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'User', 'Test', 'user'),
 ('john.doe@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'John', 'Doe', 'user'),
-('jane.smith@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'Jane', 'Smith', 'user');
+('jane.smith@sdis49.fr', '$2b$12$bgRR59xphxhr5czNCvzUGuyfCv5VbMKsk2eZI/01U63kwz3ac5jN2', 'Jane', 'Smith', 'user'),
+('antoine.huet@sdis49.fr', '$2b$10$/yx6RCPJr/aQ20bVxrKO5uWi/dlm9CnEs52P7mQhh4XacB2Tg9eKW', 'Antoine', 'Huet', 'admin');
 
 -- Table gardes
 INSERT INTO gardes (numero, color, responsable) VALUES
@@ -78,6 +80,7 @@ UPDATE users SET garde_id = 1 WHERE id = 1; -- Admin Test est assigné à la gar
 UPDATE users SET garde_id = 1 WHERE id = 2; -- User Test est assigné à la garde 1
 UPDATE users SET garde_id = 2 WHERE id = 3; -- John Doe est assigné à la garde 2
 UPDATE users SET garde_id = 3 WHERE id = 4; -- Jane Smith est assignée à la garde 3
+UPDATE users SET garde_id = 2 WHERE id = 5; -- Antoine Huet est assigné à la garde 2
 
 -- Table vehicules
 INSERT INTO vehicules (name) VALUES
