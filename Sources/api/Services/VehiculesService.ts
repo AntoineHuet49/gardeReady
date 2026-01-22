@@ -14,7 +14,18 @@ import { MailerService } from "./MailerService";
 import { createLogger } from "~~/Utils/Logger";
 
 const logger = createLogger("VehiculesService");
-
+/**
+ * Sanitise le nom de fichier pour éviter les problèmes avec les serveurs mail
+ * Supprime les accents, espaces et caractères spéciaux
+ */
+function sanitizeFilename(filename: string): string {
+    return filename
+        .normalize('NFD') // Normaliser les caractères Unicode
+        .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+        .replace(/[^a-zA-Z0-9._-]/g, '_') // Remplacer caractères spéciaux par _
+        .replace(/_{2,}/g, '_') // Éviter les underscores multiples
+        .replace(/^_|_$/g, ''); // Retirer les underscores en début/fin
+}
 export default class VehiculesService {
     public static getAllVehicules() {
         return VehiculesRepository.getAllVehicules();
@@ -128,17 +139,35 @@ export default class VehiculesService {
         
         logger.debug(`Email sera envoyé à: ${recipient}`);
         
+        // Générer un nom de fichier sécurisé
+        const dateStr = moment().format('YYYYMMDD');
+        const cleanVehiculeName = sanitizeFilename(vehicule.name);
+        const sanitizedFilename = `Verif_${cleanVehiculeName}_${dateStr}.pdf`;
+        
+        // Lire le PDF et calculer sa taille
+        const pdfBase64 = fs.readFileSync(filePath, "base64");
+        const pdfSizeKB = (Buffer.from(pdfBase64, 'base64').length / 1024).toFixed(2);
+        
+        logger.info('Préparation de l\'email', {
+            vehicule: vehicule.name,
+            filename: sanitizedFilename,
+            taillePDF: `${pdfSizeKB} KB`,
+            destinataire: recipient
+        });
+        
+        const dateFormatted = VehiculesService.getFormatDate();
+        
         const message: Message = {
             to: recipient,
-            subject: "Véhicule : " + vehicule.name,
-            text: "Véhicule : " + vehicule.name,
+            subject: `Rapport de vérification - ${vehicule.name}`,
+            text: `Rapport de vérification\n\nVéhicule : ${vehicule.name}\nDate : ${dateFormatted}\n\nVeuillez trouver ci-joint le rapport de vérification.\n\nCordialement,\nL'équipe GardeReady`,
         };
 
         const attachments: Attachments[] = [
             {
                 ContentType: "application/pdf",
-                Filename: vehicule.name + ".pdf",
-                Base64Content: fs.readFileSync(filePath, "base64"),
+                Filename: sanitizedFilename,
+                Base64Content: pdfBase64,
             },
         ];
 
@@ -162,7 +191,7 @@ export default class VehiculesService {
         }
     }
 
-    private static getFormatDate() {
+    public static getFormatDate() {
         return moment().locale("fr").format("LLL");
     }
 }
