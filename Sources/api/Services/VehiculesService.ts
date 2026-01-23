@@ -125,58 +125,69 @@ export default class VehiculesService {
         vehicule: TVehicules,
         filePath: string
     ) {
-        logger.debug(`Préparation de l'envoi d'email pour le véhicule ${vehicule.name}`);
-        
-        const responsable = await GardesRepository.getResponsable(
-            userPayload.garde_id
-        );
-        const recipient = responsable?.email;
-        
-        if (!recipient) {
-            logger.warn(`Aucun responsable trouvé pour la garde ${userPayload.garde_id}`);
-            throw new Error("Aucun responsable de garde trouvé");
+        try {
+            logger.debug(`Préparation de l'envoi d'email pour le véhicule ${vehicule.name}`);
+            
+            const responsable = await GardesRepository.getResponsable(
+                userPayload.garde_id
+            );
+            const recipient = responsable?.email;
+            
+            if (!recipient) {
+                logger.warn(`Aucun responsable trouvé pour la garde ${userPayload.garde_id}`);
+                throw new Error("Aucun responsable de garde trouvé");
+            }
+            
+            logger.debug(`Email sera envoyé à: ${recipient}`);
+            
+            // Générer un nom de fichier sécurisé
+            const dateStr = moment().format('YYYYMMDD');
+            const cleanVehiculeName = sanitizeFilename(vehicule.name);
+            const sanitizedFilename = `Verif_${cleanVehiculeName}_${dateStr}.pdf`;
+            
+            // Lire le PDF et calculer sa taille
+            const pdfBase64 = fs.readFileSync(filePath, "base64");
+            const pdfSizeKB = (Buffer.from(pdfBase64, 'base64').length / 1024).toFixed(2);
+            
+            logger.info('Préparation de l\'email', {
+                vehicule: vehicule.name,
+                filename: sanitizedFilename,
+                taillePDF: `${pdfSizeKB} KB`,
+                destinataire: recipient
+            });
+            
+            const dateFormatted = VehiculesService.getFormatDate();
+            
+            const message: Message = {
+                to: recipient,
+                subject: `Rapport de vérification - ${vehicule.name}`,
+                text: `Rapport de vérification\n\nVéhicule : ${vehicule.name}\nDate : ${dateFormatted}\n\nVeuillez trouver ci-joint le rapport de vérification.\n\nCordialement,\nL'équipe GardeReady`,
+            };
+
+            const attachments: Attachments[] = [
+                {
+                    ContentType: "application/pdf",
+                    Filename: sanitizedFilename,
+                    Base64Content: pdfBase64,
+                },
+            ];
+
+            message.attachments = attachments;
+
+            logger.info('Appel du service d\'envoi d\'email...');
+            const result = await MailerService.sendMailAsync(message);
+            logger.success(`Email de vérification envoyé avec succès à ${recipient} pour le véhicule ${vehicule.name}`);
+
+            return result;
+        } catch (error: any) {
+            logger.error('Erreur lors de l\'envoi de l\'email de vérification', {
+                vehicule: vehicule.name,
+                garde: userPayload.garde_id,
+                error: error.message,
+                stack: error.stack
+            });
+            throw new Error(`Échec de l'envoi du rapport de vérification: ${error.message}`);
         }
-        
-        logger.debug(`Email sera envoyé à: ${recipient}`);
-        
-        // Générer un nom de fichier sécurisé
-        const dateStr = moment().format('YYYYMMDD');
-        const cleanVehiculeName = sanitizeFilename(vehicule.name);
-        const sanitizedFilename = `Verif_${cleanVehiculeName}_${dateStr}.pdf`;
-        
-        // Lire le PDF et calculer sa taille
-        const pdfBase64 = fs.readFileSync(filePath, "base64");
-        const pdfSizeKB = (Buffer.from(pdfBase64, 'base64').length / 1024).toFixed(2);
-        
-        logger.info('Préparation de l\'email', {
-            vehicule: vehicule.name,
-            filename: sanitizedFilename,
-            taillePDF: `${pdfSizeKB} KB`,
-            destinataire: recipient
-        });
-        
-        const dateFormatted = VehiculesService.getFormatDate();
-        
-        const message: Message = {
-            to: recipient,
-            subject: `Rapport de vérification - ${vehicule.name}`,
-            text: `Rapport de vérification\n\nVéhicule : ${vehicule.name}\nDate : ${dateFormatted}\n\nVeuillez trouver ci-joint le rapport de vérification.\n\nCordialement,\nL'équipe GardeReady`,
-        };
-
-        const attachments: Attachments[] = [
-            {
-                ContentType: "application/pdf",
-                Filename: sanitizedFilename,
-                Base64Content: pdfBase64,
-            },
-        ];
-
-        message.attachments = attachments;
-
-        const result = await MailerService.sendMailAsync(message);
-        logger.success(`Email de vérification envoyé avec succès à ${recipient} pour le véhicule ${vehicule.name}`);
-
-        return result;
     }
 
     public static removePdf(filePath: string) {

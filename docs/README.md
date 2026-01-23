@@ -6,6 +6,7 @@ Bienvenue dans la documentation du projet GardeReady.
 
 - **[LOGGING.md](./LOGGING.md)** - Guide complet du système de logging
 - **[COMPTES_TEST.md](./COMPTES_TEST.md)** - Comptes de test pour le développement
+- **[EMAIL_TROUBLESHOOTING.md](./EMAIL_TROUBLESHOOTING.md)** - Guide de dépannage pour l'envoi d'emails
 
 ## 🏗️ Architecture
 
