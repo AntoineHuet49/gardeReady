@@ -17,7 +17,9 @@ export class MailerService {
     
         // Configuration du transporteur SMTP Gmail avec timeout
         const transporter = nodemailer.createTransport({
-          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false, // true pour port 465, false pour les autres ports
           auth: {
             user: gmailUser,
             pass: gmailAppPassword,
