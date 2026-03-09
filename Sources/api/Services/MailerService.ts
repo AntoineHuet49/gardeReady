@@ -15,19 +15,25 @@ export class MailerService {
           throw new Error('Configuration Gmail incomplète');
         }
     
-        // Configuration du transporteur SMTP Gmail avec timeout
+        // Configuration du transporteur SMTP Gmail avec SSL direct (port 465)
+        // Le port 465 avec SSL direct a plus de chances de fonctionner
+        // sur les plateformes cloud comme Railway
         const transporter = nodemailer.createTransport({
           host: 'smtp.gmail.com',
-          port: 587,
-          secure: false, // true pour port 465, false pour les autres ports
+          port: 465,
+          secure: true, // SSL direct sur port 465
           auth: {
             user: gmailUser,
             pass: gmailAppPassword,
           },
-          // Ajouter des timeouts pour éviter les blocages
-          connectionTimeout: 20000, // 20 secondes
-          greetingTimeout: 10000,    // 10 secondes
-          socketTimeout: 20000,      // 20 secondes
+          tls: {
+            // Ne pas échouer sur les certificats auto-signés
+            rejectUnauthorized: false,
+          },
+          // Timeouts généreux pour les environnements cloud
+          connectionTimeout: 30000, // 30 secondes
+          greetingTimeout: 30000,   // 30 secondes
+          socketTimeout: 30000,     // 30 secondes
         });
 
         logger.debug('Envoi email via Gmail SMTP', {
