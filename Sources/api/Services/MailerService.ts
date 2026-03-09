@@ -1,5 +1,5 @@
 import { Message } from "~~/Types/Mailer";
-import nodemailer from "nodemailer";
+import Mailjet from "node-mailjet";
 import { createLogger } from "~~/Utils/Logger";
 
 const logger = createLogger('MailerService');
@@ -7,74 +7,70 @@ const logger = createLogger('MailerService');
 export class MailerService {
     public static async sendMailAsync(message: Message) {
       try {
-        const gmailUser = process.env.GMAIL_USER;
-        const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+        const apiKey = process.env.MAILJET_API_KEY;
+        const apiSecret = process.env.MAILJET_API_SECRET;
+        const senderEmail = process.env.MAILJET_SENDER_EMAIL;
 
-        if (!gmailUser || !gmailAppPassword) {
-          logger.error('Variables GMAIL_USER ou GMAIL_APP_PASSWORD manquantes');
-          throw new Error('Configuration Gmail incomplète');
+        if (!apiKey || !apiSecret || !senderEmail) {
+          logger.error('Variables MAILJET_API_KEY, MAILJET_API_SECRET ou MAILJET_SENDER_EMAIL manquantes');
+          throw new Error('Configuration Mailjet incomplète');
         }
-    
-        // Configuration du transporteur SMTP Gmail avec SSL direct (port 465)
-        // Le port 465 avec SSL direct a plus de chances de fonctionner
-        // sur les plateformes cloud comme Railway
-        const transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true, // SSL direct sur port 465
-          auth: {
-            user: gmailUser,
-            pass: gmailAppPassword,
-          },
-          tls: {
-            // Ne pas échouer sur les certificats auto-signés
-            rejectUnauthorized: false,
-          },
-          // Timeouts généreux pour les environnements cloud
-          connectionTimeout: 30000, // 30 secondes
-          greetingTimeout: 30000,   // 30 secondes
-          socketTimeout: 30000,     // 30 secondes
-        });
 
-        logger.debug('Envoi email via Gmail SMTP', {
-          from: gmailUser,
+        const mailjet = Mailjet.apiConnect(apiKey, apiSecret);
+
+        logger.debug('Envoi email via Mailjet API', {
+          from: senderEmail,
           to: message.to,
           subject: message.subject,
           hasAttachments: !!message.attachments?.length
         });
 
-        // Préparer les options d'envoi
-        const mailOptions = {
-          from: `"Veri'Feu" <${gmailUser}>`,
-          to: message.to,
-          subject: message.subject,
-          text: message.text,
-          attachments: message.attachments?.map((att) => ({
-            filename: att.Filename,
-            content: att.Base64Content,
-            encoding: 'base64',
-            contentType: att.ContentType,
-          })),
-        };
-
         logger.info('Tentative d\'envoi email...');
 
-        // Envoi de l'email avec timeout global
-        const sendPromise = transporter.sendMail(mailOptions);
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Timeout: L\'envoi d\'email a pris trop de temps')), 60000); // 60 secondes
-        });
+        // Construire le payload Mailjet
+        const mailjetMessage: Record<string, any> = {
+          From: {
+            Email: senderEmail,
+            Name: "Veri'Feu",
+          },
+          To: [
+            {
+              Email: message.to,
+            },
+          ],
+          Subject: message.subject,
+          TextPart: message.text,
+        };
 
-        const info = await Promise.race([sendPromise, timeoutPromise]) as any;
+        // Ajouter les pièces jointes si présentes
+        if (message.attachments && message.attachments.length > 0) {
+          mailjetMessage.Attachments = message.attachments.map((att) => ({
+            ContentType: att.ContentType,
+            Filename: att.Filename,
+            Base64Content: att.Base64Content,
+          }));
+        }
+
+        const result = await mailjet
+          .post('send', { version: 'v3.1' })
+          .request({
+            Messages: [mailjetMessage],
+          });
+
+        const responseBody = result.body as any;
+        const messageResult = responseBody.Messages?.[0];
+
+        if (messageResult?.Status === 'error') {
+          throw new Error(`Mailjet erreur: ${JSON.stringify(messageResult.Errors)}`);
+        }
 
         logger.info('Email envoyé avec succès', {
-          messageId: info.messageId,
+          messageId: messageResult?.To?.[0]?.MessageID,
           to: message.to,
-          accepted: info.accepted,
-          rejected: info.rejected
+          status: messageResult?.Status,
         });
-    
-        return info;
+
+        return result;
       } catch (error: any) {
         logger.error('Erreur lors de l\'envoi de l\'email', {
           error: error.message,
@@ -82,7 +78,7 @@ export class MailerService {
           to: message.to,
           subject: message.subject
         });
-        
+
         // Propager l'erreur avec plus de contexte
         throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
       }
