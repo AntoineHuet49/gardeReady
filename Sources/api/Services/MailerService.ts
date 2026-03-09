@@ -25,9 +25,9 @@ export class MailerService {
             pass: gmailAppPassword,
           },
           // Ajouter des timeouts pour éviter les blocages
-          connectionTimeout: 10000, // 10 secondes
-          greetingTimeout: 5000,    // 5 secondes
-          socketTimeout: 30000,      // 30 secondes
+          connectionTimeout: 20000, // 20 secondes
+          greetingTimeout: 10000,    // 10 secondes
+          socketTimeout: 20000,      // 20 secondes
         });
 
         logger.debug('Envoi email via Gmail SMTP', {
