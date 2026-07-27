@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoginValues } from "../Types/formValues";
 import { login } from "../App/utils/Api/Auth";
-import { updateUserRole } from "../App/utils/Api/Users";
+import { updateUserRole, deleteUser } from "../App/utils/Api/Users";
 import { notify } from "../App/utils/notify";
 
 export const useAuthMutations = () => {
@@ -25,5 +25,17 @@ export const useAuthMutations = () => {
         }
     });
 
-    return { loginMutation, updateRoleMutation };
+    const deleteUserMutation = useMutation({
+        mutationFn: (userId: number) => deleteUser(userId),
+        onSuccess: () => {
+            notify("Utilisateur supprimé avec succès", "success");
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["gardes"] });
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            notify(error.response?.data?.message || "Erreur lors de la suppression de l'utilisateur", "error");
+        }
+    });
+
+    return { loginMutation, updateRoleMutation, deleteUserMutation };
 };

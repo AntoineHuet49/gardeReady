@@ -105,4 +105,34 @@ export class UsersController {
             });
         }
     }
+
+    public static async deleteUser(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.params.id);
+            if (isNaN(userId)) {
+                res.status(400).json({ message: "ID invalide" });
+                return;
+            }
+
+            const requestingUserId = req.user?.id;
+            const requestingUserRole = req.user?.role;
+
+            const result = await UsersServices.deleteUser(userId, requestingUserId, requestingUserRole);
+
+            if (result.success) {
+                res.status(200).json({
+                    message: result.message
+                });
+            } else {
+                res.status(400).json({
+                    message: result.message
+                });
+            }
+        } catch (error) {
+            console.error("Error in deleteUser controller:", error);
+            res.status(500).json({
+                message: "Erreur interne du serveur"
+            });
+        }
+    }
 }

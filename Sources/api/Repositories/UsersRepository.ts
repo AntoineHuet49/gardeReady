@@ -50,4 +50,18 @@ export class UsersRepository {
         await user.save();
         return user.dataValues;
     }
+
+    public static async getOneUserById(userId: number): Promise<TUser | undefined> {
+        const user = await Users.findByPk(userId);
+        return user?.dataValues;
+    }
+
+    public static async deleteUser(userId: number): Promise<boolean> {
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            return false;
+        }
+        await user.destroy();
+        return true;
+    }
 }

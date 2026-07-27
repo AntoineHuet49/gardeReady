@@ -40,6 +40,7 @@ router.delete('/sections/:id', verifyToken, requireAdmin, SectionsController.del
 router.get('/users', verifyToken, requireAdmin, UsersController.getAllUsers);
 router.post('/users', verifyToken, requireAdmin, UsersController.createUser);
 router.patch('/users/:id/role', verifyToken, requireAdmin, UsersController.updateUserRole);
+router.delete('/users/:id', verifyToken, requireAdmin, UsersController.deleteUser);
 
 // Gardes (protégées - authentification requise)
 router.get('/gardes', verifyToken, GardeController.getAllGardes);

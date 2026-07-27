@@ -4,6 +4,9 @@ import { User } from "../../../Types/User";
 import GardeCard from "./GardeCard";
 import AddUserModal from "./AddUserModal/AddUserModal";
 import AddGardeModal from "./AddGardeModal/AddGardeModal";
+import Button from "../../../Components/Button/button";
+import { useUser } from "../../../App/Provider/UserProvider";
+import { useAuthMutations } from "../../../hooks/useAuthMutations";
 
 type GardesUsersProps = {
     gardes?: Garde[];
@@ -14,8 +17,17 @@ type GardesUsersProps = {
 };
 
 function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersProps) {
+    const { user: currentUser } = useUser();
+    const { deleteUserMutation } = useAuthMutations();
+
     // Récupérer les utilisateurs non assignés à une garde
     const unassignedUsers = allUsers.filter(user => !user.garde_id);
+
+    const handleDeleteUser = (user: User) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`)) {
+            deleteUserMutation.mutate(user.id);
+        }
+    };
 
     return (
         <div className="container mx-auto p-6">
@@ -51,11 +63,20 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
                             </h3>
                             <ul className="space-y-2 mt-2">
                                 {unassignedUsers.map((user) => (
-                                    <li 
+                                    <li
                                         key={user.id}
-                                        className="text-sm"
+                                        className="text-sm flex items-center justify-between gap-2"
                                     >
-                                        • {user.firstname} {user.lastname}
+                                        <span>• {user.firstname} {user.lastname}</span>
+                                        {currentUser?.id !== user.id && (
+                                            <Button
+                                                text={deleteUserMutation.isPending ? "..." : "✕"}
+                                                onClick={() => handleDeleteUser(user)}
+                                                className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                                title="Supprimer cet utilisateur"
+                                                disabled={deleteUserMutation.isPending}
+                                            />
+                                        )}
                                     </li>
                                 ))}
                             </ul>

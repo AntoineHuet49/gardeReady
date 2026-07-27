@@ -68,4 +68,32 @@ export class UsersServices {
             return OperationResult.fail("Erreur lors de la mise à jour du rôle");
         }
     }
+
+    public static async deleteUser(userId: number, requestingUserId?: number, requestingUserRole?: string): Promise<OperationResult<null>> {
+        try {
+            if (requestingUserId === userId) {
+                return OperationResult.fail("Vous ne pouvez pas supprimer votre propre compte");
+            }
+
+            const userToDelete = await UsersRepository.getOneUserById(userId);
+            if (!userToDelete) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            // Seul un superAdmin peut supprimer un compte superAdmin
+            if (userToDelete.role === "superAdmin" && requestingUserRole !== "superAdmin") {
+                return OperationResult.fail("Seul un superAdmin peut supprimer un compte superAdmin");
+            }
+
+            const deleted = await UsersRepository.deleteUser(userId);
+            if (!deleted) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            return OperationResult.ok(null, "Utilisateur supprimé avec succès");
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            return OperationResult.fail("Erreur lors de la suppression de l'utilisateur");
+        }
+    }
 }

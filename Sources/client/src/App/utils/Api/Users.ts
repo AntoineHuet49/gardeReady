@@ -22,3 +22,7 @@ export async function createUser(userData: CreateUserData) {
 export async function updateUserRole(userId: number, role: string) {
     return await instance.patch(`${apiUrl.users}/${userId}/role`, { role });
 }
+
+export async function deleteUser(userId: number) {
+    return await instance.delete(`${apiUrl.users}/${userId}`);
+}

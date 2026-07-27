@@ -13,9 +13,9 @@ type GardeCardProps = {
 };
 
 function GardeCard({ garde, users }: GardeCardProps) {
-    const { isSuperAdmin } = useUser();
+    const { user: currentUser, isSuperAdmin } = useUser();
     const { deleteGarde, updateResponsable } = useGardeMutations();
-    const { updateRoleMutation } = useAuthMutations();
+    const { updateRoleMutation, deleteUserMutation } = useAuthMutations();
     const [openDropdownUserId, setOpenDropdownUserId] = useState<number | null>(null);
 
     // Filtrer les utilisateurs : les admins normaux ne voient pas les superAdmin
@@ -44,6 +44,12 @@ function GardeCard({ garde, users }: GardeCardProps) {
     const handleRoleChange = (userId: number, newRole: string) => {
         updateRoleMutation.mutate({ userId, role: newRole });
         setOpenDropdownUserId(null);
+    };
+
+    const handleDeleteUser = (user: User) => {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`)) {
+            deleteUserMutation.mutate(user.id);
+        }
     };
 
     const toggleDropdown = (userId: number) => {
@@ -141,52 +147,63 @@ function GardeCard({ garde, users }: GardeCardProps) {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className={`dropdown dropdown-end ${isDropdownOpen ? 'dropdown-open' : ''}`}>
-                                                <button
-                                                    tabIndex={0}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleDropdown(user.id);
-                                                    }}
-                                                    className={`badge badge-sm ${roleBadgeColor} whitespace-nowrap cursor-pointer hover:brightness-90 transition-all`}
-                                                    title="Cliquez pour changer le rôle"
-                                                >
-                                                    {roleLabel}
-                                                </button>
-                                                <ul 
-                                                    tabIndex={0} 
-                                                    className="dropdown-content menu bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-content/10 mt-1"
-                                                >
-                                                        <li>
-                                                            <button
-                                                                onClick={() => handleRoleChange(user.id, "user")}
-                                                                className={user.role === "user" ? "active" : ""}
-                                                                disabled={updateRoleMutation.isPending}
-                                                            >
-                                                                <span className="badge badge-sm badge-ghost">Utilisateur</span>
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button
-                                                                onClick={() => handleRoleChange(user.id, "admin")}
-                                                                className={user.role === "admin" ? "active" : ""}
-                                                                disabled={updateRoleMutation.isPending}
-                                                            >
-                                                                <span className="badge badge-sm badge-warning">Admin</span>
-                                                            </button>
-                                                        </li>
-                                                        {isSuperAdmin && (
+                                            <div className="flex items-center gap-2">
+                                                <div className={`dropdown dropdown-end ${isDropdownOpen ? 'dropdown-open' : ''}`}>
+                                                    <button
+                                                        tabIndex={0}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleDropdown(user.id);
+                                                        }}
+                                                        className={`badge badge-sm ${roleBadgeColor} whitespace-nowrap cursor-pointer hover:brightness-90 transition-all`}
+                                                        title="Cliquez pour changer le rôle"
+                                                    >
+                                                        {roleLabel}
+                                                    </button>
+                                                    <ul
+                                                        tabIndex={0}
+                                                        className="dropdown-content menu bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-content/10 mt-1"
+                                                    >
                                                             <li>
                                                                 <button
-                                                                    onClick={() => handleRoleChange(user.id, "superAdmin")}
-                                                                    className={user.role === "superAdmin" ? "active" : ""}
+                                                                    onClick={() => handleRoleChange(user.id, "user")}
+                                                                    className={user.role === "user" ? "active" : ""}
                                                                     disabled={updateRoleMutation.isPending}
                                                                 >
-                                                                    <span className="badge badge-sm badge-error">Super Admin</span>
+                                                                    <span className="badge badge-sm badge-ghost">Utilisateur</span>
                                                                 </button>
                                                             </li>
-                                                        )}
-                                                    </ul>
+                                                            <li>
+                                                                <button
+                                                                    onClick={() => handleRoleChange(user.id, "admin")}
+                                                                    className={user.role === "admin" ? "active" : ""}
+                                                                    disabled={updateRoleMutation.isPending}
+                                                                >
+                                                                    <span className="badge badge-sm badge-warning">Admin</span>
+                                                                </button>
+                                                            </li>
+                                                            {isSuperAdmin && (
+                                                                <li>
+                                                                    <button
+                                                                        onClick={() => handleRoleChange(user.id, "superAdmin")}
+                                                                        className={user.role === "superAdmin" ? "active" : ""}
+                                                                        disabled={updateRoleMutation.isPending}
+                                                                    >
+                                                                        <span className="badge badge-sm badge-error">Super Admin</span>
+                                                                    </button>
+                                                                </li>
+                                                            )}
+                                                        </ul>
+                                                </div>
+                                                {currentUser?.id !== user.id && (
+                                                    <Button
+                                                        text={deleteUserMutation.isPending ? "..." : "✕"}
+                                                        onClick={() => handleDeleteUser(user)}
+                                                        className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                                        title="Supprimer cet utilisateur"
+                                                        disabled={deleteUserMutation.isPending}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                         <div className="text-xs text-base-content/60 break-all">
