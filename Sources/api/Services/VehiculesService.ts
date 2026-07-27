@@ -32,8 +32,7 @@ export default class VehiculesService {
     }
 
     public static async getOneById(id: number) {
-        const vehicule = await VehiculesRepository.getOneByIdWithSections(id);
-        return vehicule?.toJSON();
+        return VehiculesRepository.getOneByIdWithSections(id);
     }
 
     public static async createVehicule(name: string) {
