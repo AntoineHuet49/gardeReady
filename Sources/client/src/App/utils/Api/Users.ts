@@ -4,7 +4,7 @@ import { instance } from "./axios";
 
 export interface CreateUserData {
     email: string;
-    password: string;
+    password?: string;
     firstname: string;
     lastname: string;
     role: string;

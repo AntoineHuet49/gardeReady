@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UsersServices } from '~~/Services/UsersServices';
 import { CreateUserDTO } from '~~/Types/DTO/CreateUserDto';
+import { getAuthProvider } from '~~/Utils/AuthProvider';
 
 export class UsersController {
     public static async getAllUsers(req: Request, res: Response) {
@@ -21,10 +22,10 @@ export class UsersController {
             const userData: CreateUserDTO = req.body;
             
             // Validation basique des champs requis
-            if (!userData.email || !userData.password || !userData.firstname || 
-                !userData.lastname || !userData.role || !userData.garde_id) {
-                res.status(400).json({ 
-                    message: "Tous les champs sont requis" 
+            if (!userData.email || !userData.firstname ||
+                !userData.lastname || !userData.role) {
+                res.status(400).json({
+                    message: "Tous les champs sont requis"
                 });
                 return;
             }
@@ -32,19 +33,22 @@ export class UsersController {
             // Validation du format email
             const emailRegex = /^[\w-.]+@sdis49\.fr$/;
             if (!emailRegex.test(userData.email)) {
-                res.status(400).json({ 
-                    message: "L'email doit être du domaine sdis49.fr" 
+                res.status(400).json({
+                    message: "L'email doit être du domaine sdis49.fr"
                 });
                 return;
             }
 
-            // Validation du mot de passe
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-            if (!passwordRegex.test(userData.password)) {
-                res.status(400).json({ 
-                    message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre" 
-                });
-                return;
+            // En mode login local, un mot de passe est requis à la création (les comptes Microsoft
+            // sont provisionnés automatiquement au premier login, sans mot de passe)
+            if (getAuthProvider() === "local") {
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+                if (!userData.password || !passwordRegex.test(userData.password)) {
+                    res.status(400).json({
+                        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre"
+                    });
+                    return;
+                }
             }
 
             // Empêcher les admins normaux de créer des superAdmin

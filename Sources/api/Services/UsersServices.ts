@@ -25,15 +25,10 @@ export class UsersServices {
                 return OperationResult.fail("Cet email est déjà utilisé");
             }
 
-            // Crypter le mot de passe
-            const saltRounds = 12;
-            const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
-
-            // Créer l'utilisateur avec le mot de passe crypté
-            const userToCreate = {
-                ...userData,
-                password: hashedPassword
-            };
+            // Crypter le mot de passe s'il est fourni (compte local ; absent pour un compte Microsoft)
+            const userToCreate = userData.password
+                ? { ...userData, password: await bcrypt.hash(userData.password, 12) }
+                : userData;
 
             const newUser = await UsersRepository.createUser(userToCreate);
             return OperationResult.ok(newUser, "Utilisateur créé avec succès");

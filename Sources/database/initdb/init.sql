@@ -2,10 +2,11 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque utilisateur
     email VARCHAR(100) NOT NULL UNIQUE, -- Adresse e-mail de l'utilisateur
-    password VARCHAR(255) NOT NULL, -- Mot de passe de l'utilisateur
+    password VARCHAR(255), -- Mot de passe de l'utilisateur (NULL pour les comptes Microsoft)
     firstname VARCHAR(50) NOT NULL, -- Prénom de l'utilisateur
     lastname VARCHAR(50) NOT NULL, -- name de l'utilisateur
-    role VARCHAR(20) NOT NULL DEFAULT 'user' -- Rôle de l'utilisateur (par ex: 'user', 'admin')
+    role VARCHAR(20) NOT NULL DEFAULT 'user', -- Rôle de l'utilisateur (par ex: 'user', 'admin')
+    azure_oid VARCHAR(100) UNIQUE -- Identifiant Azure AD (Microsoft Entra ID) lié au compte
 );
 
 -- Création de la table gardes

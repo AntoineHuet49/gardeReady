@@ -12,6 +12,6 @@ export type VerificationValues = {
 };
 
 export type UsersValues = Omit<User, "id"> & {
-    password: string;
-    passwordConfirmation: string;
+    password?: string;
+    passwordConfirmation?: string;
 };

@@ -1,13 +1,9 @@
+import './Utils/LoadEnv';
 import express from 'express';
 import router from './routes/routes';
 import { connectDatabase } from './Utils/Database';
-import { configDotenv } from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { configureLogLevel, createLogger } from './Utils/Logger';
-
-// Charge les variables globales
-configDotenv({path: '.env', override: true});
-configDotenv({path: '.env.local', override: true});
 
 // Configure le niveau de log
 configureLogLevel();

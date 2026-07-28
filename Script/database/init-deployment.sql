@@ -12,11 +12,12 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     firstname VARCHAR(50) NOT NULL,
     lastname VARCHAR(50) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'user',
-    garde_id INT
+    garde_id INT,
+    azure_oid VARCHAR(100) UNIQUE
 );
 
 -- Création de la table gardes

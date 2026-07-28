@@ -7,11 +7,12 @@ export class Users extends Model<
 > {
   declare id: CreationOptional<number>;
   declare email: string;
-  declare password: string;
+  declare password: CreationOptional<string | null>;
   declare firstname: string;
   declare lastname: string;
   declare role: string;
-  declare garde_id: number;
+  declare garde_id: CreationOptional<number | null>;
+  declare azure_oid: CreationOptional<string | null>;
 }
 
 Users.init(
@@ -31,7 +32,7 @@ Users.init(
         },
         password: {
             type: DataTypes.STRING(255),
-            allowNull: false,
+            allowNull: true,
         },
         firstname: {
             type: DataTypes.STRING(50),
@@ -47,12 +48,17 @@ Users.init(
         },
         garde_id: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: "gardes",
                 key: "id",
             },
             onDelete: "CASCADE",
+        },
+        azure_oid: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
+            unique: true,
         },
     },
     {

@@ -1,5 +1,5 @@
-import { TUserWithPassword } from "~~/Models/Users";
 import { Users } from "~~/Models";
+import { TUserWithPassword } from "~~/Models/Users";
 import { TUser } from "~~/Types/User";
 import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
 import { Op } from "sequelize";
@@ -29,6 +29,21 @@ export class UsersRepository {
     public static async getOneUserWithPassword(email: string): Promise<TUserWithPassword | undefined> {
         const user = await Users.scope('withPassword').findOne({ where: { email } });
         return user?.dataValues;
+    }
+
+    public static async getOneUserByAzureOid(azureOid: string): Promise<TUser | undefined> {
+        const user = await Users.findOne({ where: { azure_oid: azureOid } });
+        return user?.dataValues;
+    }
+
+    public static async setAzureOid(userId: number, azureOid: string): Promise<TUser | undefined> {
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            return undefined;
+        }
+        user.azure_oid = azureOid;
+        await user.save();
+        return user.dataValues;
     }
 
     public static async createUser(userData: CreateUserDTO): Promise<TUser> {

@@ -126,7 +126,11 @@ export default class VehiculesService {
     ) {
         try {
             logger.debug(`Préparation de l'envoi d'email pour le véhicule ${vehicule.name}`);
-            
+
+            if (!userPayload.garde_id) {
+                throw new Error("Aucune garde assignée à cet utilisateur");
+            }
+
             const responsable = await GardesRepository.getResponsable(
                 userPayload.garde_id
             );

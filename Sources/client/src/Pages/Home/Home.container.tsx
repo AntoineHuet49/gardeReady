@@ -1,35 +1,48 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router";
 import Home from "./Home";
 import { LoginValues } from "../../Types/formValues";
-import { useNavigate } from "react-router";
+import { getMicrosoftLoginUrl } from "../../App/utils/Api/Auth";
+import { notify } from "../../App/utils/notify";
 import { useUser } from "../../App/Provider/UserProvider";
 import { routePath } from "../../App/Routes/routeConstants";
 import { useAuthMutations } from "../../hooks/useAuthMutations";
+import { useAuthProvider } from "../../hooks/useAuthProvider";
 
 function HomeContainer() {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const { isAuthenticated, isAdmin, refreshUser } = useUser();
+    const { provider, isLoading: isAuthProviderLoading } = useAuthProvider();
+    const { loginMutation } = useAuthMutations();
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<LoginValues>();
-    const { loginMutation } = useAuthMutations();
-    const navigate = useNavigate();
 
-    const { refreshUser } = useUser();
+    useEffect(() => {
+        if (searchParams.get("authError")) {
+            notify("La connexion avec Microsoft a échoué. Contactez un administrateur si le problème persiste.", "error");
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate(isAdmin && window.innerWidth > 768 ? routePath.admin : routePath.vehicules);
+        }
+    }, [isAuthenticated, isAdmin, navigate]);
+
+    const handleMicrosoftLogin = () => {
+        window.location.href = getMicrosoftLoginUrl();
+    };
 
     const handleSubmitForm = async (loginValues: LoginValues) => {
         const response = await loginMutation.mutateAsync(loginValues);
-        console.log(response);
         if (response.status === 200) {
-            // Rafraîchir et récupérer directement les informations utilisateur
             const { isAdmin: userIsAdmin } = refreshUser();
-
-            // Navigation immédiate basée sur le rôle
-            if (userIsAdmin && window.innerWidth > 768) {
-                navigate(routePath.admin);
-            } else {
-                navigate(routePath.vehicules);
-            }
+            navigate(userIsAdmin && window.innerWidth > 768 ? routePath.admin : routePath.vehicules);
         }
     };
 
@@ -48,6 +61,9 @@ function HomeContainer() {
     return (
         <Home
             handleStartClick={handleStartClick}
+            authProvider={provider}
+            isAuthProviderLoading={isAuthProviderLoading}
+            handleMicrosoftLogin={handleMicrosoftLogin}
             register={register}
             handleSubmit={handleSubmit}
             handleSubmitForm={handleSubmitForm}

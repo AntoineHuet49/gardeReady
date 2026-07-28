@@ -6,6 +6,7 @@ import VehiculesController from '~~/Controllers/VehiculesController';
 import ElementsController from '~~/Controllers/ElementsController';
 import SectionsController from '~~/Controllers/SectionsController';
 import { verifyToken, requireAdmin } from '~~/Middlewares/AuthMiddleware';
+import { requireAuthProvider } from '~~/Utils/AuthProvider';
 
 const router = express.Router();
 
@@ -15,9 +16,13 @@ router.get("/", (req, res) => {
   res.send(JSON.stringify({ status: "ok", version: "1.0" }));
 });
 
-// Auth (publiques)
-router.post("/auth/register", AuthController.register)
-router.post("/auth/login", AuthController.login)
+// Auth (publiques) - un seul provider actif à la fois, voir AUTH_PROVIDER / docs/AZURE_AD_SETUP.md
+// Le provider actif est vérifié à chaque requête (requireAuthProvider), pas à l'import de ce
+// fichier, pour ne pas dépendre de l'ordre de chargement de dotenv dans app.ts.
+router.get("/auth/provider", AuthController.getAuthProvider)
+router.post("/auth/login", requireAuthProvider("local"), AuthController.login)
+router.get("/auth/microsoft/login", requireAuthProvider("microsoft"), AuthController.redirectToMicrosoft)
+router.get("/auth/microsoft/callback", requireAuthProvider("microsoft"), AuthController.microsoftCallback)
 
 // Vehicules (protégées - authentification requise)
 router.get('/vehicules', verifyToken, VehiculesController.getAllVehicules);

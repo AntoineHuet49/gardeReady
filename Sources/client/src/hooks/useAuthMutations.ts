@@ -20,7 +20,7 @@ export const useAuthMutations = () => {
             notify("Rôle mis à jour avec succès", "success");
             queryClient.invalidateQueries({ queryKey: ["users"] });
         },
-        onError: (error: any) => {
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
             notify(error.response?.data?.message || "Erreur lors de la mise à jour du rôle", "error");
         }
     });

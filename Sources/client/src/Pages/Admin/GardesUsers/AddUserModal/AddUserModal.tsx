@@ -6,6 +6,7 @@ import DropdownInput from "../../../../Components/Input/DropdownInput";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllGardes } from "../../../../App/utils/Api/Gardes";
 import { createUser } from "../../../../App/utils/Api/Users";
+import { useAuthProvider } from "../../../../hooks/useAuthProvider";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -22,6 +23,8 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
     const modalId = defaultGardeId ? `add-user-modal-${defaultGardeId}` : "add-user-modal";
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<UsersValues>();
     const queryClient = useQueryClient();
+    const { provider, isLoading: isAuthProviderLoading } = useAuthProvider();
+    const isLocalAuth = provider === "local";
 
     const gardes = useQuery({
         queryKey: ["gardes"],
@@ -66,8 +69,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
     };
 
     const handleSubmitForm = async (data: UsersValues) => {
-        // Vérification que les mots de passe correspondent
-        if (data.password !== data.passwordConfirmation) {
+        if (isLocalAuth && data.password !== data.passwordConfirmation) {
             toast.error("Les mots de passe ne correspondent pas");
             return;
         }
@@ -75,7 +77,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
         // Préparation des données pour l'API
         const userData = {
             email: data.email,
-            password: data.password,
+            ...(isLocalAuth ? { password: data.password } : {}),
             firstname: data.firstname,
             lastname: data.lastname,
             role: data.role,
@@ -142,31 +144,35 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                                 required: "Veuillez entrer un nom",
                             }}
                         />
-                        <TextInput
-                            register={register}
-                            placeholder="Mot de passe"
-                            name="password"
-                            isPassword
-                            errors={errors}
-                            options={{
-                                required: "Veuillez entrer un mot de passe",
-                                pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
-                                    message:
-                                        "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre",
-                                },
-                            }}
-                        />
-                        <TextInput
-                            register={register}
-                            placeholder="Confirmer le Mot de passe"
-                            name="passwordConfirmation"
-                            isPassword
-                            errors={errors}
-                            options={{
-                                required: "Veuillez confirmer le mot de passe",
-                            }}
-                        />
+                        {isLocalAuth && (
+                            <>
+                                <TextInput
+                                    register={register}
+                                    placeholder="Mot de passe"
+                                    name="password"
+                                    isPassword
+                                    errors={errors}
+                                    options={{
+                                        required: "Veuillez entrer un mot de passe",
+                                        pattern: {
+                                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+                                            message:
+                                                "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre",
+                                        },
+                                    }}
+                                />
+                                <TextInput
+                                    register={register}
+                                    placeholder="Confirmer le Mot de passe"
+                                    name="passwordConfirmation"
+                                    isPassword
+                                    errors={errors}
+                                    options={{
+                                        required: "Veuillez confirmer le mot de passe",
+                                    }}
+                                />
+                            </>
+                        )}
                         <DropdownInput
                             register={register}
                             name="role"
@@ -177,7 +183,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                             name="garde_id"
                             options={gardesOptions}
                         />
-                        <Button type="submit" className="btn-primary" text="Ajouter" />
+                        <Button type="submit" className="btn-primary" text="Ajouter" disabled={isAuthProviderLoading} />
                         <Button
                             text={"Annuler"}
                             className="ml-2 btn"
