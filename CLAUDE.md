@@ -103,5 +103,6 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 - Do not create Markdown files documenting changes unless explicitly requested; if requested, place them under `docs/changes/`.
 
 ## Claude Code workflow (temporary, until told otherwise)
-- Make code changes directly on `main` — do not create a branch or worktree for them.
-- Do not `git commit`, `git push`, or open a PR automatically after making changes. Leave changes uncommitted in the working tree and tell the user what changed; they will review and commit themselves.
+- `main` is currently the production branch, and the user works directly on it because the app has no real users yet — make code changes directly on `main`, do not create a branch or worktree for them.
+- Do not `git commit`, `git push`, or open a PR automatically after making changes. Leave changes uncommitted in the working tree and tell the user what changed; they will review, commit, and push themselves.
+- Once the app has real users, the user will introduce a `dev` branch wired to a staging/recette environment, and `main` will become push-only after review — do not assume that workflow is in place until the user says so.
