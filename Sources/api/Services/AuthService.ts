@@ -6,7 +6,7 @@ import { TUser } from "~~/Types/User";
 import { TUserWithPassword } from "~~/Models/Users";
 import bcrypt from "bcrypt";
 import { IdTokenClaims } from "@azure/msal-node";
-import { msalClient, msalScopes, getRedirectUri } from "~~/Utils/AzureAuth";
+import { getMsalClient, msalScopes, getRedirectUri } from "~~/Utils/AzureAuth";
 
 type MicrosoftClaims = IdTokenClaims & {
     email?: string;
@@ -42,7 +42,7 @@ export class AuthService {
     }
 
     public static getMicrosoftAuthUrl(): Promise<string> {
-        return msalClient.getAuthCodeUrl({
+        return getMsalClient().getAuthCodeUrl({
             scopes: msalScopes,
             redirectUri: getRedirectUri(),
         });
@@ -50,7 +50,7 @@ export class AuthService {
 
     public static async handleMicrosoftCallback(code: string): Promise<OperationResult<string>> {
         try {
-            const authResult = await msalClient.acquireTokenByCode({
+            const authResult = await getMsalClient().acquireTokenByCode({
                 code,
                 scopes: msalScopes,
                 redirectUri: getRedirectUri(),
