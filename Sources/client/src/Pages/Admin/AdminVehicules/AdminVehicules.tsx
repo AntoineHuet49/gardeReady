@@ -9,6 +9,7 @@ import AddElementModal from "../../../Components/Modal/AddElementModal";
 import AddSectionModal from "../../../Components/Modal/AddSectionModal";
 import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
+import SectionPhotoButton from "../../../Components/Section/SectionPhotoButton";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
@@ -33,7 +34,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     } | null>(null);
     
     const { deleteElementMutation } = useElementMutations();
-    const { deleteSectionMutation } = useSectionMutations();
+    const { deleteSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
     const { deleteVehiculeMutation } = useVehiculeMutations();
 
     const openModal = (sectionId: number, sectionName: string) => {
@@ -78,7 +79,14 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         });
     };
 
-    const handleDeleteVehicule = (vehiculeId: number, vehiculeName: string) => {
+    const handleDeleteSectionPhoto = (sectionId: number, sectionName: string) => {
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer la photo de la section "${sectionName}" ?`,
+            onConfirm: () => deleteSectionPhotoMutation.mutate(sectionId),
+        });
+    };
+
+    const handleDeleteVehicule =(vehiculeId: number, vehiculeName: string) => {
         setPendingConfirm({
             message: `Êtes-vous sûr de vouloir supprimer le véhicule "${vehiculeName}" et tout son contenu ?`,
             onConfirm: () => deleteVehiculeMutation.mutate(vehiculeId),
@@ -112,6 +120,32 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                     className="btn-xs bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
                                     title="Ajouter une sous-section"
                                 />
+                                {section.has_photo && <SectionPhotoButton section={section} />}
+                                <label
+                                    className={`btn btn-xs bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 ${uploadSectionPhotoMutation.isPending ? "btn-disabled" : ""}`}
+                                    title={section.has_photo ? "Remplacer la photo de la section" : "Ajouter une photo de la section"}
+                                >
+                                    {section.has_photo ? "Changer la photo" : "+ Photo"}
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) uploadSectionPhotoMutation.mutate({ id: section.id, file });
+                                            e.target.value = "";
+                                        }}
+                                    />
+                                </label>
+                                {section.has_photo && (
+                                    <Button
+                                        text="✕ Photo"
+                                        onClick={() => handleDeleteSectionPhoto(section.id, section.name)}
+                                        className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                        title="Supprimer la photo de la section"
+                                        disabled={deleteSectionPhotoMutation.isPending}
+                                    />
+                                )}
                                 <Button
                                     text={deleteSectionMutation.isPending ? "..." : "✕"}
                                     onClick={() => handleDeleteSection(section.id, section.name)}

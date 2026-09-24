@@ -7,6 +7,7 @@ type SectionRow = {
     name: string;
     vehicule_id: number | null;
     parent_section_id: number | null;
+    has_photo: boolean;
 };
 
 type SectionNode = SectionRow & {
@@ -19,11 +20,11 @@ type SectionNode = SectionRow & {
 async function getSectionTreeForVehicule(vehiculeId: number): Promise<SectionNode[]> {
     const sections = await dbContext.query<SectionRow>(
         `WITH RECURSIVE section_tree AS (
-            SELECT id, name, vehicule_id, parent_section_id
+            SELECT id, name, vehicule_id, parent_section_id, photo IS NOT NULL AS has_photo
             FROM sections
             WHERE vehicule_id = :vehiculeId
             UNION ALL
-            SELECT s.id, s.name, s.vehicule_id, s.parent_section_id
+            SELECT s.id, s.name, s.vehicule_id, s.parent_section_id, s.photo IS NOT NULL AS has_photo
             FROM sections s
             INNER JOIN section_tree st ON s.parent_section_id = st.id
         )

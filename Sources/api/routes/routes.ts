@@ -41,6 +41,10 @@ router.delete('/elements/:id', verifyToken, requireAdmin, ElementsController.del
 router.post('/sections', verifyToken, requireAdmin, SectionsController.createSection);
 router.put('/sections/:id', verifyToken, requireAdmin, SectionsController.updateSection);
 router.delete('/sections/:id', verifyToken, requireAdmin, SectionsController.deleteSection);
+router.get('/sections/:id/photo', verifyToken, SectionsController.getPhoto);
+// Image envoyée en binaire brut ; limite un peu au-dessus de 5 Mo, la taille exacte est vérifiée par SectionsService
+router.put('/sections/:id/photo', verifyToken, requireAdmin, express.raw({ type: 'image/*', limit: '6mb' }), SectionsController.uploadPhoto);
+router.delete('/sections/:id/photo', verifyToken, requireAdmin, SectionsController.deletePhoto);
 
 // Users (protégées - admin requis)
 router.get('/users', verifyToken, requireAdmin, UsersController.getAllUsers);

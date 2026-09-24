@@ -39,7 +39,9 @@ CREATE TABLE sections (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     vehicule_id INT REFERENCES vehicules(id) ON DELETE CASCADE,
-    parent_section_id INT REFERENCES sections(id) ON DELETE CASCADE
+    parent_section_id INT REFERENCES sections(id) ON DELETE CASCADE,
+    photo BYTEA,
+    photo_mime VARCHAR(50)
 );
 
 -- Création de la table elements
