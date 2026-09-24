@@ -25,7 +25,8 @@ CREATE TABLE vehicules (
 -- Création de la table elements
 CREATE TABLE elements (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque élément
-    name VARCHAR(100) NOT NULL -- name de l'élément
+    name VARCHAR(100) NOT NULL, -- name de l'élément
+    quantite INTEGER NOT NULL DEFAULT 1 CHECK (quantite >= 1) -- quantité attendue de l'équipement
 );
 
 -- Création de la table sections (hiérarchique)
