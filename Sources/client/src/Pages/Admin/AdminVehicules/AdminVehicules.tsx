@@ -29,7 +29,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const [selectedContext, setSelectedContext] = useState<{ 
         vehiculeId?: number; 
         parentSectionId?: number; 
-        contextName: string 
+        contextName: string;
+        section?: { id: number; name: string };
     } | null>(null);
     
     const { deleteElementMutation } = useElementMutations();
@@ -48,6 +49,11 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
 
     const openSectionModal = (vehiculeId?: number, parentSectionId?: number, contextName?: string) => {
         setSelectedContext({ vehiculeId, parentSectionId, contextName: contextName || "" });
+        setSectionModalOpen(true);
+    };
+
+    const openEditSectionModal = (section: Section) => {
+        setSelectedContext({ contextName: section.name, section: { id: section.id, name: section.name } });
         setSectionModalOpen(true);
     };
 
@@ -111,6 +117,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                     onClick={() => openSectionModal(undefined, section.id, section.name)}
                                     className="btn-xs bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
                                     title="Ajouter une sous-section"
+                                />
+                                <Button
+                                    text="✎"
+                                    onClick={() => openEditSectionModal(section)}
+                                    className="btn-xs bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200"
+                                    title="Renommer cette section"
                                 />
                                 <Button
                                     text={deleteSectionMutation.isPending ? "..." : "✕"}
@@ -268,6 +280,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     vehiculeId={selectedContext.vehiculeId}
                     parentSectionId={selectedContext.parentSectionId}
                     contextName={selectedContext.contextName}
+                    section={selectedContext.section}
                 />
             )}
 
