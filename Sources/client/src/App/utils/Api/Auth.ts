@@ -17,6 +17,10 @@ export async function login(email: string, password: string) {
     );
 }
 
+export async function setPassword(token: string, password: string) {
+    return await instance.post<{ message: string }>(apiUrl.setPassword, { token, password });
+}
+
 export function getMicrosoftLoginUrl() {
     return `${apiUrl.base}${apiUrl.microsoftLogin}`;
 }

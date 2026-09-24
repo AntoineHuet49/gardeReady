@@ -44,4 +44,18 @@ export class AuthController {
             res.redirect(`${frontendUrl}?authError=1`);
         }
     }
+
+    public static async setPassword(req: Request, res: Response) {
+        const { token, password } = req.body;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        if (typeof token !== "string" || typeof password !== "string" || !passwordRegex.test(password)) {
+            res.status(HttpCode.BadRequest).json({
+                message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre"
+            });
+            return;
+        }
+
+        const result = await AuthService.setPassword(token, password);
+        res.status(result.success ? HttpCode.Ok : HttpCode.BadRequest).json({ message: result.message });
+    }
 }

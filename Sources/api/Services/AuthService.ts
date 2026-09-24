@@ -7,6 +7,14 @@ import { TUserWithPassword } from "~~/Models/Users";
 import bcrypt from "bcrypt";
 import { IdTokenClaims } from "@azure/msal-node";
 import { getMsalClient, msalScopes, getRedirectUri } from "~~/Utils/AzureAuth";
+import { MailerService } from "~~/Services/MailerService";
+import { createLogger } from "~~/Utils/Logger";
+
+const logger = createLogger('AuthService');
+
+const SET_PASSWORD_PURPOSE = "set-password";
+const INVITATION_EXPIRES_IN = "72h";
+const INVALID_LINK_MESSAGE = "Ce lien est invalide ou a expiré. Contactez un administrateur.";
 
 type MicrosoftClaims = IdTokenClaims & {
     email?: string;
@@ -106,5 +114,51 @@ export class AuthService {
             azure_oid: azureOid,
         });
         return created;
+    }
+
+    /**
+     * Envoie à un utilisateur fraîchement créé (sans mot de passe) un lien pour définir son mot de passe.
+     * Le jeton est un JWT signé à durée limitée ; il n'est utilisable que tant que le compte n'a pas
+     * de mot de passe (usage unique de fait, sans colonne supplémentaire en base).
+     */
+    public static async sendInvitation(user: TUser, frontendUrl: string): Promise<OperationResult<null>> {
+        try {
+            // Secret dérivé : un jeton d'invitation ne peut pas servir de jeton de session (verifyToken)
+            const secret = `${process.env.JWT_SECRET ?? "secret"}:${SET_PASSWORD_PURPOSE}`;
+            const token = jwt.sign({ sub: String(user.id) }, secret, { expiresIn: INVITATION_EXPIRES_IN });
+            const link = `${frontendUrl.replace(/\/$/, "")}/?invitation=${encodeURIComponent(token)}`;
+
+            await MailerService.sendMailAsync({
+                to: user.email,
+                subject: "Véri'Feu - Définissez votre mot de passe",
+                text: `Bonjour ${user.firstname},\n\n`
+                    + `Un compte Véri'Feu vient d'être créé pour vous.\n`
+                    + `Pour l'activer, définissez votre mot de passe en suivant ce lien (valable 72 heures) :\n\n`
+                    + `${link}\n\n`
+                    + `Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.`,
+            });
+            return OperationResult.ok(null, "Invitation envoyée");
+        } catch (error: any) {
+            logger.error("Échec de l'envoi de l'invitation", { userId: user.id, error: error.message });
+            return OperationResult.fail("L'e-mail d'invitation n'a pas pu être envoyé");
+        }
+    }
+
+    public static async setPassword(token: string, password: string): Promise<OperationResult<null>> {
+        let userId: number;
+        try {
+            const secret = `${process.env.JWT_SECRET ?? "secret"}:${SET_PASSWORD_PURPOSE}`;
+            userId = Number((jwt.verify(token, secret) as jwt.JwtPayload).sub);
+        } catch {
+            return OperationResult.fail(INVALID_LINK_MESSAGE);
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+        // Ne met à jour que si le compte n'a pas encore de mot de passe : le lien devient inutilisable une fois servi
+        const updated = await UsersRepository.setPasswordIfUnset(userId, hashedPassword);
+        if (!updated) {
+            return OperationResult.fail(INVALID_LINK_MESSAGE);
+        }
+        return OperationResult.ok(null, "Mot de passe défini, vous pouvez vous connecter");
     }
 }

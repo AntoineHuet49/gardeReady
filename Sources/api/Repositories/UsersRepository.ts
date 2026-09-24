@@ -105,4 +105,12 @@ export class UsersRepository {
         await user.destroy();
         return true;
     }
+
+    public static async setPasswordIfUnset(userId: number, hashedPassword: string): Promise<boolean> {
+        const [count] = await Users.update(
+            { password: hashedPassword },
+            { where: { id: userId, password: { [Op.is]: null } } }
+        );
+        return count > 0;
+    }
 }
