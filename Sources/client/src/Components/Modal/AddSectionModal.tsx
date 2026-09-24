@@ -13,6 +13,7 @@ type AddSectionModalProps = {
     vehiculeId?: number;
     parentSectionId?: number;
     contextName: string; // Nom du véhicule ou de la section parent
+    section?: { id: number; name: string }; // Si fourni : mode édition (renommage)
 };
 
 type FormData = {
@@ -24,9 +25,11 @@ const AddSectionModal = ({
     onClose, 
     vehiculeId, 
     parentSectionId, 
-    contextName 
+    contextName,
+    section
 }: AddSectionModalProps) => {
-    const { createSectionMutation } = useSectionMutations();
+    const { createSectionMutation, updateSectionMutation } = useSectionMutations();
+    const mutation = section ? updateSectionMutation : createSectionMutation;
     
     const {
         register,
@@ -39,14 +42,26 @@ const AddSectionModal = ({
     // Mettre le focus sur l'input quand le modal s'ouvre
     useEffect(() => {
         if (isOpen) {
+            reset({ name: section?.name ?? "" });
             // Délai pour que le modal soit complètement rendu
             setTimeout(() => {
                 setFocus("name");
             }, 100);
         }
-    }, [isOpen, setFocus]);
+    }, [isOpen, section, reset, setFocus]);
 
     const onSubmit = (data: FormData) => {
+        const onSuccess = () => {
+            logger.success("Mutation réussie");
+            reset();
+            onClose();
+        };
+
+        if (section) {
+            updateSectionMutation.mutate({ id: section.id, data: { name: data.name } }, { onSuccess });
+            return;
+        }
+
         logger.debug("Soumission formulaire");
         logger.debug("Données formulaire", data);
         logger.debug("Context", { vehiculeId, parentSectionId, contextName });
@@ -60,11 +75,7 @@ const AddSectionModal = ({
         logger.sent("Données mutation", mutationData);
         
         createSectionMutation.mutate(mutationData, {
-            onSuccess: () => {
-                logger.success("Mutation réussie");
-                reset();
-                onClose();
-            },
+            onSuccess,
             onError: (error) => {
                 logger.error("Erreur mutation", error);
             }
@@ -82,7 +93,7 @@ const AddSectionModal = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Ajouter une section</h3>
+                    <h3 className="text-lg font-semibold">{section ? "Renommer la section" : "Ajouter une section"}</h3>
                     <button
                         onClick={handleClose}
                         className="text-gray-500 hover:text-gray-700"
@@ -92,7 +103,9 @@ const AddSectionModal = ({
                 </div>
                 
                 <p className="text-sm text-gray-600 mb-4">
-                    {parentSectionId ? (
+                    {section ? (
+                        <>Section : <strong>{section.name}</strong></>
+                    ) : parentSectionId ? (
                         <>Dans la section : <strong>{contextName}</strong></>
                     ) : (
                         <>Pour le véhicule : <strong>{contextName}</strong></>
@@ -122,14 +135,14 @@ const AddSectionModal = ({
                             type="button"
                             onClick={handleClose}
                             className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-                            disabled={createSectionMutation.isPending}
+                            disabled={mutation.isPending}
                         >
                             Annuler
                         </button>
                         <Button
-                            text={createSectionMutation.isPending ? "Création..." : "Créer"}
+                            text={mutation.isPending ? (section ? "Enregistrement..." : "Création...") : (section ? "Enregistrer" : "Créer")}
                             type="submit"
-                            disabled={createSectionMutation.isPending}
+                            disabled={mutation.isPending}
                             className="px-4 py-2"
                         />
                     </div>
