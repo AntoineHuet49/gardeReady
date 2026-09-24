@@ -106,7 +106,7 @@ export default class VehiculesService {
                         verification[elementId].elementId
                     );
                     return [
-                        element ? element.name + (element.quantite > 1 ? ` ×${element.quantite}` : "") : "",
+                        element ? (element.quantite > 1 ? `${element.quantite} ` : "") + element.name : "",
                         verification[elementId].status ?? "",
                         verification[elementId].comment ?? "",
                     ];

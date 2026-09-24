@@ -132,8 +132,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             className="bg-gray-50 p-2 rounded border text-sm flex justify-between items-center group"
                                         >
                                             <span className="font-medium">
+                                                {element.quantite > 1 && <strong>{element.quantite} </strong>}
                                                 {element.name}
-                                                {element.quantite > 1 && <span className="badge badge-neutral badge-sm ml-2">×{element.quantite}</span>}
                                             </span>
                                             <div className="flex gap-1">
                                                 <Button
