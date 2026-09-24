@@ -7,4 +7,5 @@ export const apiUrl = {
     verification: "/vehicules/verifications",
     users: "/users",
     gardes: "/gardes",
+    feedback: "/feedback",
 };

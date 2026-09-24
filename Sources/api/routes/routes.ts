@@ -5,6 +5,7 @@ import { UsersController } from '~~/Controllers/UsersController';
 import VehiculesController from '~~/Controllers/VehiculesController';
 import ElementsController from '~~/Controllers/ElementsController';
 import SectionsController from '~~/Controllers/SectionsController';
+import { FeedbackController } from '~~/Controllers/FeedbackController';
 import { verifyToken, requireAdmin } from '~~/Middlewares/AuthMiddleware';
 import { requireAuthProvider } from '~~/Utils/AuthProvider';
 
@@ -46,6 +47,7 @@ router.get('/users', verifyToken, requireAdmin, UsersController.getAllUsers);
 router.post('/users', verifyToken, requireAdmin, UsersController.createUser);
 router.put('/users/:id', verifyToken, requireAdmin, UsersController.updateUser);
 router.patch('/users/:id/role', verifyToken, requireAdmin, UsersController.updateUserRole);
+router.patch('/users/:id/garde', verifyToken, requireAdmin, UsersController.updateUserGarde);
 router.delete('/users/:id', verifyToken, requireAdmin, UsersController.deleteUser);
 
 // Gardes (protégées - authentification requise)
@@ -53,5 +55,8 @@ router.get('/gardes', verifyToken, GardeController.getAllGardes);
 router.post('/gardes', verifyToken, requireAdmin, GardeController.createGarde);
 router.put('/gardes/:id/responsable', verifyToken, requireAdmin, GardeController.updateResponsable);
 router.delete('/gardes/:id', verifyToken, requireAdmin, GardeController.deleteGarde);
+
+// Retours utilisateurs -> issues GitHub (protégée - authentification requise)
+router.post('/feedback', verifyToken, FeedbackController.createFeedback);
 
 export default router;
