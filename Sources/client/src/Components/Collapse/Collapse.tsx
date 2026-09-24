@@ -28,14 +28,6 @@ const Collapse = ({
         return `${fontWeight} text-base`;
     };
 
-    // Indicateur visuel de profondeur pour les niveaux très profonds
-    const getLevelIndicator = (level: number) => {
-        if (level <= 2) return null;
-
-        const dots = "•".repeat(Math.min(level - 2, 5)); // Maximum 5 dots
-        return <span className="text-xs text-gray-400 mr-2">{dots}</span>;
-    };
-
     // Style d'arrière-plan alternant pour une meilleure lisibilité
     const getBackgroundClass = (level: number) => {
         if (level % 2 === 0) return "bg-base-100";
@@ -48,7 +40,6 @@ const Collapse = ({
         >
             <input type="checkbox" defaultChecked={defaultOpen} />
             <div className={`collapse-title ${getTitleClass(level)}`}>
-                {getLevelIndicator(level)}
                 {title}
                 {level > 5 && (
                     <span className="text-xs text-gray-400 ml-2">
