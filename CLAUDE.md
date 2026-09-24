@@ -104,5 +104,5 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 
 ## Claude Code workflow (temporary, until told otherwise)
 - `main` is currently the production branch, and the user works directly on it because the app has no real users yet — make code changes directly on `main`, do not create a branch or worktree for them.
-- Do not `git commit`, `git push`, or open a PR automatically after making changes. Leave changes uncommitted in the working tree and tell the user what changed; they will review, commit, and push themselves.
+- Commit and push directly to `main` yourself after making changes (write a clear commit message describing what changed and why). No PR — there is no branch to open one from at this stage.
 - Once the app has real users, the user will introduce a `dev` branch wired to a staging/recette environment, and `main` will become push-only after review — do not assume that workflow is in place until the user says so.

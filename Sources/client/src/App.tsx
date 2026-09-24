@@ -4,6 +4,7 @@ import { ToastProvider } from "./App/Provider/ToastProvider";
 import { UserProvider } from "./App/Provider/UserProvider/UserProvider";
 import Router from "./App/Routes/routes";
 import { AdminProvider } from "./App/Provider/AdminProvider/AdminProvider";
+import Footer from "./Components/Footer/Footer";
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                     <>
                         <ToastProvider />
                         <Router />
+                        <Footer />
                     </>
                 </QueryClientProvider>
             </AdminProvider>
