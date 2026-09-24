@@ -24,6 +24,8 @@ export class Sections extends Model<
     declare name: string;
     declare vehicule_id: ForeignKey<Vehicules['id']> | null;
     declare parent_section_id: ForeignKey<Sections['id']> | null;
+    declare photo: CreationOptional<Buffer | null>;
+    declare photo_mime: CreationOptional<string | null>;
 
     // Associations
     declare getVehicule: BelongsToGetAssociationMixin<Vehicules>;
@@ -78,14 +80,28 @@ Sections.init(
             },
             onDelete: 'CASCADE',
         },
+        photo: {
+            type: DataTypes.BLOB,
+            allowNull: true,
+        },
+        photo_mime: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+        },
     },
     {
         sequelize: dbContext,
         tableName: "sections",
         timestamps: false,
+        // Le binaire de la photo n'est jamais chargé par défaut (servi par GET /sections/:id/photo)
+        defaultScope: {
+            attributes: { exclude: ['photo', 'photo_mime'] },
+        },
         validate: {
             // Validation personnalisée pour s'assurer qu'une section est soit racine (vehicule_id) soit sous-section (parent_section_id)
             rootOrSubSection() {
+                // Sections.update statique partiel (ex. photo) : aucun des deux champs n'est fourni
+                if (this.vehicule_id === undefined && this.parent_section_id === undefined) return;
                 if (
                     (this.vehicule_id !== null && this.parent_section_id !== null) ||
                     (this.vehicule_id === null && this.parent_section_id === null)

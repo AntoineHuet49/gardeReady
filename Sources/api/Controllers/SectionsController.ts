@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { SectionsRepository } from "~~/Repositories/SectionsRepository";
 import { BaseController } from "./BaseController";
 import { createLogger } from "~~/Utils/Logger";
+import asyncHandler from "express-async-handler";
+import { HttpCode } from "~~/Helpers/HttpCode";
+import SectionsService, { SECTION_NOT_FOUND } from "~~/Services/SectionsService";
 
 export default class SectionsController extends BaseController {
     private static logger = createLogger('SectionsController');
@@ -122,4 +125,39 @@ export default class SectionsController extends BaseController {
             res.status(500).json({ error: "Erreur interne du serveur" });
         }
     }
+
+    public static getPhoto = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const result = await SectionsService.getPhoto(parseInt(req.params.id));
+        if (!result.success) {
+            res.status(HttpCode.NotFound).json({ error: result.message });
+            return;
+        }
+        // no-cache + ETag (généré par Express) : le navigateur revalide, donc une photo remplacée s'affiche aussitôt
+        res.set({
+            "Content-Type": result.data!.mime,
+            "Cache-Control": "private, no-cache",
+            "X-Content-Type-Options": "nosniff",
+        });
+        res.send(result.data!.photo);
+    });
+
+    // Corps = binaire brut de l'image (express.raw sur la route, voir routes.ts)
+    public static uploadPhoto = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const result = await SectionsService.setPhoto(parseInt(req.params.id), req.body);
+        if (!result.success) {
+            const status = result.message === SECTION_NOT_FOUND ? HttpCode.NotFound : HttpCode.BadRequest;
+            res.status(status).json({ error: result.message });
+            return;
+        }
+        res.status(HttpCode.NoContent).send();
+    });
+
+    public static deletePhoto = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const result = await SectionsService.deletePhoto(parseInt(req.params.id));
+        if (!result.success) {
+            res.status(HttpCode.NotFound).json({ error: result.message });
+            return;
+        }
+        res.status(HttpCode.NoContent).send();
+    });
 }

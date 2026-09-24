@@ -4,6 +4,7 @@ import { Element } from "../../Types/Element";
 import { VerificationValues } from "../../Types/formValues";
 import Collapse from "../Collapse/Collapse";
 import VerificationInput from "../Input/VerificationInput";
+import SectionPhotoButton from "./SectionPhotoButton";
 
 type SectionVerificationProps = {
     section: Section;
@@ -24,6 +25,12 @@ const SectionVerification = ({
 
     const content = (
         <>
+            {section.has_photo && (
+                <div className="mb-4">
+                    <SectionPhotoButton section={section} className="btn-sm" />
+                </div>
+            )}
+
             {/* Éléments de cette section */}
             {hasElements && (
                 <div className="space-y-2 mb-4">

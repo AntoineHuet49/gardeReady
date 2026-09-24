@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createSection, updateSection, deleteSection } from "../App/utils/Api/Sections";
+import { createSection, updateSection, deleteSection, uploadSectionPhoto, deleteSectionPhoto } from "../App/utils/Api/Sections";
 import { notify } from "../App/utils/notify";
+import { resizeImage } from "../App/utils/resizeImage";
 
 export const useSectionMutations = () => {
     const queryClient = useQueryClient();
@@ -44,9 +45,39 @@ export const useSectionMutations = () => {
         }
     });
 
+    // La photo est visible dans l'admin et pendant la vérification ("details")
+    const invalidatePhotoQueries = () => {
+        queryClient.invalidateQueries({ queryKey: ["admin-vehicules"] });
+        queryClient.invalidateQueries({ queryKey: ["details"] });
+    };
+
+    const uploadSectionPhotoMutation = useMutation({
+        mutationFn: async ({ id, file }: { id: number; file: File }) => uploadSectionPhoto(id, await resizeImage(file)),
+        onSuccess: () => {
+            invalidatePhotoQueries();
+            notify("Photo enregistrée !", "success");
+        },
+        onError: (error: Error & { response?: { data?: { error?: string } } }) => {
+            notify(error.response?.data?.error || "Erreur lors de l'envoi de la photo", "error");
+        }
+    });
+
+    const deleteSectionPhotoMutation = useMutation({
+        mutationFn: (id: number) => deleteSectionPhoto(id),
+        onSuccess: () => {
+            invalidatePhotoQueries();
+            notify("Photo supprimée !", "success");
+        },
+        onError: (error: Error & { response?: { data?: { error?: string } } }) => {
+            notify(error.response?.data?.error || "Erreur lors de la suppression de la photo", "error");
+        }
+    });
+
     return {
         createSectionMutation,
         updateSectionMutation,
-        deleteSectionMutation
+        deleteSectionMutation,
+        uploadSectionPhotoMutation,
+        deleteSectionPhotoMutation
     };
 };

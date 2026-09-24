@@ -35,6 +35,8 @@ CREATE TABLE sections (
     name VARCHAR(100) NOT NULL, -- Nom de la section
     vehicule_id INT, -- Clé étrangère vers vehicules (nullable, seulement pour les sections racines)
     parent_section_id INT, -- Clé étrangère auto-référentielle (nullable pour les sections racines)
+    photo BYTEA, -- Photo de la section (optionnelle)
+    photo_mime VARCHAR(50), -- Type MIME de la photo (image/jpeg, image/png, image/webp)
     CONSTRAINT fk_section_vehicule FOREIGN KEY (vehicule_id) REFERENCES vehicules(id) ON DELETE CASCADE,
     CONSTRAINT fk_section_parent FOREIGN KEY (parent_section_id) REFERENCES sections(id) ON DELETE CASCADE,
     CONSTRAINT check_section_root CHECK (

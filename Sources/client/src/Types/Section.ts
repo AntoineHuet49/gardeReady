@@ -5,6 +5,7 @@ export type Section = {
     name: string;
     vehicule_id?: number;
     parent_section_id?: number;
+    has_photo?: boolean;
     subSections?: Section[];
     elements?: Element[];
 };

@@ -31,3 +31,16 @@ export async function updateSection(id: number, sectionData: { name: string }) {
 export async function deleteSection(id: number) {
     return await instance.delete(`/sections/${id}`);
 }
+
+// URL servie par l'API (le cookie d'auth est envoyé automatiquement par <img>)
+export const sectionPhotoUrl = (id: number) => `${apiUrl.base}/sections/${id}/photo`;
+
+export async function uploadSectionPhoto(id: number, photo: Blob) {
+    return await instance.put(`/sections/${id}/photo`, photo, {
+        headers: { "Content-Type": photo.type },
+    });
+}
+
+export async function deleteSectionPhoto(id: number) {
+    return await instance.delete(`/sections/${id}/photo`);
+}

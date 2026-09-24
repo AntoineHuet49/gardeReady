@@ -129,6 +129,22 @@ export class SectionsRepository {
         return section ? await section.update(data) : null;
     }
 
+    // Photo de la section (hors scope par défaut, voir Models/Sections.ts)
+    public static async getPhoto(sectionId: number) {
+        return await Sections.unscoped().findByPk(sectionId, {
+            attributes: ['photo', 'photo_mime']
+        });
+    }
+
+    // Enregistrer (ou effacer avec null) la photo d'une section ; renvoie le nombre de lignes modifiées
+    public static async setPhoto(sectionId: number, photo: Buffer | null, photoMime: string | null) {
+        const [count] = await Sections.update(
+            { photo, photo_mime: photoMime },
+            { where: { id: sectionId } }
+        );
+        return count;
+    }
+
     // Supprimer une section (cascade automatique pour les sous-sections et éléments)
     public static async deleteSection(sectionId: number) {
         return await Sections.destroy({
