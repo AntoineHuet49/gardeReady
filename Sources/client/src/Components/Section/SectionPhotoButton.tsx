@@ -32,7 +32,7 @@ const SectionPhotoButton = ({ section, className = "btn-xs" }: SectionPhotoButto
                         <img
                             src={`${sectionPhotoUrl(section.id)}?v=${openedAt}`}
                             alt={`Photo de la section ${section.name}`}
-                            className="w-full rounded-lg"
+                            className="w-full max-h-[70vh] object-contain rounded-lg"
                         />
                     )}
                     <div className="modal-action">
