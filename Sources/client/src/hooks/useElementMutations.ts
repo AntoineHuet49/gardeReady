@@ -6,7 +6,7 @@ export const useElementMutations = () => {
     const queryClient = useQueryClient();
 
     const createElementMutation = useMutation({
-        mutationFn: (data: { name: string; section_id: number }) => createElement(data),
+        mutationFn: (data: { name: string; section_id: number; quantite: number }) => createElement(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin-vehicules"] });
             notify("Équipement créé avec succès !", "success");
@@ -19,7 +19,7 @@ export const useElementMutations = () => {
     });
 
     const updateElementMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: { name: string } }) => updateElement(id, data),
+        mutationFn: ({ id, data }: { id: number; data: { name: string; quantite: number } }) => updateElement(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin-vehicules"] });
             notify("Équipement modifié avec succès !", "success");

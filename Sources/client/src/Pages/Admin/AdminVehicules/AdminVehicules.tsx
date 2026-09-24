@@ -22,7 +22,7 @@ type AdminVehiculesProps = {
 
 const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) => {
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedSection, setSelectedSection] = useState<{ id: number; name: string } | null>(null);
+    const [selectedSection, setSelectedSection] = useState<{ id: number; name: string; element?: Element } | null>(null);
     const [sectionModalOpen, setSectionModalOpen] = useState(false);
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [vehiculeModalOpen, setVehiculeModalOpen] = useState(false);
@@ -37,8 +37,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const { deleteSectionMutation } = useSectionMutations();
     const { deleteVehiculeMutation } = useVehiculeMutations();
 
-    const openModal = (sectionId: number, sectionName: string) => {
-        setSelectedSection({ id: sectionId, name: sectionName });
+    const openModal = (sectionId: number, sectionName: string, element?: Element) => {
+        setSelectedSection({ id: sectionId, name: sectionName, element });
         setModalOpen(true);
     };
 
@@ -143,14 +143,25 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             key={element.id}
                                             className="bg-gray-50 p-2 rounded border text-sm flex justify-between items-center group"
                                         >
-                                            <span className="font-medium">{element.name}</span>
-                                            <Button
-                                                text={deleteElementMutation.isPending ? "..." : "✕"}
-                                                onClick={() => handleDeleteElement(element.id, element.name)}
-                                                className="btn-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 bg-red-100 text-red-500 border-red-200 hover:bg-red-200 hover:text-red-700 transition-all duration-200"
-                                                title="Supprimer cet équipement"
-                                                disabled={deleteElementMutation.isPending}
-                                            />
+                                            <span className="font-medium">
+                                                {element.quantite > 1 && <strong>{element.quantite} </strong>}
+                                                {element.name}
+                                            </span>
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    text="✎"
+                                                    onClick={() => openModal(section.id, section.name, element)}
+                                                    className="btn-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200"
+                                                    title="Modifier cet équipement"
+                                                />
+                                                <Button
+                                                    text={deleteElementMutation.isPending ? "..." : "✕"}
+                                                    onClick={() => handleDeleteElement(element.id, element.name)}
+                                                    className="btn-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 bg-red-100 text-red-500 border-red-200 hover:bg-red-200 hover:text-red-700 transition-all duration-200"
+                                                    title="Supprimer cet équipement"
+                                                    disabled={deleteElementMutation.isPending}
+                                                />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -269,6 +280,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     onClose={closeModal}
                     sectionId={selectedSection.id}
                     sectionName={selectedSection.name}
+                    element={selectedSection.element}
                 />
             )}
 

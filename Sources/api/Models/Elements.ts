@@ -17,6 +17,7 @@ export class Elements extends Model<
 > {
     declare id: CreationOptional<number>;
     declare name: string;
+    declare quantite: CreationOptional<number>;
     declare section_id: ForeignKey<number> | null;
 
     // Associations
@@ -38,6 +39,12 @@ Elements.init(
         name: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        quantite: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1,
+            validate: { min: 1 },
         },
         section_id: {
             type: DataTypes.INTEGER,

@@ -1,18 +1,27 @@
 import { Request, Response } from "express";
 import { ElementsRepository } from "~~/Repositories/ElementsRepository";
 import { BaseController } from "./BaseController";
+import { CreateElementDto, UpdateElementDto } from "~~/Types/DTO/ElementDto";
+
+// quantite est optionnelle (défaut 1) mais doit être un entier >= 1 si fournie
+const isValidQuantite = (quantite: unknown) =>
+    quantite === undefined || (Number.isInteger(quantite) && (quantite as number) >= 1);
 
 export default class ElementsController extends BaseController {
     public static async createElement(req: Request, res: Response): Promise<void> {
         try {
-            const { name, section_id } = req.body;
+            const { name, section_id, quantite } = req.body as CreateElementDto;
             
             if (!name || !section_id) {
                 res.status(400).json({ error: "Le nom et l'ID de section sont requis" });
                 return;
             }
+            if (!isValidQuantite(quantite)) {
+                res.status(400).json({ error: "La quantité doit être un entier supérieur ou égal à 1" });
+                return;
+            }
 
-            const element = await ElementsRepository.createElement({ name, section_id });
+            const element = await ElementsRepository.createElement({ name, section_id, quantite });
             res.status(201).json(element);
         } catch (error) {
             console.error("Erreur lors de la création de l'élément:", error);
@@ -23,14 +32,18 @@ export default class ElementsController extends BaseController {
     public static async updateElement(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id);
-            const { name } = req.body;
+            const { name, quantite } = req.body as UpdateElementDto;
             
             if (!name) {
                 res.status(400).json({ error: "Le nom est requis" });
                 return;
             }
+            if (!isValidQuantite(quantite)) {
+                res.status(400).json({ error: "La quantité doit être un entier supérieur ou égal à 1" });
+                return;
+            }
 
-            const element = await ElementsRepository.updateElement(id, { name });
+            const element = await ElementsRepository.updateElement(id, { name, quantite });
             if (!element) {
                 res.status(404).json({ error: "Élément non trouvé" });
                 return;
