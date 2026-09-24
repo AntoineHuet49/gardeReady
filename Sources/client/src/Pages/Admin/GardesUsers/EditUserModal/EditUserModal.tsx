@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import Button from "../../../../Components/Button/button";
 import TextInput from "../../../../Components/Input/TextInput";
@@ -45,6 +46,7 @@ function EditUserModal({ user }: EditUserModalProps) {
                 className="btn-xs bg-base-200 hover:bg-base-300"
                 title="Modifier cet utilisateur"
             />
+            {createPortal(
             <dialog id={modalId} className="modal">
                 <div className="modal-box">
                     <form method="dialog">
@@ -108,7 +110,9 @@ function EditUserModal({ user }: EditUserModalProps) {
                         />
                     </form>
                 </div>
-            </dialog>
+            </dialog>,
+            document.body
+            )}
         </>
     );
 }
