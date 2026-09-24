@@ -57,9 +57,9 @@ app.use("/api", router);
 // Serve static files du frontend buildé
 app.use(express.static('Sources/api/public'));
 
-// Fallback pour SPA - redirige toutes les routes vers index.html
-// IMPORTANT: Doit être APRÈS les autres routes
-app.get('/', (req, res) => {
+// Fallback pour SPA - renvoie index.html pour toute route client (ex: refresh sur /vehicules)
+// IMPORTANT: Doit être APRÈS les autres routes. Syntaxe Express 5 : '/{*splat}' (et non '*')
+app.get('/{*splat}', (req, res) => {
     res.sendFile('Sources/api/public/index.html', { root: '.' });
 });
 
