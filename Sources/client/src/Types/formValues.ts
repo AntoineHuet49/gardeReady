@@ -11,7 +11,9 @@ export type VerificationValues = {
     comment?: string;
 };
 
-export type UsersValues = Omit<User, "id"> & {
-    password?: string;
-    passwordConfirmation?: string;
+export type UsersValues = Omit<User, "id">;
+
+export type SetPasswordValues = {
+    password: string;
+    passwordConfirmation: string;
 };

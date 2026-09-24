@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router";
 import Home from "./Home";
+import SetPasswordForm from "./SetPasswordForm";
 import { LoginValues } from "../../Types/formValues";
 import { getMicrosoftLoginUrl } from "../../App/utils/Api/Auth";
 import { notify } from "../../App/utils/notify";
@@ -57,6 +58,11 @@ function HomeContainer() {
             loginForm?.classList.remove("hidden");
         }, 300);
     };
+
+    const invitationToken = searchParams.get("invitation");
+    if (invitationToken) {
+        return <SetPasswordForm token={invitationToken} onDone={() => navigate(routePath.home, { replace: true })} />;
+    }
 
     return (
         <Home

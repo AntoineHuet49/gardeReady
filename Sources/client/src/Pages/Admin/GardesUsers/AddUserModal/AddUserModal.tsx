@@ -6,7 +6,6 @@ import DropdownInput from "../../../../Components/Input/DropdownInput";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllGardes } from "../../../../App/utils/Api/Gardes";
 import { createUser } from "../../../../App/utils/Api/Users";
-import { useAuthProvider } from "../../../../hooks/useAuthProvider";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -23,8 +22,6 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
     const modalId = defaultGardeId ? `add-user-modal-${defaultGardeId}` : "add-user-modal";
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<UsersValues>();
     const queryClient = useQueryClient();
-    const { provider, isLoading: isAuthProviderLoading } = useAuthProvider();
-    const isLocalAuth = provider === "local";
 
     const gardes = useQuery({
         queryKey: ["gardes"],
@@ -33,8 +30,16 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
 
     const createUserMutation = useMutation({
         mutationFn: createUser,
-        onSuccess: () => {
-            toast.success("Utilisateur créé avec succès !");
+        onSuccess: (response) => {
+            // invitationSent : null en login Microsoft (pas d'invitation), false si l'e-mail n'est pas parti
+            const { invitationSent } = response.data as { invitationSent: boolean | null };
+            if (invitationSent === false) {
+                toast.warning("Utilisateur créé, mais l'e-mail d'invitation n'a pas pu être envoyé.");
+            } else if (invitationSent) {
+                toast.success("Utilisateur créé : un e-mail lui a été envoyé pour définir son mot de passe.");
+            } else {
+                toast.success("Utilisateur créé avec succès !");
+            }
             queryClient.invalidateQueries({ queryKey: ["users"] });
             handleClose();
         },
@@ -69,15 +74,9 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
     };
 
     const handleSubmitForm = async (data: UsersValues) => {
-        if (isLocalAuth && data.password !== data.passwordConfirmation) {
-            toast.error("Les mots de passe ne correspondent pas");
-            return;
-        }
-
-        // Préparation des données pour l'API
+        // Pas de mot de passe : en login local, l'utilisateur reçoit un e-mail pour le définir lui-même
         const userData = {
             email: data.email,
-            ...(isLocalAuth ? { password: data.password } : {}),
             firstname: data.firstname,
             lastname: data.lastname,
             role: data.role,
@@ -145,35 +144,6 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                                 required: "Veuillez entrer un nom",
                             }}
                         />
-                        {isLocalAuth && (
-                            <>
-                                <TextInput
-                                    register={register}
-                                    placeholder="Mot de passe"
-                                    name="password"
-                                    isPassword
-                                    errors={errors}
-                                    options={{
-                                        required: "Veuillez entrer un mot de passe",
-                                        pattern: {
-                                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
-                                            message:
-                                                "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre",
-                                        },
-                                    }}
-                                />
-                                <TextInput
-                                    register={register}
-                                    placeholder="Confirmer le Mot de passe"
-                                    name="passwordConfirmation"
-                                    isPassword
-                                    errors={errors}
-                                    options={{
-                                        required: "Veuillez confirmer le mot de passe",
-                                    }}
-                                />
-                            </>
-                        )}
                         <DropdownInput
                             register={register}
                             name="role"
@@ -186,7 +156,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                             label="Garde"
                             options={gardesOptions}
                         />
-                        <Button type="submit" className="btn-primary" text="Ajouter" disabled={isAuthProviderLoading} />
+                        <Button type="submit" className="btn-primary" text="Ajouter" disabled={createUserMutation.isPending} />
                         <Button
                             text={"Annuler"}
                             className="ml-2 btn"

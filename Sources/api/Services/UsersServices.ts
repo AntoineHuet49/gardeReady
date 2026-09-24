@@ -4,7 +4,6 @@ import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
 import { UpdateUserDTO } from "~~/Types/DTO/UpdateUserDto";
 import { OperationResult } from "~~/Helpers/OperationResult";
 import { TUser } from "~~/Types/User";
-import bcrypt from "bcrypt";
 
 export class UsersServices {
     public static async getAllUsers(requestingUserRole?: string) {
@@ -27,12 +26,8 @@ export class UsersServices {
                 return OperationResult.fail("Cet email est déjà utilisé");
             }
 
-            // Crypter le mot de passe s'il est fourni (compte local ; absent pour un compte Microsoft)
-            const userToCreate = userData.password
-                ? { ...userData, password: await bcrypt.hash(userData.password, 12) }
-                : userData;
-
-            const newUser = await UsersRepository.createUser(userToCreate);
+            // Créé sans mot de passe : l'utilisateur le définit via le lien d'invitation (ou se connecte via Microsoft)
+            const newUser = await UsersRepository.createUser(userData);
             return OperationResult.ok(newUser, "Utilisateur créé avec succès");
 
         } catch (error) {

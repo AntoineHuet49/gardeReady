@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoginValues } from "../Types/formValues";
-import { login } from "../App/utils/Api/Auth";
+import { login, setPassword } from "../App/utils/Api/Auth";
 import { updateUserRole, updateUser, updateUserGarde, deleteUser, UpdateUserData } from "../App/utils/Api/Users";
 import { notify } from "../App/utils/notify";
 
@@ -11,6 +11,16 @@ export const useAuthMutations = () => {
         mutationFn: (data: LoginValues) => login(data.email, data.password),
         onError: () => {
             notify("Email ou mot de passe incorrect", "error");
+        }
+    });
+
+    const setPasswordMutation = useMutation({
+        mutationFn: ({ token, password }: { token: string; password: string }) => setPassword(token, password),
+        onSuccess: (response) => {
+            notify(response.data.message, "success");
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            notify(error.response?.data?.message || "Erreur lors de la définition du mot de passe", "error");
         }
     });
 
@@ -60,5 +70,5 @@ export const useAuthMutations = () => {
         }
     });
 
-    return { loginMutation, updateRoleMutation, updateUserMutation, updateGardeMutation, deleteUserMutation };
+    return { loginMutation, setPasswordMutation, updateRoleMutation, updateUserMutation, updateGardeMutation, deleteUserMutation };
 };
