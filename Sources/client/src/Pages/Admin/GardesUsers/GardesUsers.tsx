@@ -46,7 +46,7 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
         event.preventDefault();
         setIsDragOver(false);
         const userId = Number(event.dataTransfer.getData("text/plain"));
-        if (!userId) return;
+        if (!userId || unassignedUsers.some((u) => u.id === userId)) return;
         updateGardeMutation.mutate({ userId, gardeId: null });
     };
 

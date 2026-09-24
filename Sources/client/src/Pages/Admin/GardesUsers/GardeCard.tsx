@@ -69,7 +69,7 @@ function GardeCard({ garde, users }: GardeCardProps) {
         event.preventDefault();
         setIsDragOver(false);
         const userId = Number(event.dataTransfer.getData("text/plain"));
-        if (!userId) return;
+        if (!userId || users.some((u) => u.id === userId)) return;
         updateGardeMutation.mutate({ userId, gardeId: garde.id });
     };
 
