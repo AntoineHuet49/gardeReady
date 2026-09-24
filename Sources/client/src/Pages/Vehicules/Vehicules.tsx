@@ -20,10 +20,14 @@ function Vehicules({
 }: VehiculesProps) {
     return (
         <div className="container flex flex-col items-center p-4">
-            <h1 className="text-6xl m-10">Véhicules</h1>
             {isLoading ? <Loader /> : undefined}
             {!error ? (
                 <div className="flex flex-wrap justify-center w-full p-6">
+                    {!isLoading && vehicules.length === 0 && (
+                        <p className="text-center text-base-content/70 py-8">
+                            Aucun véhicule n'est configuré pour le moment.
+                        </p>
+                    )}
                     {vehicules.map((vehicule) => (
                         <Card
                             key={vehicule.id}

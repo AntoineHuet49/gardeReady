@@ -38,7 +38,7 @@ const Collapse = ({
         <div
             className={`collapse collapse-arrow ${getBackgroundClass(level)} ${getBorderClass(level)} mb-2`}
         >
-            <input type="checkbox" defaultChecked={defaultOpen} />
+            <input type="checkbox" defaultChecked={defaultOpen} aria-label={title} />
             <div className={`collapse-title ${getTitleClass(level)}`}>
                 {title}
                 {level > 5 && (

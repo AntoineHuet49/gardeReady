@@ -6,6 +6,7 @@ import * as path from 'path';
 import asyncHandler from "express-async-handler";
 import { HttpCode } from "~~/Helpers/HttpCode";
 import { CreateVehiculeDto } from "~~/Types/DTO/CreateVehiculeDto";
+import { verificationDTO } from "~~/Types/DTO/VerificationDto";
 import { createLogger } from "~~/Utils/Logger";
 
 const logger = createLogger("VehiculesController");
@@ -64,6 +65,13 @@ export default class VehiculesController extends BaseController {
         const id = parseInt(req.params.id);
         const body = req.body;
         const userPayload: TUserPayload = BaseController.getUserPayload(req);
+
+        // Chaque élément doit avoir un statut explicite (pas de statut vide / "non vérifié")
+        const verifications: verificationDTO[] = Object.values(body ?? {}).filter(Boolean) as verificationDTO[];
+        if (verifications.some((v) => v.status !== "OK" && v.status !== "KO")) {
+            res.status(HttpCode.BadRequest).send("Chaque élément doit avoir un statut OK ou KO");
+            return;
+        }
         
         // Générer un nom de fichier unique pour éviter les conflits
         const timestamp = Date.now();

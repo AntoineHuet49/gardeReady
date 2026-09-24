@@ -1,3 +1,5 @@
+import { useState } from "react";
+import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 import Loader from "../../../Components/Loader/Loader";
 import { Garde } from "../../../Types/Garde";
 import { User } from "../../../Types/User";
@@ -19,19 +21,22 @@ type GardesUsersProps = {
 function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersProps) {
     const { user: currentUser } = useUser();
     const { deleteUserMutation } = useAuthMutations();
+    const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
 
     // Récupérer les utilisateurs non assignés à une garde
     const unassignedUsers = allUsers.filter(user => !user.garde_id);
 
     const handleDeleteUser = (user: User) => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`)) {
-            deleteUserMutation.mutate(user.id);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`,
+            onConfirm: () => deleteUserMutation.mutate(user.id),
+        });
     };
 
     return (
         <div className="container mx-auto p-6">
             {isLoading && <Loader />}
+            <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
             
             {/* Boutons pour ajouter une garde et un utilisateur */}
             <div className="flex justify-end gap-2 mb-4">
@@ -51,6 +56,12 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
                         />
                     ))}
                 </div>
+            )}
+
+            {!isLoading && gardes?.length === 0 && (
+                <p className="text-center text-base-content/70 py-8">
+                    Aucune garde n'a été créée pour le moment.
+                </p>
             )}
 
             {/* Card pour les utilisateurs non assignés */}

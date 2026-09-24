@@ -30,7 +30,7 @@ const SectionVerification = ({
                     {section.elements!.map(
                         (element: Element, index: number) => {
                             const currentStatus =
-                                watch(`${element.id}.status`) || "KO";
+                                watch(`${element.id}.status`);
                             const isLastElement =
                                 index === section.elements!.length - 1;
 

@@ -116,6 +116,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                             register={register}
                             placeholder="E-mail"
                             name="email"
+                            type="email"
                             errors={errors}
                             options={{
                                 required: "Veuillez entrer un e-mail",
@@ -176,11 +177,13 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                         <DropdownInput
                             register={register}
                             name="role"
+                            label="Rôle"
                             options={{ User: "user", Admin: "admin" }}
                         />
                         <DropdownInput
                             register={register}
                             name="garde_id"
+                            label="Garde"
                             options={gardesOptions}
                         />
                         <Button type="submit" className="btn-primary" text="Ajouter" disabled={isAuthProviderLoading} />

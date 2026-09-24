@@ -7,7 +7,7 @@ export type LoginValues = {
 
 export type VerificationValues = {
     elementId: number;
-    status: string;
+    status: "OK" | "KO";
     comment?: string;
 };
 

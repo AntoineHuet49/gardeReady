@@ -5,6 +5,7 @@ import { useGardeMutations } from "../../../hooks/useGardeMutations";
 import { useAuthMutations } from "../../../hooks/useAuthMutations";
 import Button from "../../../Components/Button/button";
 import { useState, useEffect } from "react";
+import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 
 type GardeCardProps = {
     garde: Garde;
@@ -16,6 +17,7 @@ function GardeCard({ garde, users }: GardeCardProps) {
     const { user: currentUser, isSuperAdmin } = useUser();
     const { deleteGarde, updateResponsable } = useGardeMutations();
     const { updateRoleMutation, deleteUserMutation } = useAuthMutations();
+    const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [openDropdownUserId, setOpenDropdownUserId] = useState<number | null>(null);
 
     // Filtrer les utilisateurs : les admins normaux ne voient pas les superAdmin
@@ -31,9 +33,10 @@ function GardeCard({ garde, users }: GardeCardProps) {
     const responsable = garde.responsableUser;
 
     const handleDelete = () => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la Garde ${garde.numero} ? Cette action est irréversible.`)) {
-            deleteGarde.mutate(garde.id);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer la Garde ${garde.numero} ? Cette action est irréversible.`,
+            onConfirm: () => deleteGarde.mutate(garde.id),
+        });
     };
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -47,9 +50,10 @@ function GardeCard({ garde, users }: GardeCardProps) {
     };
 
     const handleDeleteUser = (user: User) => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`)) {
-            deleteUserMutation.mutate(user.id);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`,
+            onConfirm: () => deleteUserMutation.mutate(user.id),
+        });
     };
 
     const toggleDropdown = (userId: number) => {
@@ -78,6 +82,7 @@ function GardeCard({ garde, users }: GardeCardProps) {
             className="card bg-base-100 border border-base-content/10 shadow-sm"
             style={{ borderLeftWidth: '4px', borderLeftColor: garde.color }}
         >
+            <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
             <div className="card-body">
                 {/* Header avec titre et bouton de suppression */}
                 <div className="flex justify-between items-center">
@@ -95,8 +100,9 @@ function GardeCard({ garde, users }: GardeCardProps) {
 
                 {/* Responsable */}
                 <div className="mt-2">
-                    <label className="font-semibold block mb-1">Responsable :</label>
+                    <label htmlFor={`responsable-${garde.id}`} className="font-semibold block mb-1">Responsable :</label>
                     <select
+                        id={`responsable-${garde.id}`}
                         value={responsable?.id || ""}
                         onChange={handleResponsableChange}
                         disabled={updateResponsable.isPending || filteredUsers.length === 0}

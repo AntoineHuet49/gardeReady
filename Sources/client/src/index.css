@@ -9,3 +9,8 @@ body {
 h1 {
     font-family: 'Permanent Marker',Arial, Helvetica, sans-serif;
 }
+
+/* daisyUI affiche les placeholders à 50% d'opacité (ratio 3.4:1) : 70% passe le seuil WCAG AA */
+::placeholder {
+    color: color-mix(in oklab, currentColor 70%, transparent);
+}

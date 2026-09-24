@@ -10,19 +10,18 @@ function RadioInput({ register, name }: RadioInputProps) {
     return (
         <div className="join justify-end">
             <input
-                className="join-item btn checked:btn-success"
+                className="join-item btn min-h-11 min-w-16 checked:btn-success"
                 type="radio"
                 aria-label="OK"
-                {...register(name)}
+                {...register(name, { required: true })}
                 value="OK"
                 />
             <input
-                className="join-item btn checked:btn-error"
+                className="join-item btn min-h-11 min-w-16 checked:btn-error"
                 type="radio"
                 aria-label="KO"
-                {...register(name)}
+                {...register(name, { required: true })}
                 value="KO"
-                defaultChecked
                 />
         </div>
     );

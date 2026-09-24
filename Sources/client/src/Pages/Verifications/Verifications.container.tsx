@@ -3,8 +3,6 @@ import Details from "./Verifications";
 import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { VerificationValues } from "../../Types/formValues";
-import { useMemo } from "react";
-import { Element } from "../../Types/Element";
 import { getVehiculeById } from "../../App/utils/Api/Vehicules";
 import { sendVerifications } from "../../App/utils/Api/Verifications";
 import { notify } from "../../App/utils/notify";
@@ -12,7 +10,6 @@ import { routePath } from "../../App/Routes/routeConstants";
 
 function VerificationsContainer() {
     const navigate = useNavigate();
-    let elements: Element[] = [];
     const { id } = useParams();
     const { data, isLoading, error } = useQuery({
         queryKey: ["details"],
@@ -23,22 +20,9 @@ function VerificationsContainer() {
             sendVerifications(id!, data),
     });
 
-    useMemo(() => {
-        if (data?.data.elements !== undefined) {
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            elements = data?.data.elements;
-        }
-    }, [data?.data.elements]);
-
-    const defaultValues: VerificationValues[] = elements.map((element) => ({
-        elementId: element.id,
-        status: "KO",
-        comment: "",
-    }));
-
+    // Aucun statut par défaut : chaque élément doit être explicitement coché OK/KO
     const { register, handleSubmit, watch } = useForm<VerificationValues[]>({
         shouldUnregister: true,
-        defaultValues: defaultValues,
     });
 
     const onSubmit = async (data: VerificationValues[]) => {
@@ -59,6 +43,7 @@ function VerificationsContainer() {
             register={register}
             handleSubmit={handleSubmit}
             onSubmit={onSubmit}
+            isPending={verification.isPending}
             watch={watch}
         />
     );

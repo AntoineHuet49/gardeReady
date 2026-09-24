@@ -6,6 +6,7 @@ import { Vehicules } from "../../Pages/Vehicules";
 import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
 import AdminRoutes from "./adminRoutes";
+import AppLayout from "../../Components/Layout/AppLayout";
 
 function Router() {
     const routes: RouteObject[] = [
@@ -17,7 +18,9 @@ function Router() {
             path: routePath.vehicules,
             element: (
                 <PrivateRoute>
-                    <Vehicules />
+                    <AppLayout title="Véhicules">
+                        <Vehicules />
+                    </AppLayout>
                 </PrivateRoute>
             ),
         },
@@ -25,7 +28,9 @@ function Router() {
             path: routePath.details,
             element: (
                 <PrivateRoute>
-                    <Verifications />
+                    <AppLayout title="Vérifications">
+                        <Verifications />
+                    </AppLayout>
                 </PrivateRoute>
             ),
         },
@@ -34,7 +39,9 @@ function Router() {
             element: (
                 <PrivateRoute>
                     <AdminRoutes>
-                        <Admin />   
+                        <AppLayout title="Tableau de bord">
+                            <Admin />
+                        </AppLayout>
                     </AdminRoutes>
                 </PrivateRoute>
             ),

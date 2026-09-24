@@ -29,7 +29,7 @@ function Home({
 }: HomeProps) {
     return (
         <div className="container flex flex-col items-center justify-center h-screen">
-            <h1 id="homeTitle" className="text-6xl mb-20">
+            <h1 id="homeTitle" className="text-4xl sm:text-5xl md:text-6xl mb-20">
                 Véri'Feu
             </h1>
             <Button
@@ -68,7 +68,8 @@ function Home({
                 >
                     <h2 className="text-3xl mb-4">Connexion</h2>
                     <TextInput
-                        placeholder="email"
+                        placeholder="E-mail"
+                        type="email"
                         icon={MailIcon}
                         register={register}
                         name="email"

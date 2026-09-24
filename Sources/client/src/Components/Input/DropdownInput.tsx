@@ -4,9 +4,10 @@ type DropdownInputProps<T extends FieldValues> = {
     options: Record<string, string | number>;
     register: UseFormRegister<T>;
     name: Path<T>;
+    label: string;
 };
 
-function DropdownInput<T extends FieldValues>({ options, register, name }: DropdownInputProps<T>) {
+function DropdownInput<T extends FieldValues>({ options, register, name, label }: DropdownInputProps<T>) {
     const optionsArray = Object.entries(options);
 
     return (
@@ -16,6 +17,7 @@ function DropdownInput<T extends FieldValues>({ options, register, name }: Dropd
             defaultValue={optionsArray[0][0]}
             {...register(name)}
             className="select w-full"
+            aria-label={label}
             >
                 {optionsArray.map((option, index) => (
                     <option key={index} value={option[1]}>

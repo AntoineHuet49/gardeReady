@@ -9,6 +9,7 @@ import AddElementModal from "../../../Components/Modal/AddElementModal";
 import AddSectionModal from "../../../Components/Modal/AddSectionModal";
 import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
+import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
 import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
@@ -23,6 +24,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; name: string } | null>(null);
     const [sectionModalOpen, setSectionModalOpen] = useState(false);
+    const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [vehiculeModalOpen, setVehiculeModalOpen] = useState(false);
     const [selectedContext, setSelectedContext] = useState<{ 
         vehiculeId?: number; 
@@ -63,21 +65,24 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     };
 
     const handleDeleteElement = (elementId: number, elementName: string) => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'équipement "${elementName}" ?`)) {
-            deleteElementMutation.mutate(elementId);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer l'équipement "${elementName}" ?`,
+            onConfirm: () => deleteElementMutation.mutate(elementId),
+        });
     };
 
     const handleDeleteSection = (sectionId: number, sectionName: string) => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la section "${sectionName}" et tout son contenu ?`)) {
-            deleteSectionMutation.mutate(sectionId);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer la section "${sectionName}" et tout son contenu ?`,
+            onConfirm: () => deleteSectionMutation.mutate(sectionId),
+        });
     };
 
     const handleDeleteVehicule = (vehiculeId: number, vehiculeName: string) => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer le véhicule "${vehiculeName}" et tout son contenu ?`)) {
-            deleteVehiculeMutation.mutate(vehiculeId);
-        }
+        setPendingConfirm({
+            message: `Êtes-vous sûr de vouloir supprimer le véhicule "${vehiculeName}" et tout son contenu ?`,
+            onConfirm: () => deleteVehiculeMutation.mutate(vehiculeId),
+        });
     };
 
     const renderSection = (section: Section, level: number = 0): JSX.Element => {
@@ -130,7 +135,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             <Button
                                                 text={deleteElementMutation.isPending ? "..." : "✕"}
                                                 onClick={() => handleDeleteElement(element.id, element.name)}
-                                                className="btn-xs opacity-0 group-hover:opacity-100 bg-red-100 text-red-500 border-red-200 hover:bg-red-200 hover:text-red-700 transition-all duration-200"
+                                                className="btn-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 bg-red-100 text-red-500 border-red-200 hover:bg-red-200 hover:text-red-700 transition-all duration-200"
                                                 title="Supprimer cet équipement"
                                                 disabled={deleteElementMutation.isPending}
                                             />
@@ -265,6 +270,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     contextName={selectedContext.contextName}
                 />
             )}
+
+            <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
 
             {/* Modal d'ajout de véhicule */}
             <AddVehiculeModal

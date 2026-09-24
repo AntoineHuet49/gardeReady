@@ -12,6 +12,13 @@ import { VerificationValues } from "../../Types/formValues";
 import BackButton from "../../Components/Button/backButton";
 import SectionVerification from "../../Components/Section/SectionVerification";
 
+const countElements = (sections: Section[] = []): number =>
+    sections.reduce(
+        (total, section) =>
+            total + (section.elements?.length ?? 0) + countElements(section.subSections),
+        0
+    );
+
 type DetailsProps = {
     vehicule?: Vehicule;
     isLoading: boolean;
@@ -19,6 +26,7 @@ type DetailsProps = {
     register: UseFormRegister<VerificationValues[]>;
     handleSubmit: UseFormHandleSubmit<VerificationValues[]>;
     onSubmit: (data: VerificationValues[]) => void;
+    isPending: boolean;
     watch: UseFormWatch<VerificationValues[]>;
 };
 
@@ -29,11 +37,15 @@ function Verifications({
     register,
     handleSubmit,
     onSubmit,
+    isPending,
     watch,
 }: DetailsProps) {
+    const total = countElements(vehicule?.sections);
+    const checked = Object.values(watch() ?? {}).filter((value) => value?.status).length;
+    const remaining = total - checked;
+
     return (
         <div className="container flex flex-col items-center p-4">
-            <h1 className="text-5xl m-10">Verifications</h1>
             {isLoading ? <Loader /> : undefined}
             {!error && !isLoading ? (
                 <div className="flex flex-col items-center justify-center w-full lg:w-3/4 xl:w-1/2 p-6">
@@ -49,8 +61,8 @@ function Verifications({
                         className="flex flex-col items-start w-full space-y-4"
                     >
                         {/* Affichage des sections hiérarchiques si disponibles */}
-                        {vehicule?.sections && vehicule.sections.length > 0 ? (
-                            vehicule.sections.map((section: Section) => (
+                        {total > 0 ? (
+                            vehicule!.sections!.map((section: Section) => (
                                 <SectionVerification
                                     key={section.id}
                                     section={section}
@@ -64,7 +76,27 @@ function Verifications({
                                 Aucun élément de vérification disponible pour ce véhicule.
                             </div>
                         )}
-                        <Button className="self-end px-10" text="Valider" />
+                        {total > 0 && (
+                            <div className="sticky bottom-0 w-full flex items-center gap-3 py-3 bg-base-100 border-t border-base-300">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm">
+                                        {checked}/{total} éléments vérifiés
+                                    </p>
+                                    <progress
+                                        className="progress progress-success w-full"
+                                        value={checked}
+                                        max={total}
+                                        aria-label="Progression de la vérification"
+                                    />
+                                </div>
+                                <Button
+                                    className="px-10"
+                                    text={isPending ? "Envoi..." : "Valider"}
+                                    disabled={remaining > 0 || isPending}
+                                    title={remaining > 0 ? `${remaining} élément(s) restant(s) à vérifier` : undefined}
+                                />
+                            </div>
+                        )}
                     </form>
                 </div>
             ) : undefined}

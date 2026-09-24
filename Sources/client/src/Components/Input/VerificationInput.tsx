@@ -5,7 +5,7 @@ import { VerificationValues } from "../../Types/formValues";
 
 type VerificationInputProps = {
     element: Element;
-    currentStatus: string;
+    currentStatus?: VerificationValues["status"];
     register: UseFormRegister<VerificationValues[]>;
 };
 
@@ -13,8 +13,8 @@ const VerificationInput = ({ element, currentStatus, register }: VerificationInp
     return (
         <div key={element.id} className="w-full">
             <div className="">
-                <div className="flex justify-between w-full mb-4">
-                    <h3 className="text-xl">{element.name}</h3>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full mb-4">
+                    <h3 className="text-xl break-words min-w-0">{element.name}</h3>
                     <input
                         type="hidden"
                         {...register(`${element.id}.elementId`)}
@@ -29,6 +29,7 @@ const VerificationInput = ({ element, currentStatus, register }: VerificationInp
                     <textarea
                         className="textarea textarea-bordered textarea-md w-full"
                         placeholder="Commentaire"
+                        aria-label={`Commentaire pour ${element.name}`}
                         style={{ resize: "none" }}
                         {...register(`${element.id}.comment`)}
                         required
