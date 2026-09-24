@@ -1,0 +1,5 @@
+# Fichiers gitignorés copiés dans chaque nouveau worktree (sessions Claude parallèles)
+Sources/api/.env
+Sources/api/.env.local
+Sources/client/.env
+Sources/client/.env.local

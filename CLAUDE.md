@@ -102,7 +102,11 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 - Frontend env vars must be prefixed `VITE_` to be exposed to client code (`import.meta.env.VITE_*`).
 - Do not create Markdown files documenting changes unless explicitly requested; if requested, place them under `docs/changes/`.
 
-## Claude Code workflow (temporary, until told otherwise)
-- `main` is currently the production branch, and the user works directly on it because the app has no real users yet — make code changes directly on `main`, do not create a branch or worktree for them.
-- Commit and push directly to `main` yourself after making changes (write a clear commit message describing what changed and why). No PR — there is no branch to open one from at this stage.
-- Once the app has real users, the user will introduce a `dev` branch wired to a staging/recette environment, and `main` will become push-only after review — do not assume that workflow is in place until the user says so.
+## Claude Code workflow — worktrees + PRs
+The user runs several Claude sessions in parallel, so each session works in isolation:
+- Never commit directly on `main`. Work in a git worktree under `.claude/worktrees/` on its own branch (the desktop app / `claude --worktree` create one; otherwise use `EnterWorktree`). Branch names: `feat/...`, `fix/...`, `chore/...`.
+- A fresh worktree has no `node_modules`: run `npm install` in `Sources/api` and/or `Sources/client` before building/linting. `.env` files are copied in automatically via `.worktreeinclude`.
+- Dev servers use fixed ports (API 3000, Vite 5173, Postgres 5432): only one session should run the stack at a time; check `lsof -ti:3000,5173` before starting one. The Postgres container is shared by all worktrees.
+- When done: commit (clear message, what and why), push the branch, open a PR against `main` with `gh pr create`, and give the user the PR link. Don't merge it yourself unless asked.
+- Before opening the PR, bring the branch up to date with `main` and resolve conflicts — other sessions may have merged in the meantime.
+- `main` is the production branch (Railway deploys it); a `dev`/staging branch may come later — don't assume it exists until the user says so.
