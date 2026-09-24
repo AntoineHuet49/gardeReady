@@ -123,9 +123,10 @@ export class SectionsRepository {
         vehicule_id: number;
         parent_section_id: number;
     }>) {
-        return await Sections.update(data, {
-            where: { id: sectionId }
-        });
+        // Mise à jour via l'instance : le validateur rootOrSubSection doit voir la ligne complète
+        // (un Sections.update statique le fait échouer sur vehicule_id/parent_section_id undefined)
+        const section = await Sections.findByPk(sectionId);
+        return section ? await section.update(data) : null;
     }
 
     // Supprimer une section (cascade automatique pour les sous-sections et éléments)
