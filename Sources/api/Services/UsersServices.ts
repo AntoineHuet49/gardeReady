@@ -1,4 +1,5 @@
 import { UsersRepository } from "~~/Repositories/UsersRepository";
+import { GardesRepository } from "~~/Repositories/GardeRepository";
 import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
 import { UpdateUserDTO } from "~~/Types/DTO/UpdateUserDto";
 import { OperationResult } from "~~/Helpers/OperationResult";
@@ -91,6 +92,47 @@ export class UsersServices {
         } catch (error) {
             console.error("Error updating user:", error);
             return OperationResult.fail("Erreur lors de la mise à jour de l'utilisateur");
+        }
+    }
+
+    public static async updateUserGarde(userId: number, gardeId: number | null, requestingUserRole?: string): Promise<OperationResult<TUser>> {
+        try {
+            const userToUpdate = await UsersRepository.getOneUserById(userId);
+            if (!userToUpdate) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            // Seul un superAdmin peut changer la garde d'un compte superAdmin
+            if (userToUpdate.role === "superAdmin" && requestingUserRole !== "superAdmin") {
+                return OperationResult.fail("Seul un superAdmin peut modifier un compte superAdmin");
+            }
+
+            if (gardeId !== null) {
+                const garde = await GardesRepository.getOneById(gardeId);
+                if (!garde) {
+                    return OperationResult.fail("Garde non trouvée");
+                }
+            }
+
+            const updatedUser = await UsersRepository.updateUserGarde(userId, gardeId);
+            if (!updatedUser) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            // Si l'utilisateur quitte une garde dont il était responsable, on désigne "aucun responsable"
+            // plutôt que de laisser une référence à quelqu'un qui n'est plus membre de cette garde
+            const previousGardeId = userToUpdate.garde_id;
+            if (previousGardeId && previousGardeId !== gardeId) {
+                const previousGarde = await GardesRepository.getOneById(previousGardeId);
+                if (previousGarde?.responsable === userId) {
+                    await GardesRepository.UpdateResponsable(previousGardeId, null);
+                }
+            }
+
+            return OperationResult.ok(updatedUser, "Garde mise à jour avec succès");
+        } catch (error) {
+            console.error("Error updating user garde:", error);
+            return OperationResult.fail("Erreur lors du changement de garde");
         }
     }
 

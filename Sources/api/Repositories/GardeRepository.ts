@@ -40,7 +40,7 @@ export class GardesRepository {
 
     public static async getResponsable(id: number) {
         const garde = await Gardes.findByPk(id);
-        const responsable  = await Users.findByPk(garde?.dataValues.responsable);
+        const responsable  = await Users.findByPk(garde?.dataValues.responsable ?? undefined);
         return responsable?.dataValues as TUser;
     }
 
@@ -49,7 +49,8 @@ export class GardesRepository {
         if (!garde) {
             return null;
         }
-        await garde.update({ responsable: responsableId === null ? undefined : responsableId });
+        garde.responsable = responsableId;
+        await garde.save();
         // Recharger avec les associations
         return await Gardes.findByPk(id, {
             include: [{

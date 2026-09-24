@@ -72,6 +72,16 @@ export class UsersRepository {
         return user.dataValues;
     }
 
+    public static async updateUserGarde(userId: number, gardeId: number | null): Promise<TUser | null> {
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            return null;
+        }
+        user.garde_id = gardeId;
+        await user.save();
+        return user.dataValues;
+    }
+
     public static async updateUserRole(userId: number, newRole: string): Promise<TUser | null> {
         const user = await Users.findByPk(userId);
         if (!user) {

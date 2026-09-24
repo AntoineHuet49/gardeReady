@@ -18,7 +18,7 @@ export class Gardes extends Model<
   declare color: string;
 
   // Association : une garde peut avoir un responsable (optionnel)
-  declare responsable: CreationOptional<ForeignKey<Users['id']>>;
+  declare responsable: CreationOptional<ForeignKey<Users['id']> | null>;
 
   // Association inverse : une garde a plusieurs utilisateurs
   declare users?: Users[];

@@ -33,6 +33,10 @@ export async function updateUserRole(userId: number, role: string) {
     return await instance.patch(`${apiUrl.users}/${userId}/role`, { role });
 }
 
+export async function updateUserGarde(userId: number, gardeId: number | null) {
+    return await instance.patch(`${apiUrl.users}/${userId}/garde`, { garde_id: gardeId });
+}
+
 export async function deleteUser(userId: number) {
     return await instance.delete(`${apiUrl.users}/${userId}`);
 }

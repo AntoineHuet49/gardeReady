@@ -21,8 +21,9 @@ type GardesUsersProps = {
 
 function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersProps) {
     const { user: currentUser } = useUser();
-    const { deleteUserMutation } = useAuthMutations();
+    const { deleteUserMutation, updateGardeMutation } = useAuthMutations();
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     // Récupérer les utilisateurs non assignés à une garde
     const unassignedUsers = allUsers.filter(user => !user.garde_id);
@@ -32,6 +33,21 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
             message: `Êtes-vous sûr de vouloir supprimer ${user.firstname} ${user.lastname} ? Cette action est irréversible.`,
             onConfirm: () => deleteUserMutation.mutate(user.id),
         });
+    };
+
+    const handleDragOver = (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = () => setIsDragOver(false);
+
+    const handleDrop = (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragOver(false);
+        const userId = Number(event.dataTransfer.getData("text/plain"));
+        if (!userId) return;
+        updateGardeMutation.mutate({ userId, gardeId: null });
     };
 
     return (
@@ -65,36 +81,49 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
                 </p>
             )}
 
-            {/* Card pour les utilisateurs non assignés */}
-            {unassignedUsers.length > 0 && (
+            {/* Card pour les utilisateurs non assignés (glisser un membre ici pour le désassigner) */}
+            {!isLoading && (
                 <div className="mt-4">
-                    <div className="card bg-base-100 border border-base-content/10 shadow-sm">
+                    <div
+                        className={`card bg-base-100 border shadow-sm transition-colors ${isDragOver ? 'border-primary border-2' : 'border-base-content/10'}`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
                         <div className="card-body">
                             <h3 className="card-title text-warning">
                                 ⚠️ Utilisateurs non assignés à une garde
                             </h3>
-                            <ul className="space-y-2 mt-2">
-                                {unassignedUsers.map((user) => (
-                                    <li
-                                        key={user.id}
-                                        className="text-sm flex items-center justify-between gap-2"
-                                    >
-                                        <span>• {user.firstname} {user.lastname}</span>
-                                        <div className="flex items-center gap-2">
-                                            <EditUserModal user={user} />
-                                            {currentUser?.id !== user.id && (
-                                                <Button
-                                                    text={deleteUserMutation.isPending ? "..." : "✕"}
-                                                    onClick={() => handleDeleteUser(user)}
-                                                    className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
-                                                    title="Supprimer cet utilisateur"
-                                                    disabled={deleteUserMutation.isPending}
-                                                />
-                                            )}
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                            {unassignedUsers.length > 0 ? (
+                                <ul className="space-y-2 mt-2">
+                                    {unassignedUsers.map((user) => (
+                                        <li
+                                            key={user.id}
+                                            draggable
+                                            onDragStart={(e) => e.dataTransfer.setData("text/plain", String(user.id))}
+                                            className="text-sm flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing"
+                                        >
+                                            <span>• {user.firstname} {user.lastname}</span>
+                                            <div className="flex items-center gap-2">
+                                                <EditUserModal user={user} />
+                                                {currentUser?.id !== user.id && (
+                                                    <Button
+                                                        text={deleteUserMutation.isPending ? "..." : "✕"}
+                                                        onClick={() => handleDeleteUser(user)}
+                                                        className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                                        title="Supprimer cet utilisateur"
+                                                        disabled={deleteUserMutation.isPending}
+                                                    />
+                                                )}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-base-content/60 italic mt-2">
+                                    Aucun utilisateur non assigné — glissez un membre ici pour le retirer de sa garde.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

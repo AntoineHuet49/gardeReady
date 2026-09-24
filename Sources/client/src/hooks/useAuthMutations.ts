@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoginValues } from "../Types/formValues";
 import { login } from "../App/utils/Api/Auth";
-import { updateUserRole, updateUser, deleteUser, UpdateUserData } from "../App/utils/Api/Users";
+import { updateUserRole, updateUser, updateUserGarde, deleteUser, UpdateUserData } from "../App/utils/Api/Users";
 import { notify } from "../App/utils/notify";
 
 export const useAuthMutations = () => {
@@ -36,6 +36,18 @@ export const useAuthMutations = () => {
         }
     });
 
+    const updateGardeMutation = useMutation({
+        mutationFn: ({ userId, gardeId }: { userId: number; gardeId: number | null }) => updateUserGarde(userId, gardeId),
+        onSuccess: () => {
+            notify("Garde mise à jour avec succès", "success");
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["gardes"] });
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            notify(error.response?.data?.message || "Erreur lors du changement de garde", "error");
+        }
+    });
+
     const deleteUserMutation = useMutation({
         mutationFn: (userId: number) => deleteUser(userId),
         onSuccess: () => {
@@ -48,5 +60,5 @@ export const useAuthMutations = () => {
         }
     });
 
-    return { loginMutation, updateRoleMutation, updateUserMutation, deleteUserMutation };
+    return { loginMutation, updateRoleMutation, updateUserMutation, updateGardeMutation, deleteUserMutation };
 };

@@ -126,6 +126,42 @@ export class UsersController {
         }
     }
 
+    public static async updateUserGarde(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.params.id);
+            if (isNaN(userId)) {
+                res.status(400).json({ message: "ID invalide" });
+                return;
+            }
+
+            const { garde_id } = req.body;
+            const gardeId = garde_id === null || garde_id === undefined ? null : Number(garde_id);
+            if (gardeId !== null && isNaN(gardeId)) {
+                res.status(400).json({ message: "garde_id invalide" });
+                return;
+            }
+
+            const requestingUserRole = req.user?.role;
+            const result = await UsersServices.updateUserGarde(userId, gardeId, requestingUserRole);
+
+            if (result.success) {
+                res.status(200).json({
+                    message: result.message,
+                    user: result.data
+                });
+            } else {
+                res.status(400).json({
+                    message: result.message
+                });
+            }
+        } catch (error) {
+            console.error("Error in updateUserGarde controller:", error);
+            res.status(500).json({
+                message: "Erreur interne du serveur"
+            });
+        }
+    }
+
     public static async updateUserRole(req: Request, res: Response): Promise<void> {
         try {
             const userId = parseInt(req.params.id);

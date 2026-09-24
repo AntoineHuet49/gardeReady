@@ -17,9 +17,10 @@ type GardeCardProps = {
 function GardeCard({ garde, users }: GardeCardProps) {
     const { user: currentUser, isSuperAdmin } = useUser();
     const { deleteGarde, updateResponsable } = useGardeMutations();
-    const { updateRoleMutation, deleteUserMutation } = useAuthMutations();
+    const { updateRoleMutation, updateGardeMutation, deleteUserMutation } = useAuthMutations();
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [openDropdownUserId, setOpenDropdownUserId] = useState<number | null>(null);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     // Filtrer les utilisateurs : les admins normaux ne voient pas les superAdmin
     const filteredUsers = users.filter(user => {
@@ -57,6 +58,21 @@ function GardeCard({ garde, users }: GardeCardProps) {
         });
     };
 
+    const handleDragOver = (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = () => setIsDragOver(false);
+
+    const handleDrop = (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragOver(false);
+        const userId = Number(event.dataTransfer.getData("text/plain"));
+        if (!userId) return;
+        updateGardeMutation.mutate({ userId, gardeId: garde.id });
+    };
+
     const toggleDropdown = (userId: number) => {
         setOpenDropdownUserId(openDropdownUserId === userId ? null : userId);
     };
@@ -79,9 +95,12 @@ function GardeCard({ garde, users }: GardeCardProps) {
     }, [openDropdownUserId]);
 
     return (
-        <div 
-            className="card bg-base-100 border border-base-content/10 shadow-sm"
-            style={{ borderLeftWidth: '4px', borderLeftColor: garde.color }}
+        <div
+            className={`card bg-base-100 border shadow-sm transition-colors ${isDragOver ? 'border-primary border-2' : 'border-base-content/10'}`}
+            style={{ borderLeftWidth: isDragOver ? undefined : '4px', borderLeftColor: isDragOver ? undefined : garde.color }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
         >
             <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
             <div className="card-body">
@@ -139,9 +158,11 @@ function GardeCard({ garde, users }: GardeCardProps) {
                                 const isDropdownOpen = openDropdownUserId === user.id;
                                 
                                 return (
-                                    <li 
+                                    <li
                                         key={user.id}
-                                        className="flex flex-col gap-2 text-sm border border-base-content/10 rounded-lg p-3 hover:bg-base-200/50 transition-colors"
+                                        draggable
+                                        onDragStart={(e) => e.dataTransfer.setData("text/plain", String(user.id))}
+                                        className="flex flex-col gap-2 text-sm border border-base-content/10 rounded-lg p-3 hover:bg-base-200/50 transition-colors cursor-grab active:cursor-grabbing"
                                     >
                                         <div className="flex items-center justify-between gap-2 flex-wrap">
                                             <div className="flex items-center gap-2">
