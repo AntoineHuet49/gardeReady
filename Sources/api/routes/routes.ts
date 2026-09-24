@@ -47,7 +47,6 @@ router.get('/users', verifyToken, requireAdmin, UsersController.getAllUsers);
 router.post('/users', verifyToken, requireAdmin, UsersController.createUser);
 router.put('/users/:id', verifyToken, requireAdmin, UsersController.updateUser);
 router.patch('/users/:id/role', verifyToken, requireAdmin, UsersController.updateUserRole);
-router.patch('/users/:id/garde', verifyToken, requireAdmin, UsersController.updateUserGarde);
 router.delete('/users/:id', verifyToken, requireAdmin, UsersController.deleteUser);
 
 // Gardes (protégées - authentification requise)
