@@ -1,5 +1,6 @@
 import { UsersRepository } from "~~/Repositories/UsersRepository";
 import { CreateUserDTO } from "~~/Types/DTO/CreateUserDto";
+import { UpdateUserDTO } from "~~/Types/DTO/UpdateUserDto";
 import { OperationResult } from "~~/Helpers/OperationResult";
 import { TUser } from "~~/Types/User";
 import bcrypt from "bcrypt";
@@ -61,6 +62,35 @@ export class UsersServices {
         } catch (error) {
             console.error("Error updating user role:", error);
             return OperationResult.fail("Erreur lors de la mise à jour du rôle");
+        }
+    }
+
+    public static async updateUser(userId: number, data: UpdateUserDTO, requestingUserRole?: string): Promise<OperationResult<TUser>> {
+        try {
+            const userToUpdate = await UsersRepository.getOneUserById(userId);
+            if (!userToUpdate) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            // Seul un superAdmin peut modifier un compte superAdmin
+            if (userToUpdate.role === "superAdmin" && requestingUserRole !== "superAdmin") {
+                return OperationResult.fail("Seul un superAdmin peut modifier un compte superAdmin");
+            }
+
+            const emailExists = await UsersRepository.checkEmailExists(data.email, userId);
+            if (emailExists) {
+                return OperationResult.fail("Cet email est déjà utilisé");
+            }
+
+            const updatedUser = await UsersRepository.updateUser(userId, data);
+            if (!updatedUser) {
+                return OperationResult.fail("Utilisateur non trouvé");
+            }
+
+            return OperationResult.ok(updatedUser, "Utilisateur mis à jour avec succès");
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return OperationResult.fail("Erreur lors de la mise à jour de l'utilisateur");
         }
     }
 

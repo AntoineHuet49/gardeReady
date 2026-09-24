@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UsersServices } from '~~/Services/UsersServices';
 import { CreateUserDTO } from '~~/Types/DTO/CreateUserDto';
+import { UpdateUserDTO } from '~~/Types/DTO/UpdateUserDto';
 import { getAuthProvider } from '~~/Utils/AuthProvider';
 
 export class UsersController {
@@ -73,6 +74,52 @@ export class UsersController {
             }
         } catch (error) {
             console.error("Error in createUser controller:", error);
+            res.status(500).json({
+                message: "Erreur interne du serveur"
+            });
+        }
+    }
+
+    public static async updateUser(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.params.id);
+            if (isNaN(userId)) {
+                res.status(400).json({ message: "ID invalide" });
+                return;
+            }
+
+            const userData: UpdateUserDTO = req.body;
+
+            if (!userData.email || !userData.firstname || !userData.lastname) {
+                res.status(400).json({
+                    message: "Tous les champs sont requis"
+                });
+                return;
+            }
+
+            const emailRegex = /^[\w-.]+@sdis49\.fr$/;
+            if (!emailRegex.test(userData.email)) {
+                res.status(400).json({
+                    message: "L'email doit être du domaine sdis49.fr"
+                });
+                return;
+            }
+
+            const requestingUserRole = req.user?.role;
+            const result = await UsersServices.updateUser(userId, userData, requestingUserRole);
+
+            if (result.success) {
+                res.status(200).json({
+                    message: result.message,
+                    user: result.data
+                });
+            } else {
+                res.status(400).json({
+                    message: result.message
+                });
+            }
+        } catch (error) {
+            console.error("Error in updateUser controller:", error);
             res.status(500).json({
                 message: "Erreur interne du serveur"
             });

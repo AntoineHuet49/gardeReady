@@ -51,9 +51,25 @@ export class UsersRepository {
         return user.dataValues;
     }
 
-    public static async checkEmailExists(email: string): Promise<boolean> {
-        const user = await Users.findOne({ where: { email } });
+    public static async checkEmailExists(email: string, excludeUserId?: number): Promise<boolean> {
+        const user = await Users.findOne({
+            where: excludeUserId
+                ? { email, id: { [Op.ne]: excludeUserId } }
+                : { email },
+        });
         return !!user;
+    }
+
+    public static async updateUser(userId: number, data: { email: string; firstname: string; lastname: string }): Promise<TUser | null> {
+        const user = await Users.findByPk(userId);
+        if (!user) {
+            return null;
+        }
+        user.email = data.email;
+        user.firstname = data.firstname;
+        user.lastname = data.lastname;
+        await user.save();
+        return user.dataValues;
     }
 
     public static async updateUserRole(userId: number, newRole: string): Promise<TUser | null> {

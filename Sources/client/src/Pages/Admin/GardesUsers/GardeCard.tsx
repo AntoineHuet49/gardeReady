@@ -6,6 +6,7 @@ import { useAuthMutations } from "../../../hooks/useAuthMutations";
 import Button from "../../../Components/Button/button";
 import { useState, useEffect } from "react";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
+import EditUserModal from "./EditUserModal/EditUserModal";
 
 type GardeCardProps = {
     garde: Garde;
@@ -201,6 +202,7 @@ function GardeCard({ garde, users }: GardeCardProps) {
                                                             )}
                                                         </ul>
                                                 </div>
+                                                <EditUserModal user={user} />
                                                 {currentUser?.id !== user.id && (
                                                     <Button
                                                         text={deleteUserMutation.isPending ? "..." : "✕"}

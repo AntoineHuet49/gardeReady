@@ -6,6 +6,7 @@ import { User } from "../../../Types/User";
 import GardeCard from "./GardeCard";
 import AddUserModal from "./AddUserModal/AddUserModal";
 import AddGardeModal from "./AddGardeModal/AddGardeModal";
+import EditUserModal from "./EditUserModal/EditUserModal";
 import Button from "../../../Components/Button/button";
 import { useUser } from "../../../App/Provider/UserProvider";
 import { useAuthMutations } from "../../../hooks/useAuthMutations";
@@ -79,15 +80,18 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
                                         className="text-sm flex items-center justify-between gap-2"
                                     >
                                         <span>• {user.firstname} {user.lastname}</span>
-                                        {currentUser?.id !== user.id && (
-                                            <Button
-                                                text={deleteUserMutation.isPending ? "..." : "✕"}
-                                                onClick={() => handleDeleteUser(user)}
-                                                className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
-                                                title="Supprimer cet utilisateur"
-                                                disabled={deleteUserMutation.isPending}
-                                            />
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <EditUserModal user={user} />
+                                            {currentUser?.id !== user.id && (
+                                                <Button
+                                                    text={deleteUserMutation.isPending ? "..." : "✕"}
+                                                    onClick={() => handleDeleteUser(user)}
+                                                    className="btn-xs bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+                                                    title="Supprimer cet utilisateur"
+                                                    disabled={deleteUserMutation.isPending}
+                                                />
+                                            )}
+                                        </div>
                                     </li>
                                 ))}
                             </ul>

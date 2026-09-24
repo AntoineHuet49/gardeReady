@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoginValues } from "../Types/formValues";
 import { login } from "../App/utils/Api/Auth";
-import { updateUserRole, deleteUser } from "../App/utils/Api/Users";
+import { updateUserRole, updateUser, deleteUser, UpdateUserData } from "../App/utils/Api/Users";
 import { notify } from "../App/utils/notify";
 
 export const useAuthMutations = () => {
@@ -25,6 +25,17 @@ export const useAuthMutations = () => {
         }
     });
 
+    const updateUserMutation = useMutation({
+        mutationFn: ({ userId, data }: { userId: number; data: UpdateUserData }) => updateUser(userId, data),
+        onSuccess: () => {
+            notify("Utilisateur mis à jour avec succès", "success");
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
+        onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            notify(error.response?.data?.message || "Erreur lors de la mise à jour de l'utilisateur", "error");
+        }
+    });
+
     const deleteUserMutation = useMutation({
         mutationFn: (userId: number) => deleteUser(userId),
         onSuccess: () => {
@@ -37,5 +48,5 @@ export const useAuthMutations = () => {
         }
     });
 
-    return { loginMutation, updateRoleMutation, deleteUserMutation };
+    return { loginMutation, updateRoleMutation, updateUserMutation, deleteUserMutation };
 };

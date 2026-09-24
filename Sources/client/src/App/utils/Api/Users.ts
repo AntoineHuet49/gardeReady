@@ -15,8 +15,18 @@ export async function getAllUsers() {
     return await instance.get<User[]>(apiUrl.users);
 }
 
+export interface UpdateUserData {
+    email: string;
+    firstname: string;
+    lastname: string;
+}
+
 export async function createUser(userData: CreateUserData) {
     return await instance.post(apiUrl.users, userData);
+}
+
+export async function updateUser(userId: number, userData: UpdateUserData) {
+    return await instance.put(`${apiUrl.users}/${userId}`, userData);
 }
 
 export async function updateUserRole(userId: number, role: string) {
