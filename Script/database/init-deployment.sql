@@ -68,6 +68,7 @@ VALUES ('admin@gardeready.com', '$2b$12$D0VYrObMzX2rXZ8bGG9wqebzhMS4brxMkMDHzmUD
 
 -- Création d'une garde par défaut et assignation de l'admin
 INSERT INTO gardes (numero, color, responsable)
+VALUES (1, 'Bleu', 1);
 
 -- Assignation de l'admin à la garde d'administration
 UPDATE users SET garde_id = 1 WHERE email = 'admin@gardeready.com';
