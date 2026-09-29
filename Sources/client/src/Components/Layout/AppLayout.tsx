@@ -9,7 +9,7 @@ type AppLayoutProps = {
 };
 
 function AppLayout({ title, children }: AppLayoutProps) {
-    const { logout } = useUser();
+    const { user, logout } = useUser();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -21,6 +21,11 @@ function AppLayout({ title, children }: AppLayoutProps) {
         <div className="flex flex-col items-center w-full min-w-0">
             <header className="navbar w-full gap-2 border-b border-base-300 px-4">
                 <span className="flex-1 truncate text-xl font-['Permanent_Marker']">Véri'Feu</span>
+                {user && (
+                    <span className="max-w-[40%] truncate text-sm opacity-70">
+                        {user.firstname} {user.lastname}
+                    </span>
+                )}
                 <FeedbackModal />
                 <Button text="Déconnexion" onClick={handleLogout} className="btn-error" />
             </header>

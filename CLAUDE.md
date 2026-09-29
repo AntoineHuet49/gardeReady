@@ -104,10 +104,13 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 
 ## Claude Code workflow — worktrees + PRs
 The user runs several Claude sessions in parallel, so each session works in isolation:
-- Never commit directly on `main`. Work in a git worktree under `.claude/worktrees/` on its own branch (the desktop app / `claude --worktree` create one; otherwise use `EnterWorktree`). Branch names: `feat/...`, `fix/...`, `chore/...`.
+- Never commit directly on `main` or `develop`. Base feature branches on `origin/develop` (a fresh worktree starts from `main`: run `git fetch origin && git reset --hard origin/develop` before any change). Work in a git worktree under `.claude/worktrees/` on its own branch (the desktop app / `claude --worktree` create one; otherwise use `EnterWorktree`). Branch names: `feat/...`, `fix/...`, `chore/...`.
 - A fresh worktree has no `node_modules`: run `npm install` in `Sources/api` and/or `Sources/client` before building/linting. `.env` files are copied in automatically via `.worktreeinclude`.
 - The user runs the stack in Docker themselves (`docker-compose up -d`: `gardeReady-database` 5432, `backend` 3000, `gardeReady-frontend` 5173), shared by all sessions. Never start, stop, restart or rebuild these containers, and never launch a local `npm run dev` on those ports. If you need the stack and it is unreachable (`docker ps` / `curl -s localhost:3000`), stop and ask the user to start the containers.
 - Those containers bind-mount the **main checkout's** `Sources/`, not your worktree: they run `main`'s code, not your changes. Verify your work with `npm run build` / `npm run lint` / `npx tsc` in the worktree; tell the user when a change needs a manual check in the running app after merge.
-- When done: commit (clear message, what and why), push the branch, open a PR against `main` with `gh pr create`, and give the user the PR link. Don't merge it yourself unless asked.
-- Before opening the PR, bring the branch up to date with `main` and resolve conflicts — other sessions may have merged in the meantime.
-- `main` is the production branch (Railway deploys it); a `dev`/staging branch may come later — don't assume it exists until the user says so.
+- When done: commit (clear message, what and why), push the branch, open a PR against `develop` with `gh pr create --base develop`, and give the user the PR link. Don't merge it yourself unless asked.
+- Before opening the PR, bring the branch up to date with `develop` and resolve conflicts — other sessions may have merged in the meantime.
+- Environments (Railway project `VeriFeu`):
+  - `develop` → env `staging` (RE7): https://gardeready-staging.up.railway.app, its own Postgres, auto-deploys on push.
+  - `main` → env `production`: https://www.verifeu.fr, real users. Code reaches `main` only via a `develop` → `main` PR once validated in RE7, and only when the user asks.
+- Schema changes (no auto-sync outside `NODE_ENV=development`) must be applied to the RE7 database first, then to prod when promoting.

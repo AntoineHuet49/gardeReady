@@ -5,6 +5,7 @@ import { Home } from "../../Pages/Home";
 import { Vehicules } from "../../Pages/Vehicules";
 import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
+import { Installer } from "../../Pages/Installer";
 import AdminRoutes from "./adminRoutes";
 import AppLayout from "../../Components/Layout/AppLayout";
 
@@ -13,6 +14,10 @@ function Router() {
         {
             path: routePath.home,
             element: <Home />,
+        },
+        {
+            path: routePath.installer,
+            element: <Installer />,
         },
         {
             path: routePath.vehicules,

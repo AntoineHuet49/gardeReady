@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+import { routePath } from "../../App/Routes/routeConstants";
 import { UseFormHandleSubmit, UseFormRegister, FieldErrors } from "react-hook-form";
 import Button from "../../Components/Button/button";
 import TextInput from "../../Components/Input/TextInput";
@@ -86,6 +88,12 @@ function Home({
                     <Button text="Connexion" />
                 </form>
             )}
+            <Link
+                to={routePath.installer}
+                className="link absolute bottom-6 text-sm [@media(display-mode:standalone)]:hidden"
+            >
+                Installer l'application sur mon téléphone
+            </Link>
         </div>
     );
 }
