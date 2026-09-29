@@ -3,4 +3,5 @@ export const routePath = {
     vehicules: "/vehicules",
     details: "/vehicules/:id",
     admin: "/admin",
+    installer: "/installer",
 }
