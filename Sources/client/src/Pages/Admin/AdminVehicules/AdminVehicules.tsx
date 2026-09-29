@@ -178,7 +178,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             className="bg-gray-50 p-2 rounded border text-sm flex justify-between items-center group"
                                         >
                                             <span className="font-medium">
-                                                {element.quantite > 1 && <strong>{element.quantite} </strong>}
+                                                <strong>{element.quantite} </strong>
                                                 {element.name}
                                             </span>
                                             <div className="flex gap-1">

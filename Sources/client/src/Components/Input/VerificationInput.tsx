@@ -15,7 +15,7 @@ const VerificationInput = ({ element, currentStatus, register }: VerificationInp
             <div className="">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full mb-4">
                     <h3 className="text-xl break-words min-w-0">
-                        {element.quantite > 1 && <strong>{element.quantite} </strong>}
+                        <strong>{element.quantite} </strong>
                         {element.name}
                     </h3>
                     <input
