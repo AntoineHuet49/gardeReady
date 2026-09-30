@@ -60,7 +60,9 @@ function GardeModal({ shift, onClose }: { shift: Shift | null; onClose: () => vo
     return (
         <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onClose={onClose}>
             {shift && (
-                <div className="modal-box">
+                // Hauteur en dvh (pas vh) : sur mobile la barre du navigateur masquait le bas de la modale.
+                // Seule la liste des membres défile ; en-tête et bouton Fermer restent visibles.
+                <div className="modal-box flex flex-col max-h-[85dvh] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <span className="inline-block size-4 rounded-full" style={{ backgroundColor: gardeColor(shift.garde.color) }} />
                         Garde {shift.garde.numero}
@@ -74,7 +76,7 @@ function GardeModal({ shift, onClose }: { shift: Shift | null; onClose: () => vo
                     </p>
                     <h4 className="font-semibold mt-4 mb-2">Membres ({shift.garde.users?.length ?? 0})</h4>
                     {shift.garde.users?.length ? (
-                        <ul className="list bg-base-200 rounded-box">
+                        <ul className="list bg-base-200 rounded-box min-h-0 overflow-y-auto overscroll-contain">
                             {shift.garde.users.map((u) => (
                                 <li key={u.id} className="list-row py-2">
                                     {u.firstname} {u.lastname}
@@ -85,7 +87,7 @@ function GardeModal({ shift, onClose }: { shift: Shift | null; onClose: () => vo
                     ) : (
                         <p className="text-sm opacity-70">Aucun membre dans cette garde.</p>
                     )}
-                    <div className="modal-action">
+                    <div className="modal-action mt-4">
                         <button type="button" className="btn" onClick={() => ref.current?.close()}>Fermer</button>
                     </div>
                 </div>
