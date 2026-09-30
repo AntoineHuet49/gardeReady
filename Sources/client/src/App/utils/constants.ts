@@ -9,5 +9,6 @@ export const apiUrl = {
     users: "/users",
     gardes: "/gardes",
     gardeRotation: "/garde-rotation",
+    vehiculeAssignments: "/vehicule-assignments",
     feedback: "/feedback",
 };

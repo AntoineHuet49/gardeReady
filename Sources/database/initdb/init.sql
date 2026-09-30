@@ -65,6 +65,15 @@ ALTER TABLE gardes
 ADD COLUMN responsable INT NULL,
 ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE SET NULL;
 
+-- Assignation des agents aux véhicules à vérifier pour la prise de garde (shift_date = vendredi de relève)
+CREATE TABLE vehicule_assignments (
+    id SERIAL PRIMARY KEY,
+    shift_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM shift_date) = 5),
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (shift_date, vehicule_id, user_id)
+);
+
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
 -- SuperAdmin: email=admin@gardeready.com, password=AdminReady2024!

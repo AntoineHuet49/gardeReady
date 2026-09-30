@@ -1,4 +1,4 @@
-import { gardeColor, Shift } from "./shared";
+import { gardeTint, Shift } from "./shared";
 
 type GardeBarProps = {
     shift: Shift;
@@ -16,11 +16,7 @@ function GardeBar({ shift, isMine, onSelect, className = "", style, children }: 
             type="button"
             onClick={() => onSelect(shift)}
             className={`text-left rounded-md border-l-4 cursor-pointer hover:brightness-95 ${isMine ? "ring-2 ring-primary" : ""} ${className}`}
-            style={{
-                borderLeftColor: gardeColor(shift.garde.color),
-                backgroundColor: `color-mix(in oklab, ${gardeColor(shift.garde.color)} 25%, transparent)`,
-                ...style,
-            }}
+            style={{ ...gardeTint(shift.garde.color), ...style }}
         >
             {children}
         </button>

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { GardesService } from "~~/Services/GardesService";
 import { CreateGardeDto } from "~~/Types/DTO/CreateGardeDto";
+import { isFriday } from "~~/Utils/GardeRotation";
 
 export class GardeController {
     public static getAllGardes = async (req: Request, res: Response) => {
@@ -116,14 +117,8 @@ export class GardeController {
             const { reference_date } = req.body;
 
             // Date calendaire AAAA-MM-JJ qui doit tomber un vendredi (jour de la relève)
-            const match = typeof reference_date === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(reference_date) : null;
-            const date = match ? new Date(Date.UTC(+match[1], +match[2] - 1, +match[3])) : null;
-            if (!date || date.toISOString().slice(0, 10) !== reference_date) {
-                res.status(400).json({ message: "Date de référence invalide (format AAAA-MM-JJ)" });
-                return;
-            }
-            if (date.getUTCDay() !== 5) {
-                res.status(400).json({ message: "La date de référence doit être un vendredi" });
+            if (!isFriday(reference_date)) {
+                res.status(400).json({ message: "La date de référence doit être un vendredi (format AAAA-MM-JJ)" });
                 return;
             }
 

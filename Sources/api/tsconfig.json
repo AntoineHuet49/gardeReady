@@ -19,6 +19,8 @@
       "~~/*": ["./*"]
     }
   },
+  // scripts/ : contrôles exécutés directement par node (imports en .ts), hors compilation de l'API
+  "exclude": ["node_modules", "dist", "scripts"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   }

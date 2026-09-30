@@ -3,8 +3,13 @@ import { Elements } from "./Elements";
 import { Sections } from "./Sections";
 import { Gardes } from "./Garde";
 import { Users } from "./Users";
+import { VehiculeAssignments } from "./VehiculeAssignments";
 
 export function setupAssociations() {
+    // Assignations agent → véhicule pour une semaine de garde
+    VehiculeAssignments.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
+    VehiculeAssignments.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
+
     // Relations Vehicules -> Sections (sections racines)
     Vehicules.hasMany(Sections, {
         foreignKey: "vehicule_id",
