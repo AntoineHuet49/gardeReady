@@ -60,6 +60,8 @@ router.get('/gardes', verifyToken, GardeController.getAllGardes);
 router.post('/gardes', verifyToken, requireAdmin, GardeController.createGarde);
 router.put('/gardes/:id/responsable', verifyToken, requireAdmin, GardeController.updateResponsable);
 router.delete('/gardes/:id', verifyToken, requireAdmin, GardeController.deleteGarde);
+router.get('/garde-rotation', verifyToken, GardeController.getRotation);
+router.put('/garde-rotation', verifyToken, requireAdmin, GardeController.updateRotation);
 
 // Retours utilisateurs -> issues GitHub (protégée - authentification requise)
 router.post('/feedback', verifyToken, FeedbackController.createFeedback);

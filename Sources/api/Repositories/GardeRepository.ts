@@ -1,16 +1,24 @@
-import { Gardes, Users } from "~~/Models";
+import { Op } from "sequelize";
+import { GardeRotation, Gardes, Users } from "~~/Models";
 import { TUser } from "~~/Types/User";
 import { CreateGardeDto } from "~~/Types/DTO/CreateGardeDto";
 
 export class GardesRepository {
-    public static async GetAll() {
+    public static async GetAll(includeSuperAdmins: boolean) {
         const gardes = await Gardes.findAll({
             include: [{
                 model: Users,
                 as: 'responsableUser',
                 attributes: ['id', 'firstname', 'lastname', 'email']
+            }, {
+                // Membres (sans email) pour le planning, lisible par tous les connectés
+                model: Users,
+                as: 'users',
+                attributes: ['id', 'firstname', 'lastname', 'role'],
+                where: includeSuperAdmins ? undefined : { role: { [Op.ne]: 'superAdmin' } },
+                required: false,
             }],
-            order: [['numero', 'ASC']]
+            order: [['numero', 'ASC'], [{ model: Users, as: 'users' }, 'lastname', 'ASC']]
         });
         return gardes
     }
@@ -59,5 +67,15 @@ export class GardesRepository {
                 attributes: ['id', 'firstname', 'lastname', 'email']
             }]
         });
+    }
+
+    public static async GetRotation() {
+        const rotation = await GardeRotation.findByPk(1);
+        return rotation?.dataValues ?? null;
+    }
+
+    public static async UpsertRotation(referenceDate: string) {
+        const [rotation] = await GardeRotation.upsert({ id: 1, reference_date: referenceDate });
+        return rotation.dataValues;
     }
 }

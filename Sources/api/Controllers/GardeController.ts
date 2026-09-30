@@ -4,7 +4,7 @@ import { CreateGardeDto } from "~~/Types/DTO/CreateGardeDto";
 
 export class GardeController {
     public static getAllGardes = async (req: Request, res: Response) => {
-        const gardes = await GardesService.getAllGardes();
+        const gardes = await GardesService.getAllGardes(req.user?.role);
         if (!gardes) {
             res.status(404).json({ message: "Gardes not found" });
             return;
@@ -98,6 +98,40 @@ export class GardeController {
         } catch (error: any) {
             console.error("Erreur lors de la mise à jour du responsable:", error);
             res.status(500).json({ message: "Erreur lors de la mise à jour du responsable" });
+        }
+    };
+
+    public static getRotation = async (req: Request, res: Response) => {
+        try {
+            const rotation = await GardesService.getRotation();
+            res.status(200).json(rotation);
+        } catch (error: any) {
+            console.error("Erreur lors de la récupération de la rotation:", error);
+            res.status(500).json({ message: "Erreur lors de la récupération de la rotation" });
+        }
+    };
+
+    public static updateRotation = async (req: Request, res: Response) => {
+        try {
+            const { reference_date } = req.body;
+
+            // Date calendaire AAAA-MM-JJ qui doit tomber un vendredi (jour de la relève)
+            const match = typeof reference_date === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(reference_date) : null;
+            const date = match ? new Date(Date.UTC(+match[1], +match[2] - 1, +match[3])) : null;
+            if (!date || date.toISOString().slice(0, 10) !== reference_date) {
+                res.status(400).json({ message: "Date de référence invalide (format AAAA-MM-JJ)" });
+                return;
+            }
+            if (date.getUTCDay() !== 5) {
+                res.status(400).json({ message: "La date de référence doit être un vendredi" });
+                return;
+            }
+
+            const rotation = await GardesService.updateRotation(reference_date);
+            res.status(200).json(rotation);
+        } catch (error: any) {
+            console.error("Erreur lors de la mise à jour de la rotation:", error);
+            res.status(500).json({ message: "Erreur lors de la mise à jour de la rotation" });
         }
     };
 }

@@ -5,6 +5,7 @@
 DROP TABLE IF EXISTS elements CASCADE;
 DROP TABLE IF EXISTS sections CASCADE;
 DROP TABLE IF EXISTS vehicules CASCADE;
+DROP TABLE IF EXISTS garde_rotation CASCADE;
 DROP TABLE IF EXISTS gardes CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -26,6 +27,12 @@ CREATE TABLE gardes (
     numero INT NOT NULL UNIQUE,
     color VARCHAR(50) NOT NULL,
     responsable INT NULL
+);
+
+-- Rotation des gardes (ligne unique) : vendredi où la garde de plus petit numéro prend son service
+CREATE TABLE garde_rotation (
+    id INT PRIMARY KEY CHECK (id = 1),
+    reference_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM reference_date) = 5)
 );
 
 -- Création de la table vehicules
