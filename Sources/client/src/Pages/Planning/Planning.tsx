@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../App/Provider/UserProvider";
 import { useGardes } from "../../hooks/useGardes";
 import { useGardeRotation } from "../../hooks/useGardeRotation";
-import { parseDateOnly, PRISE_DE_GARDE_HOUR, RELEVE_HOUR } from "../../App/utils/planning";
+import { useVehiculeAssignments } from "../../hooks/useVehiculeAssignments";
+import { getAllVehicules } from "../../App/utils/Api/Vehicules";
+import { parseDateOnly, PRISE_DE_GARDE_HOUR, RELEVE_HOUR, toDateOnly } from "../../App/utils/planning";
 import { Garde } from "../../Types/Garde";
+import { Vehicule } from "../../Types/Vehicule";
 import Loader from "../../Components/Loader/Loader";
 import Alert from "../../Components/Alert/Alert";
 import MonthView from "./MonthView";
 import ListView from "./ListView";
+import AssignmentModal from "./AssignmentModal";
+import AssignmentSummary from "./AssignmentSummary";
 import { formatDay, gardeColor, responsableName, Shift, shiftEnd } from "./shared";
 
 function RotationForm({ firstGarde, referenceDate }: { firstGarde?: Garde; referenceDate?: string }) {
@@ -51,17 +57,19 @@ function RotationForm({ firstGarde, referenceDate }: { firstGarde?: Garde; refer
     );
 }
 
-function GardeModal({ shift, onClose }: { shift: Shift | null; onClose: () => void }) {
+function GardeModal({ shift, vehicules, onClose }: { shift: Shift | null; vehicules: Vehicule[]; onClose: () => void }) {
     const ref = useRef<HTMLDialogElement>(null);
     useEffect(() => {
         if (shift) ref.current?.showModal();
     }, [shift]);
+    const shiftDate = shift ? toDateOnly(shift.start) : "";
+    const { assignments } = useVehiculeAssignments(shiftDate, shiftDate, shift !== null);
 
     return (
         <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onClose={onClose}>
             {shift && (
                 // Hauteur en dvh (pas vh) : sur mobile la barre du navigateur masquait le bas de la modale.
-                // Seule la liste des membres défile ; en-tête et bouton Fermer restent visibles.
+                // Seuls véhicules et membres défilent ; en-tête et bouton Fermer restent visibles.
                 <div className="modal-box flex flex-col max-h-[85dvh] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <span className="inline-block size-4 rounded-full" style={{ backgroundColor: gardeColor(shift.garde.color) }} />
@@ -74,19 +82,27 @@ function GardeModal({ shift, onClose }: { shift: Shift | null; onClose: () => vo
                         <span className="font-semibold">Responsable : </span>
                         {responsableName(shift.garde) ?? "non défini"}
                     </p>
-                    <h4 className="font-semibold mt-4 mb-2">Membres ({shift.garde.users?.length ?? 0})</h4>
-                    {shift.garde.users?.length ? (
-                        <ul className="list bg-base-200 rounded-box min-h-0 overflow-y-auto overscroll-contain">
-                            {shift.garde.users.map((u) => (
-                                <li key={u.id} className="list-row py-2">
-                                    {u.firstname} {u.lastname}
-                                    {u.id === shift.garde.responsable && <span className="badge badge-sm badge-primary">Responsable</span>}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-sm opacity-70">Aucun membre dans cette garde.</p>
-                    )}
+                    <div className="min-h-0 overflow-y-auto overscroll-contain">
+                        {vehicules.length > 0 && (
+                            <>
+                                <h4 className="font-semibold mt-4 mb-2">Véhicules à vérifier ({PRISE_DE_GARDE_HOUR}h)</h4>
+                                <AssignmentSummary garde={shift.garde} vehicules={vehicules} assignments={assignments} />
+                            </>
+                        )}
+                        <h4 className="font-semibold mt-4 mb-2">Membres ({shift.garde.users?.length ?? 0})</h4>
+                        {shift.garde.users?.length ? (
+                            <ul className="list bg-base-200 rounded-box">
+                                {shift.garde.users.map((u) => (
+                                    <li key={u.id} className="list-row py-2">
+                                        {u.firstname} {u.lastname}
+                                        {u.id === shift.garde.responsable && <span className="badge badge-sm badge-primary">Responsable</span>}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm opacity-70">Aucun membre dans cette garde.</p>
+                        )}
+                    </div>
                     <div className="modal-action mt-4">
                         <button type="button" className="btn" onClick={() => ref.current?.close()}>Fermer</button>
                     </div>
@@ -105,6 +121,11 @@ function Planning() {
     const { rotation, isLoading: rotationLoading, error: rotationError } = useGardeRotation();
     const [view, setView] = useState<"month" | "list">("month");
     const [selected, setSelected] = useState<Shift | null>(null);
+    const [assigning, setAssigning] = useState<Shift | null>(null);
+    const { data: vehiculesResponse } = useQuery({ queryKey: ["vehicules"], queryFn: () => getAllVehicules() });
+    const vehicules = vehiculesResponse?.data ?? [];
+    // Admins : toutes les gardes ; responsable : uniquement la sienne (règle vérifiée aussi côté API)
+    const canAssign = (garde: Garde) => isAdmin || (user !== null && garde.responsable === user.id);
 
     if (gardesLoading || rotationLoading) return <Loader />;
     if (gardesError || rotationError) {
@@ -134,11 +155,16 @@ function Planning() {
                             Liste
                         </button>
                     </div>
-                    {view === "month" ? <MonthView {...viewProps} /> : <ListView {...viewProps} />}
+                    {view === "month" ? (
+                        <MonthView {...viewProps} />
+                    ) : (
+                        <ListView {...viewProps} vehicules={vehicules} canAssign={canAssign} onAssign={setAssigning} />
+                    )}
                 </>
             )}
 
-            <GardeModal shift={selected} onClose={() => setSelected(null)} />
+            <GardeModal shift={selected} vehicules={vehicules} onClose={() => setSelected(null)} />
+            <AssignmentModal shift={assigning} vehicules={vehicules} gardesCount={gardes.length} onClose={() => setAssigning(null)} />
         </div>
     );
 }

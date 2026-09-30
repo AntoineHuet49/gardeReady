@@ -19,5 +19,11 @@ const FRENCH_COLORS: Record<string, string> = {
 export const gardeColor = (color: string) =>
     FRENCH_COLORS[color.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")] ?? color;
 
+// Fond teinté + liseré de la couleur de la garde (lisible en thème clair comme sombre)
+export const gardeTint = (color: string): React.CSSProperties => ({
+    borderLeftColor: gardeColor(color),
+    backgroundColor: `color-mix(in oklab, ${gardeColor(color)} 25%, transparent)`,
+});
+
 export const responsableName = (garde: Garde) =>
     garde.responsableUser ? `${garde.responsableUser.firstname} ${garde.responsableUser.lastname}` : null;
