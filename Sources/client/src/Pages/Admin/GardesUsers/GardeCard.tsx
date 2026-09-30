@@ -1,4 +1,5 @@
 import { Garde } from "../../../Types/Garde";
+import { gardeColor } from "../../Planning/shared";
 import { User } from "../../../Types/User";
 import { useUser } from "../../../App/Provider/UserProvider";
 import { useGardeMutations } from "../../../hooks/useGardeMutations";
@@ -97,7 +98,7 @@ function GardeCard({ garde, users }: GardeCardProps) {
     return (
         <div
             className={`card bg-base-100 border shadow-sm transition-colors ${isDragOver ? 'border-primary border-2' : 'border-base-content/10'}`}
-            style={{ borderLeftWidth: isDragOver ? undefined : '4px', borderLeftColor: isDragOver ? undefined : garde.color }}
+            style={{ borderLeftWidth: isDragOver ? undefined : '4px', borderLeftColor: isDragOver ? undefined : gardeColor(garde.color) }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}

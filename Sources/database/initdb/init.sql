@@ -16,6 +16,12 @@ CREATE TABLE gardes (
     color VARCHAR(50) NOT NULL -- color de la garde
 );
 
+-- Rotation des gardes (ligne unique) : vendredi où la garde de plus petit numéro prend son service
+CREATE TABLE garde_rotation (
+    id INT PRIMARY KEY CHECK (id = 1),
+    reference_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM reference_date) = 5)
+);
+
 -- Création de la table vehicules
 CREATE TABLE vehicules (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque véhicule

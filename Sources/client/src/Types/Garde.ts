@@ -9,4 +9,15 @@ export type Garde = {
         lastname: string;
         email: string;
     };
+    users?: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        role: "user" | "admin" | "superAdmin";
+    }[];
+}
+
+export type GardeRotation = {
+    id: number;
+    reference_date: string; // AAAA-MM-JJ, un vendredi
 }

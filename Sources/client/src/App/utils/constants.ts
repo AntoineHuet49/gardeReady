@@ -8,5 +8,6 @@ export const apiUrl = {
     verification: "/vehicules/verifications",
     users: "/users",
     gardes: "/gardes",
+    gardeRotation: "/garde-rotation",
     feedback: "/feedback",
 };
