@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { GardesService } from "~~/Services/GardesService";
 import { CreateGardeDto } from "~~/Types/DTO/CreateGardeDto";
+import { isFriday } from "~~/Utils/GardeRotation";
 
 export class GardeController {
     public static getAllGardes = async (req: Request, res: Response) => {
-        const gardes = await GardesService.getAllGardes();
+        const gardes = await GardesService.getAllGardes(req.user?.role);
         if (!gardes) {
             res.status(404).json({ message: "Gardes not found" });
             return;
@@ -98,6 +99,34 @@ export class GardeController {
         } catch (error: any) {
             console.error("Erreur lors de la mise à jour du responsable:", error);
             res.status(500).json({ message: "Erreur lors de la mise à jour du responsable" });
+        }
+    };
+
+    public static getRotation = async (req: Request, res: Response) => {
+        try {
+            const rotation = await GardesService.getRotation();
+            res.status(200).json(rotation);
+        } catch (error: any) {
+            console.error("Erreur lors de la récupération de la rotation:", error);
+            res.status(500).json({ message: "Erreur lors de la récupération de la rotation" });
+        }
+    };
+
+    public static updateRotation = async (req: Request, res: Response) => {
+        try {
+            const { reference_date } = req.body;
+
+            // Date calendaire AAAA-MM-JJ qui doit tomber un vendredi (jour de la relève)
+            if (!isFriday(reference_date)) {
+                res.status(400).json({ message: "La date de référence doit être un vendredi (format AAAA-MM-JJ)" });
+                return;
+            }
+
+            const rotation = await GardesService.updateRotation(reference_date);
+            res.status(200).json(rotation);
+        } catch (error: any) {
+            console.error("Erreur lors de la mise à jour de la rotation:", error);
+            res.status(500).json({ message: "Erreur lors de la mise à jour de la rotation" });
         }
     };
 }

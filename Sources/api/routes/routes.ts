@@ -1,6 +1,7 @@
 import express from 'express';
 import { AuthController } from '~~/Controllers/AuthController';
 import { GardeController } from '~~/Controllers/GardeController';
+import { VehiculeAssignmentsController } from '~~/Controllers/VehiculeAssignmentsController';
 import { UsersController } from '~~/Controllers/UsersController';
 import VehiculesController from '~~/Controllers/VehiculesController';
 import ElementsController from '~~/Controllers/ElementsController';
@@ -60,6 +61,12 @@ router.get('/gardes', verifyToken, GardeController.getAllGardes);
 router.post('/gardes', verifyToken, requireAdmin, GardeController.createGarde);
 router.put('/gardes/:id/responsable', verifyToken, requireAdmin, GardeController.updateResponsable);
 router.delete('/gardes/:id', verifyToken, requireAdmin, GardeController.deleteGarde);
+router.get('/garde-rotation', verifyToken, GardeController.getRotation);
+router.put('/garde-rotation', verifyToken, requireAdmin, GardeController.updateRotation);
+
+// Assignations agents → véhicules par semaine (droits admin / responsable vérifiés dans le service)
+router.get('/vehicule-assignments', verifyToken, VehiculeAssignmentsController.getAssignments);
+router.put('/vehicule-assignments/:shiftDate', verifyToken, VehiculeAssignmentsController.replaceWeek);
 
 // Retours utilisateurs -> issues GitHub (protégée - authentification requise)
 router.post('/feedback', verifyToken, FeedbackController.createFeedback);

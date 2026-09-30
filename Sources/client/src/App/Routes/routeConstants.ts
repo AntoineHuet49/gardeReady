@@ -3,5 +3,6 @@ export const routePath = {
     vehicules: "/vehicules",
     details: "/vehicules/:id",
     admin: "/admin",
+    planning: "/planning",
     installer: "/installer",
 }

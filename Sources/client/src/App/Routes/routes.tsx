@@ -6,6 +6,7 @@ import { Vehicules } from "../../Pages/Vehicules";
 import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
 import { Installer } from "../../Pages/Installer";
+import { Planning } from "../../Pages/Planning";
 import AdminRoutes from "./adminRoutes";
 import AppLayout from "../../Components/Layout/AppLayout";
 
@@ -35,6 +36,16 @@ function Router() {
                 <PrivateRoute>
                     <AppLayout title="Vérifications">
                         <Verifications />
+                    </AppLayout>
+                </PrivateRoute>
+            ),
+        },
+        {
+            path: routePath.planning,
+            element: (
+                <PrivateRoute>
+                    <AppLayout title="Planning des gardes">
+                        <Planning />
                     </AppLayout>
                 </PrivateRoute>
             ),

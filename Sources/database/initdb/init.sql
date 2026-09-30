@@ -16,6 +16,12 @@ CREATE TABLE gardes (
     color VARCHAR(50) NOT NULL -- color de la garde
 );
 
+-- Rotation des gardes (ligne unique) : vendredi où la garde de plus petit numéro prend son service
+CREATE TABLE garde_rotation (
+    id INT PRIMARY KEY CHECK (id = 1),
+    reference_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM reference_date) = 5)
+);
+
 -- Création de la table vehicules
 CREATE TABLE vehicules (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque véhicule
@@ -58,6 +64,15 @@ ADD CONSTRAINT fk_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DELETE C
 ALTER TABLE gardes
 ADD COLUMN responsable INT NULL,
 ADD CONSTRAINT fk_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE SET NULL;
+
+-- Assignation des agents aux véhicules à vérifier pour la prise de garde (shift_date = vendredi de relève)
+CREATE TABLE vehicule_assignments (
+    id SERIAL PRIMARY KEY,
+    shift_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM shift_date) = 5),
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (shift_date, vehicule_id, user_id)
+);
 
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)

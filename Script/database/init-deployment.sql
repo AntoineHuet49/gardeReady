@@ -2,9 +2,11 @@
 -- Contient uniquement les tables essentielles et un compte admin
 
 -- Nettoyer les tables existantes (évite les conflits)
+DROP TABLE IF EXISTS vehicule_assignments CASCADE;
 DROP TABLE IF EXISTS elements CASCADE;
 DROP TABLE IF EXISTS sections CASCADE;
 DROP TABLE IF EXISTS vehicules CASCADE;
+DROP TABLE IF EXISTS garde_rotation CASCADE;
 DROP TABLE IF EXISTS gardes CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -26,6 +28,12 @@ CREATE TABLE gardes (
     numero INT NOT NULL UNIQUE,
     color VARCHAR(50) NOT NULL,
     responsable INT NULL
+);
+
+-- Rotation des gardes (ligne unique) : vendredi où la garde de plus petit numéro prend son service
+CREATE TABLE garde_rotation (
+    id INT PRIMARY KEY CHECK (id = 1),
+    reference_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM reference_date) = 5)
 );
 
 -- Création de la table vehicules
@@ -58,6 +66,15 @@ ADD CONSTRAINT fk_user_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DEL
 
 ALTER TABLE gardes
 ADD CONSTRAINT fk_garde_responsable FOREIGN KEY (responsable) REFERENCES users(id) ON DELETE SET NULL;
+
+-- Assignation des agents aux véhicules à vérifier pour la prise de garde (shift_date = vendredi de relève)
+CREATE TABLE vehicule_assignments (
+    id SERIAL PRIMARY KEY,
+    shift_date DATE NOT NULL CHECK (EXTRACT(ISODOW FROM shift_date) = 5),
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (shift_date, vehicule_id, user_id)
+);
 
 -- Insertion du compte administrateur
 -- Email: admin@gardeready.com

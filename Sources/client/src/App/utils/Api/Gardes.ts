@@ -1,4 +1,4 @@
-import { Garde } from "../../../Types/Garde";
+import { Garde, GardeRotation } from "../../../Types/Garde";
 import { apiUrl } from "../constants";
 import { instance } from "./axios";
 
@@ -22,6 +22,18 @@ export function deleteGarde(id: number) {
 
 export function updateGardeResponsable(id: number, responsableId: number | null) {
     return instance.put<Garde>(`${apiUrl.gardes}/${id}/responsable`, { responsableId }).then((response) => {
+        return response.data;
+    });
+}
+
+export function getGardeRotation() {
+    return instance.get<GardeRotation | null>(apiUrl.gardeRotation).then((response) => {
+        return response.data;
+    });
+}
+
+export function updateGardeRotation(reference_date: string) {
+    return instance.put<GardeRotation>(apiUrl.gardeRotation, { reference_date }).then((response) => {
         return response.data;
     });
 }
