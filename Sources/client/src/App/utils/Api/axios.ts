@@ -5,6 +5,8 @@ import { removeCookie } from "../getCookie";
 export const instance = axios.create({
     baseURL: apiUrl.base,
     withCredentials: true,
+    // Permet au journal d'activité serveur de distinguer la PWA installée du navigateur
+    headers: window.matchMedia("(display-mode: standalone)").matches ? { "X-Display-Mode": "standalone" } : {},
 })
 
 instance.interceptors.response.use((response) => {
