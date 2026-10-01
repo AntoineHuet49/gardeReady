@@ -129,6 +129,18 @@ export class SectionsRepository {
         return section ? await section.update(data) : null;
     }
 
+    // Rattacher une section à un parent (ou la remettre à la racine du véhicule avec parentId = null).
+    // Mise à jour via l'instance pour que le XOR vehicule_id/parent_section_id soit validé sur la ligne complète.
+    public static async moveSection(sectionId: number, parentId: number | null, vehiculeId: number) {
+        const section = await Sections.findByPk(sectionId);
+        if (!section) return null;
+        return await section.update(
+            parentId === null
+                ? { parent_section_id: null, vehicule_id: vehiculeId }
+                : { parent_section_id: parentId, vehicule_id: null }
+        );
+    }
+
     // Photo de la section (hors scope par défaut, voir Models/Sections.ts)
     public static async getPhoto(sectionId: number) {
         return await Sections.unscoped().findByPk(sectionId, {

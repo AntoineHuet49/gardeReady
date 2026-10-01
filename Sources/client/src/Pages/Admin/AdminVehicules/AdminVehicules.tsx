@@ -11,6 +11,7 @@ import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
 import SectionPhotoButton from "../../../Components/Section/SectionPhotoButton";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
+import MoveSectionModal, { MoveSectionTarget } from "../../../Components/Modal/MoveSectionModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
 import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
@@ -35,8 +36,10 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     } | null>(null);
     
     const { deleteElementMutation } = useElementMutations();
-    const { deleteSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
+    const { deleteSectionMutation, moveSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
     const { deleteVehiculeMutation } = useVehiculeMutations();
+
+    const [moveTarget, setMoveTarget] = useState<MoveSectionTarget>(null);
 
     const openModal = (sectionId: number, sectionName: string, element?: Element) => {
         setSelectedSection({ id: sectionId, name: sectionName, element });
@@ -99,7 +102,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         });
     };
 
-    const renderSection = (section: Section, level: number = 0): JSX.Element => {
+    const renderSection = (section: Section, vehiculeId: number, level: number = 0): JSX.Element => {
         const hasElements = section.elements && section.elements.length > 0;
         const hasSubSections = section.subSections && section.subSections.length > 0;
 
@@ -114,6 +117,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                 <div>{hasSubSections ? `${section.subSections!.length} sous-section(s)` : "Aucune sous-section"}</div>
                             </div>
                             <div className="flex gap-2 flex-wrap">
+                                <Button
+                                    text="↪ Déplacer"
+                                    onClick={() => setMoveTarget({ section, vehiculeSections: vehicules.find((v) => v.id === vehiculeId)?.sections ?? [] })}
+                                    className="btn-xs"
+                                    title="Déplacer cette section vers une autre section"
+                                />
                                 <Button
                                     text="+ Équipement"
                                     onClick={() => openModal(section.id, section.name)}
@@ -206,7 +215,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         {hasSubSections && (
                             <div className="space-y-2 mt-4">
                                 {section.subSections!.map((subSection: Section) => 
-                                    renderSection(subSection, level + 1)
+                                    renderSection(subSection, vehiculeId, level + 1)
                                 )}
                             </div>
                         )}
@@ -276,8 +285,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                     />
                                                 </div>
                                             </div>
-                                            {vehicule.sections.map((section: Section) => 
-                                                renderSection(section, 0)
+                                            {vehicule.sections.map((section: Section) =>
+                                                renderSection(section, vehicule.id, 0)
                                             )}
                                         </div>
                                     ) : (
@@ -306,7 +315,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     ))}
                 </div>
             )}
-            
+
             {/* Modal d'ajout d'équipement */}
             {selectedSection && (
                 <AddElementModal
@@ -331,6 +340,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             )}
 
             <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
+
+            <MoveSectionModal
+                target={moveTarget}
+                onClose={() => setMoveTarget(null)}
+                onMove={(id, parentSectionId) => moveSectionMutation.mutate({ id, parentSectionId })}
+            />
 
             {/* Modal d'ajout de véhicule */}
             <AddVehiculeModal
