@@ -3,6 +3,7 @@ import express from 'express';
 import router from './routes/routes';
 import { connectDatabase } from './Utils/Database';
 import cookieParser from 'cookie-parser';
+import { auditLog } from './Middlewares/AuditMiddleware';
 import { configureLogLevel, createLogger } from './Utils/Logger';
 
 // Configure le niveau de log
@@ -52,7 +53,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes API (doit être avant le fallback SPA)
-app.use("/api", router);
+app.use("/api", auditLog, router);
 
 // Serve static files du frontend buildé
 app.use(express.static('Sources/api/public'));

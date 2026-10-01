@@ -83,6 +83,14 @@ export class Logger {
     }
 
     /**
+     * Journal d'activité : une ligne JSON sur stdout, indépendante de LOG_LEVEL.
+     * Railway parse `level`/`message` et expose les autres champs en filtres (@userId:12).
+     */
+    public audit(message: string, fields: Record<string, unknown>): void {
+        console.log(JSON.stringify({ level: 'info', message, type: 'audit', ...fields }));
+    }
+
+    /**
      * Log pour données reçues avec emoji 📥
      */
     public received(message: string, data: unknown): void {
