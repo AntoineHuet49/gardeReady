@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CollisionDetection, DndContext, DragEndEvent, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
+import { CollisionDetection, DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
 import { Vehicule } from "../../../Types/Vehicule";
 import { Section } from "../../../Types/Section";
 import { Element } from "../../../Types/Element";
@@ -59,9 +59,20 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     // distance : un simple clic sur la poignée ne déclenche pas de glissement
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
+    // Nom de la section en cours de glissement, affiché dans l'aperçu qui suit le pointeur
+    const [draggedName, setDraggedName] = useState<string | null>(null);
+
+    const handleDragStart = ({ active }: DragStartEvent) => {
+        const drag = active.data.current as SectionDragData | undefined;
+        if (drag) setDraggedName(findSection(vehicules.find((v) => v.id === drag.vehiculeId)?.sections, drag.sectionId)?.name ?? null);
+    };
+
     const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        setDraggedName(null);
         const drag = active.data.current as SectionDragData | undefined;
         if (!drag || !over) return;
+        // Dépôt invalide : autre véhicule, ou sur la section elle-même
+        if (over.data.current?.vehiculeId !== drag.vehiculeId || over.data.current?.sectionId === drag.sectionId) return;
         const targetId: number | undefined = over.data.current?.sectionId; // undefined = racine du véhicule
         const vehicule = vehicules.find((v) => v.id === drag.vehiculeId);
         const moved = findSection(vehicule?.sections, drag.sectionId);
@@ -289,7 +300,13 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     <p className="text-gray-500 text-lg">Aucun véhicule trouvé</p>
                 </div>
             ) : (
-                <DndContext sensors={sensors} collisionDetection={innermostDrop} onDragEnd={handleDragEnd}>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={innermostDrop}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={() => setDraggedName(null)}
+                >
                 <div className="space-y-4">
                     {vehicules.map((vehicule: Vehicule) => (
                         <div key={vehicule.id}>
@@ -347,6 +364,9 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         </div>
                     ))}
                 </div>
+                <DragOverlay>
+                    {draggedName && <div className="badge badge-primary badge-lg shadow-lg cursor-grabbing">⠿ {draggedName}</div>}
+                </DragOverlay>
                 </DndContext>
             )}
 
