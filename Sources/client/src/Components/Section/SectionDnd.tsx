@@ -26,13 +26,14 @@ export const SectionDragHandle = ({ sectionId, vehiculeId, isRoot }: SectionDrag
     );
 };
 
-// Zone de dépôt : n'accepte que les sections du même véhicule, et jamais la section elle-même
+// Zone de dépôt, toujours enregistrée (la mesure des zones se fait au début du glissement) ;
+// seule la mise en évidence est limitée aux dépôts valides : même véhicule, jamais la section elle-même
 const useSectionDrop = (id: string, vehiculeId: number, sectionId?: number) => {
     const { active } = useDndContext();
     const drag = active?.data.current as SectionDragData | undefined;
-    const disabled = !drag || drag.vehiculeId !== vehiculeId || drag.sectionId === sectionId;
-    const { setNodeRef, isOver } = useDroppable({ id, data: { sectionId }, disabled });
-    return { setNodeRef, isOver: isOver && !disabled };
+    const valid = !!drag && drag.vehiculeId === vehiculeId && drag.sectionId !== sectionId;
+    const { setNodeRef, isOver } = useDroppable({ id, data: { sectionId, vehiculeId } });
+    return { setNodeRef, isOver: isOver && valid };
 };
 
 export const SectionDropTarget = ({ sectionId, vehiculeId, children }: { sectionId: number; vehiculeId: number; children: ReactNode }) => {
