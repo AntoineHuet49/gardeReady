@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { HttpCode } from "~~/Helpers/HttpCode";
 import { AuthService } from "~~/Services/AuthService";
 import { getAuthProvider } from "~~/Utils/AuthProvider";
@@ -14,6 +15,7 @@ export class AuthController {
             res.cookie('token', result.data, {
                 maxAge: 1000 * 60 * 60 * 24,
             });
+            res.locals.auditUser = jwt.decode(result.data ?? "");
         } else {
             res.status(HttpCode.BadRequest);
         }
@@ -39,6 +41,7 @@ export class AuthController {
             res.cookie('token', result.data, {
                 maxAge: 1000 * 60 * 60 * 24,
             });
+            res.locals.auditUser = jwt.decode(result.data ?? "");
             res.redirect(frontendUrl);
         } else {
             res.redirect(`${frontendUrl}?authError=1`);
