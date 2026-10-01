@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { CollisionDetection, DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
 import { Vehicule } from "../../../Types/Vehicule";
 import { Section } from "../../../Types/Section";
 import { Element } from "../../../Types/Element";
@@ -11,45 +10,11 @@ import AddSectionModal from "../../../Components/Modal/AddSectionModal";
 import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
 import SectionPhotoButton from "../../../Components/Section/SectionPhotoButton";
-import { SectionDragData, SectionDragHandle, SectionDropTarget, VehiculeRootDropZone } from "../../../Components/Section/SectionDnd";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 import MoveSectionModal, { MoveSectionTarget } from "../../../Components/Modal/MoveSectionModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
 import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
-
-const findSection = (sections: Section[] | undefined, id: number): Section | undefined => {
-    for (const section of sections ?? []) {
-        const found = section.id === id ? section : findSection(section.subSections, id);
-        if (found) return found;
-    }
-};
-
-// Un Collapse replié garde ses enfants dans le DOM (donc mesurés par dnd-kit) alors qu'ils ne sont pas affichés
-const isShown = (node: HTMLElement | null | undefined): boolean => {
-    let el = node ?? null;
-    while (el) {
-        const content = el.closest(".collapse-content");
-        if (!content) return true;
-        const collapse = content.parentElement;
-        if (!collapse?.querySelector(":scope > input")?.matches(":checked")) return false;
-        el = collapse;
-    }
-    return true;
-};
-
-// Zones de dépôt imbriquées : parmi celles affichées sous le pointeur, on garde la plus petite, c'est-à-dire la plus profonde
-const innermostDrop: CollisionDetection = (args) => {
-    const area = (id: string | number) => {
-        const rect = args.droppableRects.get(id);
-        return rect ? rect.width * rect.height : Infinity;
-    };
-    const shown = (id: string | number) => isShown(args.droppableContainers.find((c) => c.id === id)?.node.current);
-    return pointerWithin(args)
-        .filter((c) => shown(c.id))
-        .sort((a, b) => area(a.id) - area(b.id))
-        .slice(0, 1);
-};
 
 type AdminVehiculesProps = {
     vehicules: Vehicule[];
@@ -74,39 +39,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const { deleteSectionMutation, moveSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
     const { deleteVehiculeMutation } = useVehiculeMutations();
 
-    // distance : un simple clic sur la poignée ne déclenche pas de glissement
-    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
-
     const [moveTarget, setMoveTarget] = useState<MoveSectionTarget>(null);
-
-    // Nom de la section en cours de glissement, affiché dans l'aperçu qui suit le pointeur
-    const [draggedName, setDraggedName] = useState<string | null>(null);
-
-    const handleDragStart = ({ active }: DragStartEvent) => {
-        const drag = active.data.current as SectionDragData | undefined;
-        if (drag) setDraggedName(findSection(vehicules.find((v) => v.id === drag.vehiculeId)?.sections, drag.sectionId)?.name ?? null);
-    };
-
-    const handleDragEnd = ({ active, over }: DragEndEvent) => {
-        setDraggedName(null);
-        const drag = active.data.current as SectionDragData | undefined;
-        if (!drag || !over) return;
-        // Dépôt invalide : autre véhicule, ou sur la section elle-même
-        if (over.data.current?.vehiculeId !== drag.vehiculeId || over.data.current?.sectionId === drag.sectionId) return;
-        const targetId: number | undefined = over.data.current?.sectionId; // undefined = racine du véhicule
-        const vehicule = vehicules.find((v) => v.id === drag.vehiculeId);
-        const moved = findSection(vehicule?.sections, drag.sectionId);
-        const target = targetId === undefined ? undefined : findSection(vehicule?.sections, targetId);
-        if (!moved) return;
-        setPendingConfirm({
-            message: target
-                ? `Déplacer la section "${moved.name}" dans "${target.name}" ?`
-                : `Remonter la section "${moved.name}" à la racine du véhicule ?`,
-            title: "Confirmer le déplacement",
-            confirmLabel: "Déplacer",
-            onConfirm: () => moveSectionMutation.mutate({ id: moved.id, parentSectionId: targetId ?? null }),
-        });
-    };
 
     const openModal = (sectionId: number, sectionName: string, element?: Element) => {
         setSelectedSection({ id: sectionId, name: sectionName, element });
@@ -174,8 +107,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         const hasSubSections = section.subSections && section.subSections.length > 0;
 
         return (
-            <SectionDropTarget key={section.id} sectionId={section.id} vehiculeId={vehiculeId}>
-              <div className="mb-2">
+            <div key={section.id} className="mb-2">
                 <Collapse title={section.name} level={level + 1}>
                     <div className="space-y-2">
                         {/* Header avec boutons d'actions */}
@@ -185,7 +117,6 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                 <div>{hasSubSections ? `${section.subSections!.length} sous-section(s)` : "Aucune sous-section"}</div>
                             </div>
                             <div className="flex gap-2 flex-wrap">
-                                <SectionDragHandle sectionId={section.id} vehiculeId={vehiculeId} isRoot={level === 0} />
                                 <Button
                                     text="↪ Déplacer"
                                     onClick={() => setMoveTarget({ section, vehiculeSections: vehicules.find((v) => v.id === vehiculeId)?.sections ?? [] })}
@@ -290,8 +221,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         )}
                     </div>
                 </Collapse>
-              </div>
-            </SectionDropTarget>
+            </div>
         );
     };
 
@@ -328,13 +258,6 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     <p className="text-gray-500 text-lg">Aucun véhicule trouvé</p>
                 </div>
             ) : (
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={innermostDrop}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDragCancel={() => setDraggedName(null)}
-                >
                 <div className="space-y-4">
                     {vehicules.map((vehicule: Vehicule) => (
                         <div key={vehicule.id}>
@@ -362,7 +285,6 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                     />
                                                 </div>
                                             </div>
-                                            <VehiculeRootDropZone vehiculeId={vehicule.id} />
                                             {vehicule.sections.map((section: Section) =>
                                                 renderSection(section, vehicule.id, 0)
                                             )}
@@ -392,10 +314,6 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         </div>
                     ))}
                 </div>
-                <DragOverlay>
-                    {draggedName && <div className="badge badge-primary badge-lg shadow-lg cursor-grabbing">⠿ {draggedName}</div>}
-                </DragOverlay>
-                </DndContext>
             )}
 
             {/* Modal d'ajout d'équipement */}
