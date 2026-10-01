@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createSection, updateSection, deleteSection, uploadSectionPhoto, deleteSectionPhoto } from "../App/utils/Api/Sections";
+import { createSection, updateSection, moveSection, deleteSection, uploadSectionPhoto, deleteSectionPhoto } from "../App/utils/Api/Sections";
 import { notify } from "../App/utils/notify";
 import { resizeImage } from "../App/utils/resizeImage";
 
@@ -29,6 +29,17 @@ export const useSectionMutations = () => {
             const errorMessage = error.response?.data?.error || "Erreur lors de la modification de la section";
             notify(errorMessage, "error");
             console.error("Erreur lors de la modification:", error);
+        }
+    });
+
+    const moveSectionMutation = useMutation({
+        mutationFn: ({ id, parentSectionId }: { id: number; parentSectionId: number | null }) => moveSection(id, parentSectionId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin-vehicules"] });
+            notify("Section déplacée avec succès !", "success");
+        },
+        onError: (error: Error & { response?: { data?: { error?: string } } }) => {
+            notify(error.response?.data?.error || "Erreur lors du déplacement de la section", "error");
         }
     });
 
@@ -76,6 +87,7 @@ export const useSectionMutations = () => {
     return {
         createSectionMutation,
         updateSectionMutation,
+        moveSectionMutation,
         deleteSectionMutation,
         uploadSectionPhotoMutation,
         deleteSectionPhotoMutation

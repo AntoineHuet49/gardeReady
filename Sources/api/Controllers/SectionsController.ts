@@ -126,6 +126,22 @@ export default class SectionsController extends BaseController {
         }
     }
 
+    // Corps : { parent_section_id: number | null } (null = remonter à la racine du véhicule)
+    public static moveSection = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const { parent_section_id } = req.body ?? {};
+        if (parent_section_id !== null && !Number.isInteger(parent_section_id)) {
+            res.status(HttpCode.BadRequest).json({ error: "parent_section_id doit être un entier ou null" });
+            return;
+        }
+        const result = await SectionsService.moveSection(parseInt(req.params.id), parent_section_id);
+        if (!result.success) {
+            const status = result.message === SECTION_NOT_FOUND ? HttpCode.NotFound : HttpCode.BadRequest;
+            res.status(status).json({ error: result.message });
+            return;
+        }
+        res.status(HttpCode.NoContent).send();
+    });
+
     public static getPhoto = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const result = await SectionsService.getPhoto(parseInt(req.params.id));
         if (!result.success) {

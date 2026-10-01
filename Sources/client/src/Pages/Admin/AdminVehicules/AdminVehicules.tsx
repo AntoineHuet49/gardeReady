@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CollisionDetection, DndContext, DragEndEvent, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
 import { Vehicule } from "../../../Types/Vehicule";
 import { Section } from "../../../Types/Section";
 import { Element } from "../../../Types/Element";
@@ -10,10 +11,27 @@ import AddSectionModal from "../../../Components/Modal/AddSectionModal";
 import AddVehiculeModal from "../../../Components/Modal/AddVehiculeModal";
 import Button from "../../../Components/Button/button";
 import SectionPhotoButton from "../../../Components/Section/SectionPhotoButton";
+import { SectionDragData, SectionDragHandle, SectionDropTarget, VehiculeRootDropZone } from "../../../Components/Section/SectionDnd";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
 import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
+
+const findSection = (sections: Section[] | undefined, id: number): Section | undefined => {
+    for (const section of sections ?? []) {
+        const found = section.id === id ? section : findSection(section.subSections, id);
+        if (found) return found;
+    }
+};
+
+// Zones de dépôt imbriquées : on garde la plus petite sous le pointeur, c'est-à-dire la plus profonde
+const innermostDrop: CollisionDetection = (args) => {
+    const area = (id: string | number) => {
+        const rect = args.droppableRects.get(id);
+        return rect ? rect.width * rect.height : Infinity;
+    };
+    return pointerWithin(args).sort((a, b) => area(a.id) - area(b.id)).slice(0, 1);
+};
 
 type AdminVehiculesProps = {
     vehicules: Vehicule[];
@@ -35,8 +53,27 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     } | null>(null);
     
     const { deleteElementMutation } = useElementMutations();
-    const { deleteSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
+    const { deleteSectionMutation, moveSectionMutation, uploadSectionPhotoMutation, deleteSectionPhotoMutation } = useSectionMutations();
     const { deleteVehiculeMutation } = useVehiculeMutations();
+
+    // distance : un simple clic sur la poignée ne déclenche pas de glissement
+    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+    const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        const drag = active.data.current as SectionDragData | undefined;
+        if (!drag || !over) return;
+        const targetId: number | undefined = over.data.current?.sectionId; // undefined = racine du véhicule
+        const vehicule = vehicules.find((v) => v.id === drag.vehiculeId);
+        const moved = findSection(vehicule?.sections, drag.sectionId);
+        const target = targetId === undefined ? undefined : findSection(vehicule?.sections, targetId);
+        if (!moved) return;
+        setPendingConfirm({
+            message: target
+                ? `Déplacer la section "${moved.name}" dans "${target.name}" ?`
+                : `Remonter la section "${moved.name}" à la racine du véhicule ?`,
+            onConfirm: () => moveSectionMutation.mutate({ id: moved.id, parentSectionId: targetId ?? null }),
+        });
+    };
 
     const openModal = (sectionId: number, sectionName: string, element?: Element) => {
         setSelectedSection({ id: sectionId, name: sectionName, element });
@@ -99,12 +136,13 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         });
     };
 
-    const renderSection = (section: Section, level: number = 0): JSX.Element => {
+    const renderSection = (section: Section, vehiculeId: number, level: number = 0): JSX.Element => {
         const hasElements = section.elements && section.elements.length > 0;
         const hasSubSections = section.subSections && section.subSections.length > 0;
 
         return (
-            <div key={section.id} className="mb-2">
+            <SectionDropTarget key={section.id} sectionId={section.id} vehiculeId={vehiculeId}>
+              <div className="mb-2">
                 <Collapse title={section.name} level={level + 1}>
                     <div className="space-y-2">
                         {/* Header avec boutons d'actions */}
@@ -114,6 +152,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                 <div>{hasSubSections ? `${section.subSections!.length} sous-section(s)` : "Aucune sous-section"}</div>
                             </div>
                             <div className="flex gap-2 flex-wrap">
+                                <SectionDragHandle sectionId={section.id} vehiculeId={vehiculeId} isRoot={level === 0} />
                                 <Button
                                     text="+ Équipement"
                                     onClick={() => openModal(section.id, section.name)}
@@ -206,13 +245,14 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         {hasSubSections && (
                             <div className="space-y-2 mt-4">
                                 {section.subSections!.map((subSection: Section) => 
-                                    renderSection(subSection, level + 1)
+                                    renderSection(subSection, vehiculeId, level + 1)
                                 )}
                             </div>
                         )}
                     </div>
                 </Collapse>
-            </div>
+              </div>
+            </SectionDropTarget>
         );
     };
 
@@ -249,6 +289,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                     <p className="text-gray-500 text-lg">Aucun véhicule trouvé</p>
                 </div>
             ) : (
+                <DndContext sensors={sensors} collisionDetection={innermostDrop} onDragEnd={handleDragEnd}>
                 <div className="space-y-4">
                     {vehicules.map((vehicule: Vehicule) => (
                         <div key={vehicule.id}>
@@ -276,8 +317,9 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                     />
                                                 </div>
                                             </div>
-                                            {vehicule.sections.map((section: Section) => 
-                                                renderSection(section, 0)
+                                            <VehiculeRootDropZone vehiculeId={vehicule.id} />
+                                            {vehicule.sections.map((section: Section) =>
+                                                renderSection(section, vehicule.id, 0)
                                             )}
                                         </div>
                                     ) : (
@@ -305,8 +347,9 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                         </div>
                     ))}
                 </div>
+                </DndContext>
             )}
-            
+
             {/* Modal d'ajout d'équipement */}
             {selectedSection && (
                 <AddElementModal
