@@ -28,6 +28,11 @@ export async function updateSection(id: number, sectionData: { name: string }) {
     return await instance.put<Section>(`/sections/${id}`, sectionData);
 }
 
+// parentSectionId = null : remonter la section à la racine de son véhicule
+export async function moveSection(id: number, parentSectionId: number | null) {
+    return await instance.patch(`/sections/${id}/parent`, { parent_section_id: parentSectionId });
+}
+
 export async function deleteSection(id: number) {
     return await instance.delete(`/sections/${id}`);
 }

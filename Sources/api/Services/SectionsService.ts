@@ -16,6 +16,42 @@ function detectImageMime(data: Buffer): string | null {
 }
 
 export default class SectionsService {
+    // Déplace une section sous un autre parent du même véhicule, ou à la racine du véhicule (parentId = null)
+    public static async moveSection(sectionId: number, parentId: number | null): Promise<OperationResult<void>> {
+        // Chemins racine -> section ; path[0] est la racine, qui porte le vehicule_id
+        const path = await SectionsRepository.getSectionPath(sectionId);
+        if (path.length === 0) {
+            return OperationResult.fail(SECTION_NOT_FOUND);
+        }
+        const vehiculeId = path[0].vehicule_id as number;
+        const currentParentId = path[path.length - 1].parent_section_id;
+
+        if (parentId === null) {
+            if (currentParentId === null) {
+                return OperationResult.fail("La section est déjà à la racine du véhicule");
+            }
+        } else {
+            const parentPath = await SectionsRepository.getSectionPath(parentId);
+            if (parentPath.length === 0) {
+                return OperationResult.fail(SECTION_NOT_FOUND);
+            }
+            if (parentPath[0].vehicule_id !== vehiculeId) {
+                return OperationResult.fail("Une section ne peut pas être déplacée vers un autre véhicule");
+            }
+            // Le parent (ou un de ses ancêtres) est la section elle-même : cela créerait un cycle
+            if (parentPath.some((s) => s.id === sectionId)) {
+                return OperationResult.fail("Une section ne peut pas être déplacée dans elle-même ou dans l'une de ses sous-sections");
+            }
+            if (parentId === currentParentId) {
+                return OperationResult.fail("La section est déjà dans cette section");
+            }
+        }
+
+        await SectionsRepository.moveSection(sectionId, parentId, vehiculeId);
+        logger.success("Section déplacée", { sectionId, parentId, vehiculeId });
+        return OperationResult.ok();
+    }
+
     public static async getPhoto(sectionId: number): Promise<OperationResult<{ photo: Buffer; mime: string }>> {
         const section = await SectionsRepository.getPhoto(sectionId);
         if (!section?.photo || !section.photo_mime) {
