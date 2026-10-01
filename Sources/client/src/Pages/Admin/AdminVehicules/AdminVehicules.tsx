@@ -13,6 +13,7 @@ import Button from "../../../Components/Button/button";
 import SectionPhotoButton from "../../../Components/Section/SectionPhotoButton";
 import { SectionDragData, SectionDragHandle, SectionDropTarget, VehiculeRootDropZone } from "../../../Components/Section/SectionDnd";
 import ConfirmModal, { PendingConfirm } from "../../../Components/Modal/ConfirmModal";
+import MoveSectionModal, { MoveSectionTarget } from "../../../Components/Modal/MoveSectionModal";
 import { useElementMutations } from "../../../hooks/useElementMutations";
 import { useSectionMutations } from "../../../hooks/useSectionMutations";
 import { useVehiculeMutations } from "../../../hooks/useVehiculeMutations";
@@ -24,13 +25,30 @@ const findSection = (sections: Section[] | undefined, id: number): Section | und
     }
 };
 
-// Zones de dépôt imbriquées : on garde la plus petite sous le pointeur, c'est-à-dire la plus profonde
+// Un Collapse replié garde ses enfants dans le DOM (donc mesurés par dnd-kit) alors qu'ils ne sont pas affichés
+const isShown = (node: HTMLElement | null | undefined): boolean => {
+    let el = node ?? null;
+    while (el) {
+        const content = el.closest(".collapse-content");
+        if (!content) return true;
+        const collapse = content.parentElement;
+        if (!collapse?.querySelector(":scope > input")?.matches(":checked")) return false;
+        el = collapse;
+    }
+    return true;
+};
+
+// Zones de dépôt imbriquées : parmi celles affichées sous le pointeur, on garde la plus petite, c'est-à-dire la plus profonde
 const innermostDrop: CollisionDetection = (args) => {
     const area = (id: string | number) => {
         const rect = args.droppableRects.get(id);
         return rect ? rect.width * rect.height : Infinity;
     };
-    return pointerWithin(args).sort((a, b) => area(a.id) - area(b.id)).slice(0, 1);
+    const shown = (id: string | number) => isShown(args.droppableContainers.find((c) => c.id === id)?.node.current);
+    return pointerWithin(args)
+        .filter((c) => shown(c.id))
+        .sort((a, b) => area(a.id) - area(b.id))
+        .slice(0, 1);
 };
 
 type AdminVehiculesProps = {
@@ -59,6 +77,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     // distance : un simple clic sur la poignée ne déclenche pas de glissement
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
+    const [moveTarget, setMoveTarget] = useState<MoveSectionTarget>(null);
+
     // Nom de la section en cours de glissement, affiché dans l'aperçu qui suit le pointeur
     const [draggedName, setDraggedName] = useState<string | null>(null);
 
@@ -82,6 +102,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             message: target
                 ? `Déplacer la section "${moved.name}" dans "${target.name}" ?`
                 : `Remonter la section "${moved.name}" à la racine du véhicule ?`,
+            title: "Confirmer le déplacement",
+            confirmLabel: "Déplacer",
             onConfirm: () => moveSectionMutation.mutate({ id: moved.id, parentSectionId: targetId ?? null }),
         });
     };
@@ -164,6 +186,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                             </div>
                             <div className="flex gap-2 flex-wrap">
                                 <SectionDragHandle sectionId={section.id} vehiculeId={vehiculeId} isRoot={level === 0} />
+                                <Button
+                                    text="↪ Déplacer"
+                                    onClick={() => setMoveTarget({ section, vehiculeSections: vehicules.find((v) => v.id === vehiculeId)?.sections ?? [] })}
+                                    className="btn-xs"
+                                    title="Déplacer cette section vers une autre section"
+                                />
                                 <Button
                                     text="+ Équipement"
                                     onClick={() => openModal(section.id, section.name)}
@@ -394,6 +422,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             )}
 
             <ConfirmModal pending={pendingConfirm} onClose={() => setPendingConfirm(null)} />
+
+            <MoveSectionModal
+                target={moveTarget}
+                onClose={() => setMoveTarget(null)}
+                onMove={(id, parentSectionId) => moveSectionMutation.mutate({ id, parentSectionId })}
+            />
 
             {/* Modal d'ajout de véhicule */}
             <AddVehiculeModal
