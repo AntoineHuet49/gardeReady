@@ -14,7 +14,8 @@ Three independently-versioned Node projects under `Sources/`, each with its own 
 Sources/
 ├── api/          # Backend — Express 5 + TypeScript + Sequelize (PostgreSQL)
 ├── client/       # Frontend — React 18 + TypeScript + Vite
-└── database/     # PostgreSQL init scripts + seed data
+├── database/     # PostgreSQL init scripts + seed data
+└── e2e/          # End-to-end tests — Playwright
 Script/database/  # Production/deployment SQL (init-deployment.sql)
 docs/             # LOGGING.md, COMPTES_TEST.md, EMAIL_TROUBLESHOOTING.md
 ```
@@ -29,8 +30,11 @@ npm run dev          # nodemon ./app.ts — hot reload, port 3000
 npm run build         # tsup app.ts --format cjs --target node18 --clean -> dist/app.js
 npm run start         # node dist/app.js (run build first)
 npm run start:prod    # node app.js (alternative production entry)
+npm test              # Vitest: unit + integration
+npm run test:unit     # tests/unit — repositories mocked
+npm run test:int      # tests/integration — supertest on expressApp.ts + throwaway Postgres (Testcontainers, needs Docker)
 ```
-No test suite or lint script is configured for the API.
+`app.ts` is the entry point (DB connection + listen); `expressApp.ts` exports the Express app without side effects so tests can import it. No lint script is configured for the API.
 
 ### Frontend (`Sources/client`)
 ```bash
@@ -38,8 +42,14 @@ npm run dev       # vite --host, port 5173
 npm run build     # tsc -b && vite build -> dist/
 npm run lint      # eslint .
 npm run preview   # vite preview --host --port 3000
+npm test          # Vitest + React Testing Library + MSW (jsdom), *.test.ts(x) next to the tested code
 ```
-No test suite is configured for the client (Vitest + React Testing Library is the recommended-but-unimplemented setup per `.github/instructions/client.instructions.md`).
+
+### End-to-end (`Sources/e2e`)
+```bash
+npm test          # Playwright: builds and starts its own app + Postgres (Testcontainers) on separate ports
+```
+CI (`.github/workflows/tests.yml`) runs lint, build and all test suites on every PR to `develop`/`main`.
 
 ### Database / local stack
 ```bash
@@ -97,6 +107,7 @@ logger.debug(...) / logger.info(...) / logger.warn(...) / logger.error(...) / lo
 Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars. Full reference: `docs/LOGGING.md`.
 
 ## Conventions
+- **Tests are part of every change.** Before considering a dev done (and before any commit/PR): run the test suites of every project you touched (`npm test` in `Sources/api`, `Sources/client`, and `Sources/e2e` when a user flow changed). Update existing tests the change makes obsolete, and add tests for new behavior or a fixed bug (unit for logic, integration for API routes/DB constraints, E2E for a new user flow). Never delete or skip a failing test to make the suite pass — fix the code or explain why in the PR.
 - Never use `sequelize.sync({ force: true })` — it drops and recreates all tables. `alter: true` is likewise avoided in production; schema changes for prod should go through raw SQL / Sequelize CLI migrations.
 - Every FK cascades `ON DELETE CASCADE` except `gardes.responsable`, which is `ON DELETE SET NULL` — deleting a responsable's user account does not delete the garde.
 - Frontend env vars must be prefixed `VITE_` to be exposed to client code (`import.meta.env.VITE_*`).
@@ -108,7 +119,7 @@ The user runs several Claude sessions in parallel, so each session works in isol
 - A fresh worktree has no `node_modules`: run `npm install` in `Sources/api` and/or `Sources/client` before building/linting. `.env` files are copied in automatically via `.worktreeinclude`.
 - The user runs the stack in Docker themselves (`docker-compose up -d`: `gardeReady-database` 5432, `backend` 3000, `gardeReady-frontend` 5173), shared by all sessions. Never start, stop, restart or rebuild these containers, and never launch a local `npm run dev` on those ports. If you need the stack and it is unreachable (`docker ps` / `curl -s localhost:3000`), stop and ask the user to start the containers.
 - Those containers bind-mount the **main checkout's** `Sources/`, not your worktree: they run `main`'s code, not your changes. Verify your work with `npm run build` / `npm run lint` / `npx tsc` in the worktree; tell the user when a change needs a manual check in the running app after merge.
-- When done: commit (clear message, what and why), push the branch, open a PR against `develop` with `gh pr create --base develop`, and give the user the PR link. Don't merge it yourself unless asked.
+- When done: run the tests (see Conventions), then commit (clear message, what and why), push the branch, open a PR against `develop` with `gh pr create --base develop`, and give the user the PR link. Don't merge it yourself unless asked.
 - Before opening the PR, bring the branch up to date with `develop` and resolve conflicts — other sessions may have merged in the meantime.
 - Environments (Railway project `VeriFeu`):
   - `develop` → env `staging` (RE7): https://gardeready-staging.up.railway.app, its own Postgres, auto-deploys on push.
