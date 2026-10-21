@@ -14,6 +14,10 @@ export async function createVehicule(data: { name: string }) {
     return await instance.post<Vehicule>(`${apiUrl.vehicule}`, data);
 }
 
+export async function updateVehicule(id: number, data: { name: string }) {
+    return await instance.put<Vehicule>(`${apiUrl.vehicule}/${id}`, data);
+}
+
 export async function deleteVehicule(id: number) {
     return await instance.delete<{ message: string }>(`${apiUrl.vehicule}/${id}`);
 }

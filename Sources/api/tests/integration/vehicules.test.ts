@@ -41,6 +41,14 @@ describe('véhicules', () => {
         await request(app).delete(`/api/vehicules/${created.body.id}`).set('Cookie', admin).expect(404);
     });
 
+    it('un admin renomme un véhicule ; 404 si inconnu, 403 pour un agent', async () => {
+        const res = await request(app).put(`/api/vehicules/${ids.vehicule}`).set('Cookie', admin).send({ name: 'VSAV 2' }).expect(200);
+        expect(res.body).toMatchObject({ id: ids.vehicule, name: 'VSAV 2' });
+        await request(app).put('/api/vehicules/999999').set('Cookie', admin).send({ name: 'X' }).expect(404);
+        await request(app).put(`/api/vehicules/${ids.vehicule}`).set('Cookie', admin).send({ name: ' ' }).expect(400);
+        await request(app).put(`/api/vehicules/${ids.vehicule}`).set('Cookie', user).send({ name: 'Piraté' }).expect(403);
+    });
+
     it('400 pour un nom vide', async () => {
         await request(app).post('/api/vehicules').set('Cookie', admin).send({ name: ' ' }).expect(400);
     });

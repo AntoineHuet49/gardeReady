@@ -40,6 +40,31 @@ export default class VehiculesController extends BaseController {
         }
     });
 
+    public static updateVehicule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const id = parseInt(req.params.id);
+        const dto = req.body as CreateVehiculeDto;
+
+        if (isNaN(id)) {
+            res.status(HttpCode.BadRequest).json({ error: "L'ID du véhicule est invalide" });
+            return;
+        }
+        if (!dto?.name || dto.name.trim() === "") {
+            res.status(HttpCode.BadRequest).json({ error: "Le nom du véhicule est requis" });
+            return;
+        }
+
+        try {
+            res.status(HttpCode.Ok).json(await VehiculesService.updateVehicule(id, dto.name));
+        } catch (error) {
+            if ((error as Error).message === "Véhicule non trouvé") {
+                res.status(HttpCode.NotFound).json({ error: "Véhicule non trouvé" });
+            } else {
+                logger.error("Erreur lors de la modification du véhicule", error);
+                res.status(HttpCode.InternalServerError).json({ error: "Erreur interne du serveur" });
+            }
+        }
+    });
+
     public static deleteVehicule = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         try {
             const id = parseInt(req.params.id);

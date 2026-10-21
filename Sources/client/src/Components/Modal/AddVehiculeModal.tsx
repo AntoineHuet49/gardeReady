@@ -7,6 +7,7 @@ import TextInput from "../Input/TextInput";
 type AddVehiculeModalProps = {
     isOpen: boolean;
     onClose: () => void;
+    vehicule?: { id: number; name: string }; // Si fourni : mode édition (renommage)
 };
 
 type FormData = {
@@ -15,10 +16,13 @@ type FormData = {
 
 const AddVehiculeModal = ({ 
     isOpen, 
-    onClose
+    onClose,
+    vehicule
 }: AddVehiculeModalProps) => {
-    const { createVehiculeMutation } = useVehiculeMutations();
+    const { createVehiculeMutation, updateVehiculeMutation } = useVehiculeMutations();
     
+    const isPending = createVehiculeMutation.isPending || updateVehiculeMutation.isPending;
+
     const {
         register,
         handleSubmit,
@@ -31,22 +35,23 @@ const AddVehiculeModal = ({
     useEffect(() => {
         if (isOpen) {
             // Délai pour que le modal soit complètement rendu
+            reset({ name: vehicule?.name ?? "" });
             setTimeout(() => {
                 setFocus("name");
             }, 100);
         }
-    }, [isOpen, setFocus]);
+    }, [isOpen, vehicule, reset, setFocus]);
 
     const onSubmit = (data: FormData) => {
-        createVehiculeMutation.mutate(
-            { name: data.name },
-            {
-                onSuccess: () => {
-                    reset();
-                    onClose();
-                }
-            }
-        );
+        const onSuccess = () => {
+            reset();
+            onClose();
+        };
+        if (vehicule) {
+            updateVehiculeMutation.mutate({ id: vehicule.id, name: data.name }, { onSuccess });
+        } else {
+            createVehiculeMutation.mutate({ name: data.name }, { onSuccess });
+        }
     };
 
     const handleClose = () => {
@@ -60,7 +65,7 @@ const AddVehiculeModal = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Ajouter un véhicule</h3>
+                    <h3 className="text-lg font-semibold">{vehicule ? "Renommer le véhicule" : "Ajouter un véhicule"}</h3>
                     <button
                         onClick={handleClose}
                         className="text-gray-500 hover:text-gray-700"
@@ -95,9 +100,9 @@ const AddVehiculeModal = ({
                             className="btn btn-ghost"
                         />
                         <Button
-                            text={createVehiculeMutation.isPending ? "Création..." : "Créer"}
+                            text={isPending ? "Enregistrement..." : vehicule ? "Enregistrer" : "Créer"}
                             type="submit"
-                            disabled={createVehiculeMutation.isPending}
+                            disabled={isPending}
                             className="btn btn-primary"
                         />
                     </div>
