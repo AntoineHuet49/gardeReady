@@ -117,9 +117,7 @@ describe('GardesUsers', () => {
     await waitFor(() => expect(calls).toEqual([{ url: '/api/users/2/garde', body: { garde_id: null } }]))
   })
 
-  // BUG: la carte « non assignés » ne filtre pas les superAdmin comme GardeCard : un admin y voit
-  // (et peut supprimer) un superAdmin sans garde.
-  it.fails('masque aussi les superAdmin sans garde à un admin', async () => {
+  it('masque aussi les superAdmin sans garde à un admin', async () => {
     mockApi('get', '/gardes', gardes)
     mockApi('get', '/users', [...users, user(6, 'Eve', 'superAdmin', null)])
     renderWithProviders(<GardesUsers />, { user: makeUser('admin', { id: 99 }) })
