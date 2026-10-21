@@ -1,9 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { UseMutationResult } from '@tanstack/react-query'
-import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
+import { uploadSectionPhoto } from '../../App/utils/Api/Sections'
 import { mockApi } from '../../test/api'
-import { server } from '../../test/server'
 import { createTestQueryClient, createWrapper, invalidatedKeys } from '../../test/render'
 import { useElementMutations } from '../useElementMutations'
 import { useSectionMutations } from '../useSectionMutations'
@@ -12,6 +11,13 @@ import { useVehiculeMutations } from '../useVehiculeMutations'
 // La compression passe par canvas (absent de jsdom) : testée à part dans resizeImage.test.ts
 vi.mock('../../App/utils/resizeImage', () => ({
   resizeImage: vi.fn(async () => new Blob(['jpeg'], { type: 'image/jpeg' })),
+}))
+
+// Envoi d'un Blob par XHR : sous Node 22 (CI), l'intercepteur MSW + jsdom ne termine jamais la requête.
+// L'appel API est donc remplacé ici ; seuls l'enchaînement compression → envoi et les invalidations sont testés.
+vi.mock('../../App/utils/Api/Sections', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../App/utils/Api/Sections')>()),
+  uploadSectionPhoto: vi.fn(async () => ({ data: {} })),
 }))
 
 const useAll = () => ({ ...useElementMutations(), ...useSectionMutations(), ...useVehiculeMutations() })
@@ -50,20 +56,13 @@ describe('mutations véhicules / sections / équipements', () => {
   })
 
   it('uploadSectionPhotoMutation envoie la photo compressée et invalide aussi ["details"] (écran de vérification)', async () => {
-    // Le corps binaire n'est pas comparé : le Blob de jsdom n'est pas sérialisé par l'intercepteur XHR de MSW
-    let contentType: string | null = null
-    server.use(
-      http.put('*/api/sections/2/photo', ({ request }) => {
-        contentType = request.headers.get('content-type')
-        return HttpResponse.json({})
-      }),
-    )
     const { result, invalidate } = setup()
 
     act(() => result.current.uploadSectionPhotoMutation.mutate({ id: 2, file: new File(['png'], 'p.png', { type: 'image/png' }) }))
 
     await waitFor(() => expect(result.current.uploadSectionPhotoMutation.isSuccess).toBe(true))
-    expect(contentType).toBe('image/jpeg') // type du Blob compressé, pas celui du PNG d'origine
+    // C'est le Blob compressé qui est envoyé, pas le PNG d'origine
+    expect(uploadSectionPhoto).toHaveBeenCalledWith(2, expect.objectContaining({ type: 'image/jpeg' }))
     expect(invalidatedKeys(invalidate)).toEqual(expect.arrayContaining([['admin-vehicules'], ['details']]))
   })
 

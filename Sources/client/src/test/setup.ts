@@ -1,10 +1,7 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, configure } from '@testing-library/react'
+import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import { server } from './server'
-
-// Runners CI plus lents que le poste local : le délai par défaut de waitFor/findBy (1 s) y est trop juste
-configure({ asyncUtilTimeout: 5000 })
 
 // API navigateur absentes de jsdom, utilisées au chargement des modules ou par les modales DaisyUI
 window.matchMedia ??= (query: string) =>
