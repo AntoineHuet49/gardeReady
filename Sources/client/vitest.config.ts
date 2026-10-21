@@ -8,5 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // La rotation des gardes lit les heures dans le fuseau du navigateur : on fige celui du SDIS
+    env: { TZ: 'Europe/Paris' },
   },
 })
