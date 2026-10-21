@@ -1,9 +1,5 @@
 import { Sequelize } from "sequelize";
-import { configDotenv } from 'dotenv';
-
-// Charger les variables d'environnement en premier
-configDotenv({path: '.env', override: true});
-configDotenv({path: '.env.local', override: true});
+import './LoadEnv';
 
 // Utiliser DATABASE_URL en production, ou les paramètres individuels en développement
 const databaseUrl = process.env.DATABASE_URL;

@@ -1,0 +1,14 @@
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react-swc'
+
+// Config séparée de vite.config.ts pour ne pas embarquer le plugin PWA dans les tests
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['src/test/setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
+    // La rotation des gardes lit les heures dans le fuseau du navigateur : on fige celui du SDIS
+    env: { TZ: 'Europe/Paris' },
+  },
+})
