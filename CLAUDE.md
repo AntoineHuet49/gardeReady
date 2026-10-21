@@ -110,7 +110,7 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 ## Conventions
 - **Tests are part of every change.** Before considering a dev done (and before any commit/PR): run the test suites of every project you touched (`npm test` in `Sources/api`, `Sources/client`, and `Sources/e2e` when a user flow changed). Update existing tests the change makes obsolete, and add tests for new behavior or a fixed bug (unit for logic, integration for API routes/DB constraints, E2E for a new user flow). Never delete or skip a failing test to make the suite pass — fix the code or explain why in the PR.
 - Never use `sequelize.sync({ force: true })` — it drops and recreates all tables. `alter: true` is likewise avoided in production; schema changes for prod should go through raw SQL / Sequelize CLI migrations.
-- Every FK cascades `ON DELETE CASCADE` except `gardes.responsable`, which is `ON DELETE SET NULL` — deleting a responsable's user account does not delete the garde.
+- Every FK cascades `ON DELETE CASCADE` except `gardes.responsable` and `users.garde_id`, which are `ON DELETE SET NULL` — deleting a responsable's user account does not delete the garde, and deleting a garde leaves its members unassigned (not deleted).
 - Frontend env vars must be prefixed `VITE_` to be exposed to client code (`import.meta.env.VITE_*`).
 - Do not create Markdown files documenting changes unless explicitly requested; if requested, place them under `docs/changes/`.
 
