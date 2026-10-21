@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { gardeColor } from '../shared'
+import { canAssignVehicules, gardeColor } from '../shared'
+import type { Garde } from '../../../Types/Garde'
 
 describe('gardeColor', () => {
   it('traduit les couleurs françaises, sans tenir compte de la casse, des accents ni des espaces', () => {
@@ -14,5 +15,20 @@ describe('gardeColor', () => {
     expect(gardeColor('#123456')).toBe('#123456')
     expect(gardeColor('Arc-en-ciel')).toBe('#6b7280')
     supports.mockRestore()
+  })
+})
+
+describe('canAssignVehicules', () => {
+  const garde = { id: 1, numero: 1, color: 'Rouge', responsable: 5, users: [{ id: 5 }, { id: 6 }] } as unknown as Garde
+
+  it.each([
+    [{ id: 99, role: 'superAdmin' }, true],
+    [{ id: 6, role: 'admin' }, true],
+    [{ id: 5, role: 'user' }, true],
+    [{ id: 7, role: 'admin' }, false],
+    [{ id: 6, role: 'user' }, false],
+    [null, false],
+  ])('%j -> %s', (user, expected) => {
+    expect(canAssignVehicules(user, garde)).toBe(expected)
   })
 })
