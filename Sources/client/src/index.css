@@ -14,3 +14,16 @@ h1 {
 ::placeholder {
     color: color-mix(in oklab, currentColor 70%, transparent);
 }
+
+/* iOS Safari zoome au focus d'un champ dont la police fait moins de 16px (daisyUI : 14px).
+   Règle hors @layer pour primer sur input-sm/select-sm ; le zoom manuel reste possible. */
+@media (pointer: coarse) {
+    input, select, textarea {
+        font-size: 16px;
+    }
+}
+
+/* Zoom désactivé : pas de pincement ni de double-tap, le défilement reste possible */
+html {
+    touch-action: pan-x pan-y;
+}
