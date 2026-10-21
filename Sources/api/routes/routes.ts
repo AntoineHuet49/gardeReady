@@ -33,6 +33,7 @@ router.get("/auth/microsoft/callback", requireAuthProvider("microsoft"), AuthCon
 router.get('/vehicules', verifyToken, VehiculesController.getAllVehicules);
 router.get('/vehicules/:id', verifyToken, VehiculesController.getOneVehiculeWithElements);
 router.post('/vehicules', verifyToken, requireAdmin, VehiculesController.addVehicule);
+router.put('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.updateVehicule);
 router.delete('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.deleteVehicule);
 router.post('/vehicules/verifications/:id', verifyToken, VehiculesController.validateVehicule);
 

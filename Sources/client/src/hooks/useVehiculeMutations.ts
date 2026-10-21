@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createVehicule, deleteVehicule } from "../App/utils/Api/Vehicules";
+import { createVehicule, deleteVehicule, updateVehicule } from "../App/utils/Api/Vehicules";
 import { notify } from "../App/utils/notify";
 
 export const useVehiculeMutations = () => {
@@ -18,6 +18,19 @@ export const useVehiculeMutations = () => {
         }
     });
 
+    const updateVehiculeMutation = useMutation({
+        mutationFn: ({ id, name }: { id: number; name: string }) => updateVehicule(id, { name }),
+        onSuccess: () => {
+            // Le nom s'affiche aussi dans les vérifications et l'accueil
+            queryClient.invalidateQueries({ queryKey: ["admin-vehicules"] });
+            queryClient.invalidateQueries({ queryKey: ["vehicules"] });
+            notify("Véhicule renommé avec succès !", "success");
+        },
+        onError: (error: Error & { response?: { data?: { error?: string } } }) => {
+            notify(error.response?.data?.error || "Erreur lors du renommage du véhicule", "error");
+        }
+    });
+
     const deleteVehiculeMutation = useMutation({
         mutationFn: (id: number) => deleteVehicule(id),
         onSuccess: () => {
@@ -33,6 +46,7 @@ export const useVehiculeMutations = () => {
 
     return {
         createVehiculeMutation,
+        updateVehiculeMutation,
         deleteVehiculeMutation
     };
 };

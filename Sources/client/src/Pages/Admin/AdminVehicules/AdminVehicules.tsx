@@ -28,6 +28,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
     const [sectionModalOpen, setSectionModalOpen] = useState(false);
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [vehiculeModalOpen, setVehiculeModalOpen] = useState(false);
+    const [editedVehicule, setEditedVehicule] = useState<{ id: number; name: string } | undefined>();
     const [selectedContext, setSelectedContext] = useState<{ 
         vehiculeId?: number; 
         parentSectionId?: number; 
@@ -66,7 +67,8 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
         setSelectedContext(null);
     };
 
-    const openVehiculeModal = () => {
+    const openVehiculeModal = (vehicule?: { id: number; name: string }) => {
+        setEditedVehicule(vehicule);
         setVehiculeModalOpen(true);
     };
 
@@ -248,7 +250,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             <div className="mb-6 flex justify-end">
                 <Button
                     text="+ Ajouter un véhicule"
-                    onClick={openVehiculeModal}
+                    onClick={() => openVehiculeModal()}
                     className="btn btn-primary"
                 />
             </div>
@@ -277,6 +279,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                         title="Ajouter une section au véhicule"
                                                     />
                                                     <Button
+                                                        text="✎"
+                                                        onClick={() => openVehiculeModal(vehicule)}
+                                                        className="btn-sm bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200"
+                                                        title="Renommer ce véhicule"
+                                                    />
+                                                    <Button
                                                         text={deleteVehiculeMutation.isPending ? "..." : "✕"}
                                                         onClick={() => handleDeleteVehicule(vehicule.id, vehicule.name)}
                                                         className="btn-sm bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
@@ -298,6 +306,12 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                                     text="+ Ajouter une section"
                                                     onClick={() => openSectionModal(vehicule.id, undefined, vehicule.name)}
                                                     className="btn-primary"
+                                                />
+                                                <Button
+                                                    text="✎ Renommer"
+                                                    onClick={() => openVehiculeModal(vehicule)}
+                                                    className="btn"
+                                                    title="Renommer ce véhicule"
                                                 />
                                                 <Button
                                                     text={deleteVehiculeMutation.isPending ? "..." : "Supprimer"}
@@ -351,6 +365,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
             <AddVehiculeModal
                 isOpen={vehiculeModalOpen}
                 onClose={closeVehiculeModal}
+                vehicule={editedVehicule}
             />
         </div>
     );

@@ -101,4 +101,19 @@ describe('AdminVehicules — arbre des sections', () => {
 
     await waitFor(() => expect(calls).toEqual([{ url: '/api/sections/2/parent', body: { parent_section_id: 4 } }]))
   })
+
+  it('renomme le véhicule puis recharge la liste', async () => {
+    const { getDetails } = setup()
+    const calls = mockApi('put', '/vehicules/:id')
+    await screen.findByRole('checkbox', { name: 'Trousse' })
+
+    await userEvent.click(screen.getByTitle('Renommer ce véhicule'))
+    const input = await screen.findByDisplayValue('VSAV')
+    await userEvent.clear(input)
+    await userEvent.type(input, 'VSAV 2')
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(calls).toEqual([{ url: '/api/vehicules/1', body: { name: 'VSAV 2' } }]))
+    await waitFor(() => expect(getDetails.length).toBe(2))
+  })
 })
