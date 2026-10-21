@@ -5,6 +5,8 @@ const alias = { '~~': path.resolve(__dirname) };
 
 export default defineConfig({
     test: {
+        // Les services loguent beaucoup (console.error attendus dans les cas d'échec) : logs affichés seulement pour les tests en échec
+        silent: 'passed-only',
         projects: [
             {
                 resolve: { alias },
@@ -17,6 +19,7 @@ export default defineConfig({
                     include: ['tests/integration/**/*.test.ts'],
                     // Une seule base Postgres (Testcontainers) partagée : fichiers exécutés l'un après l'autre
                     globalSetup: ['tests/integration/globalSetup.ts'],
+                    setupFiles: ['tests/integration/setup.ts'],
                     poolOptions: { forks: { singleFork: true } },
                     hookTimeout: 120_000,
                 },
