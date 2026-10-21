@@ -1,12 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { removeCookie } from '../../../utils/getCookie'
+import { describe, expect, it } from 'vitest'
+import { mockApi } from '../../../../test/api'
+import { makeUser } from '../../../../test/render'
 import { UserProvider } from '../UserProvider'
 import { useUser } from '../UserContext'
-
-const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')
-const setToken = (payload: object) => (document.cookie = `token=${b64({ alg: 'HS256' })}.${b64(payload)}.sig; path=/`)
 
 function Etat() {
   const { user, isAuthenticated, isAdmin, isSuperAdmin, logout } = useUser()
@@ -18,32 +16,29 @@ function Etat() {
   )
 }
 
-afterEach(() => removeCookie('token'))
-
 describe('UserProvider', () => {
   it.each([
     ['user', 'admin=false super=false'],
     ['admin', 'admin=true super=false'],
     ['superAdmin', 'admin=true super=true'],
-  ])('décode le JWT du cookie : rôle %s → %s', (role, droits) => {
-    setToken({ id: 1, firstname: 'Jean', role })
+  ] as const)('lit la session via /auth/me : rôle %s → %s', async (role, droits) => {
+    mockApi('get', '/auth/me', makeUser(role, { firstname: 'Jean' }))
     render(<UserProvider><Etat /></UserProvider>)
-    expect(screen.getByText(`Jean auth=true ${droits}`)).toBeInTheDocument()
+    expect(await screen.findByText(`Jean auth=true ${droits}`)).toBeInTheDocument()
   })
 
-  it("n'authentifie pas sans cookie ou avec un token illisible", () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    document.cookie = 'token=pas-un-jwt; path=/'
+  it("n'authentifie pas quand /auth/me renvoie 401", async () => {
+    mockApi('get', '/auth/me', {}, 401)
     render(<UserProvider><Etat /></UserProvider>)
-    expect(screen.getByText('personne auth=false admin=false super=false')).toBeInTheDocument()
-    vi.restoreAllMocks()
+    expect(await screen.findByText('personne auth=false admin=false super=false')).toBeInTheDocument()
   })
 
-  it('logout supprime le cookie et les droits', async () => {
-    setToken({ id: 1, firstname: 'Jean', role: 'admin' })
+  it('logout appelle le serveur et retire les droits', async () => {
+    mockApi('get', '/auth/me', makeUser('admin', { firstname: 'Jean' }))
+    const calls = mockApi('post', '/auth/logout')
     render(<UserProvider><Etat /></UserProvider>)
-    await userEvent.click(screen.getByRole('button', { name: 'Déconnexion' }))
-    expect(screen.getByText('personne auth=false admin=false super=false')).toBeInTheDocument()
-    expect(document.cookie).not.toContain('token=')
+    await userEvent.click(await screen.findByRole('button', { name: 'Déconnexion' }))
+    expect(await screen.findByText('personne auth=false admin=false super=false')).toBeInTheDocument()
+    expect(calls).toHaveLength(1)
   })
 })

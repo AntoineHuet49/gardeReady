@@ -53,7 +53,7 @@ Users.init(
                 model: "gardes",
                 key: "id",
             },
-            onDelete: "CASCADE",
+            onDelete: "SET NULL",
         },
         azure_oid: {
             type: DataTypes.STRING(100),

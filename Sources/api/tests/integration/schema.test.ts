@@ -87,9 +87,11 @@ describe('contraintes de la base', () => {
         expect(garde!.responsable).toBeNull();
     });
 
-    it('ON DELETE CASCADE : supprimer une garde supprime ses membres', async () => {
+    it('ON DELETE SET NULL : supprimer une garde laisse ses membres non assignés', async () => {
+        const avant = await Users.count();
         await Gardes.destroy({ where: { id: ids.garde1 } });
-        expect(await Users.count()).toBe(0);
+        expect(await Users.count()).toBe(avant);
+        expect(await Users.count({ where: { garde_id: ids.garde1 } })).toBe(0);
     });
 
     it('garde_rotation et vehicule_assignments n’acceptent que des vendredis', async () => {

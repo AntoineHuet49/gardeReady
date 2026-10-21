@@ -59,7 +59,7 @@ ADD CONSTRAINT fk_element_section FOREIGN KEY (section_id) REFERENCES sections(i
 -- Ajout des clés étrangères après la création de toutes les tables
 ALTER TABLE users
 ADD COLUMN garde_id INT,
-ADD CONSTRAINT fk_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DELETE CASCADE;
+ADD CONSTRAINT fk_garde FOREIGN KEY (garde_id) REFERENCES gardes(id) ON DELETE SET NULL;
 
 ALTER TABLE gardes
 ADD COLUMN responsable INT NULL,

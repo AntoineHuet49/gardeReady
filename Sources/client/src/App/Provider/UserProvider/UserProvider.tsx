@@ -1,92 +1,31 @@
-import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { User } from "../../../Types/User";
 import { UserContext } from "./UserContext";
 import Loader from "../../../Components/Loader/Loader";
+import { getMe, logout as logoutRequest } from "../../utils/Api/Auth";
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-    const checkAndSetUser = () => {
-        const token = document.cookie
-            .split(";")
-            .map(c => c.trim())
-            .find(c => c.startsWith("token="))
-            ?.split("=")[1];
-
-        if (token) {
-            try {
-                const decoded: User = jwtDecode(token);
-                setUser(decoded);
-                setIsAuthenticated(true);
-                setIsAdmin(decoded.role === "admin" || decoded.role === "superAdmin");
-                setIsSuperAdmin(decoded.role === "superAdmin");
-            } catch (error) {
-                console.error("Erreur de décodage du token:", error);
-                setUser(null);
-                setIsAuthenticated(false);
-                setIsAdmin(false);
-                setIsSuperAdmin(false);
-            }
-        } else {
-            setUser(null);
-            setIsAuthenticated(false);
-            setIsAdmin(false);
-            setIsSuperAdmin(false);
-        }
-    };
-
-    useEffect(() => {
-        checkAndSetUser();
-        setIsAuthLoading(false);
+    // Le cookie est httpOnly : la session se lit côté serveur (401 = non connecté)
+    const refreshUser = useCallback(async () => {
+        const me = await getMe().catch(() => null);
+        setUser(me);
+        return {
+            isAdmin: me?.role === "admin" || me?.role === "superAdmin",
+            isSuperAdmin: me?.role === "superAdmin",
+            user: me,
+        };
     }, []);
 
-    const logout = () => {
-        // Supprime le cookie "token"
-        document.cookie = "token=; Max-Age=0; path=/";
+    useEffect(() => {
+        refreshUser().finally(() => setIsAuthLoading(false));
+    }, [refreshUser]);
+
+    const logout = async () => {
+        await logoutRequest().catch(() => undefined);
         setUser(null);
-        setIsAuthenticated(false);
-        setIsAdmin(false);
-        setIsSuperAdmin(false);
-    };
-
-    const refreshUser = (): { isAdmin: boolean; isSuperAdmin: boolean; user: User | null } => {
-        const token = document.cookie
-            .split(";")
-            .map(c => c.trim())
-            .find(c => c.startsWith("token="))
-            ?.split("=")[1];
-
-        if (token) {
-            try {
-                const decoded: User = jwtDecode(token);
-                setUser(decoded);
-                setIsAuthenticated(true);
-                const userIsAdmin = decoded.role === "admin" || decoded.role === "superAdmin";
-                const userIsSuperAdmin = decoded.role === "superAdmin";
-                setIsAdmin(userIsAdmin);
-                setIsSuperAdmin(userIsSuperAdmin);
-                
-                return { isAdmin: userIsAdmin, isSuperAdmin: userIsSuperAdmin, user: decoded };
-            } catch (error) {
-                console.error("Erreur de décodage du token:", error);
-                setUser(null);
-                setIsAuthenticated(false);
-                setIsAdmin(false);
-                setIsSuperAdmin(false);
-                return { isAdmin: false, isSuperAdmin: false, user: null };
-            }
-        } else {
-            setUser(null);
-            setIsAuthenticated(false);
-            setIsAdmin(false);
-            setIsSuperAdmin(false);
-            return { isAdmin: false, isSuperAdmin: false, user: null };
-        }
     };
 
     if (isAuthLoading) {
@@ -94,9 +33,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return (
-        <UserContext.Provider value={{ user, isAuthenticated, isAdmin, isSuperAdmin, logout, refreshUser }}>
+        <UserContext.Provider
+            value={{
+                user,
+                isAuthenticated: !!user,
+                isAdmin: user?.role === "admin" || user?.role === "superAdmin",
+                isSuperAdmin: user?.role === "superAdmin",
+                logout,
+                refreshUser,
+            }}
+        >
             {children}
         </UserContext.Provider>
     );
 };
-

@@ -1,6 +1,5 @@
 import axios from "axios";
 import { apiUrl } from "../constants";
-import { removeCookie } from "../getCookie";
 
 export const instance = axios.create({
     baseURL: apiUrl.base,
@@ -12,8 +11,8 @@ export const instance = axios.create({
 instance.interceptors.response.use((response) => {
     return response
 }, (error) => {
-    if (error.response?.status === 401) {
-        removeCookie('token');
+    // /auth/me renvoie 401 pour un visiteur non connecté : pas de redirection (boucle de rechargement)
+    if (error.response?.status === 401 && error.config?.url !== apiUrl.me) {
         document.location.href = "/";
     }
     return Promise.reject(error);

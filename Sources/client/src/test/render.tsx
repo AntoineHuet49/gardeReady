@@ -33,8 +33,8 @@ export const createWrapper = ({ user = makeUser(), route = '/', queryClient = cr
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin' || user?.role === 'superAdmin',
       isSuperAdmin: user?.role === 'superAdmin',
-      logout: () => {},
-      refreshUser: () => ({ isAdmin: false, isSuperAdmin: false, user }),
+      logout: async () => {},
+      refreshUser: async () => ({ isAdmin: false, isSuperAdmin: false, user }),
     }
     return (
       <QueryClientProvider client={queryClient}>

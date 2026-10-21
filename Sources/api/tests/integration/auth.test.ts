@@ -10,6 +10,19 @@ beforeAll(async () => {
     userCookie = await login('agent@sdis49.fr');
 });
 
+describe('GET /api/auth/me et POST /api/auth/logout', () => {
+    it('me renvoie l\'utilisateur de la session, 401 sans cookie', async () => {
+        const res = await request(app).get('/api/auth/me').set('Cookie', userCookie).expect(200);
+        expect(res.body).toMatchObject({ email: 'agent@sdis49.fr', role: 'user' });
+        await request(app).get('/api/auth/me').expect(401);
+    });
+
+    it('logout efface le cookie', async () => {
+        const res = await request(app).post('/api/auth/logout').expect(200);
+        expect(res.get('Set-Cookie')![0]).toMatch(/^token=;.*(Expires=Thu, 01 Jan 1970|Max-Age=0)/i);
+    });
+});
+
 describe('POST /api/auth/login', () => {
     it('pose un cookie de session JWT réutilisable sur les routes protégées', async () => {
         const res = await request(app).post('/api/auth/login').send({ email: 'agent@sdis49.fr', password: PASSWORD }).expect(200);
@@ -18,8 +31,8 @@ describe('POST /api/auth/login', () => {
         const token = /^token=([^;]+)/.exec(cookie)![1];
         expect(jwt.decode(token)).toMatchObject({ email: 'agent@sdis49.fr', role: 'user' });
         expect(jwt.decode(token)).not.toHaveProperty('password');
-        // Pas httpOnly : le client lit et supprime ce cookie en JS (UserProvider), contrairement à ce qu'indique CLAUDE.md
-        expect(cookie).not.toMatch(/HttpOnly/i);
+        expect(cookie).toMatch(/HttpOnly/i);
+        expect(cookie).toMatch(/SameSite=Lax/i);
 
         await request(app).get('/api/vehicules').set('Cookie', res.get('Set-Cookie')!).expect(200);
     });

@@ -1,20 +1,12 @@
 import { Navigate } from "react-router";
+import { useUser } from "../Provider/UserProvider";
 
 type PrivateRouteProps = {
     children: React.ReactNode;
 };
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-    let isAuthenticated = false;
-
-    // TODO: Check if token is valid
-    document.cookie.split(";").forEach((cookie) => {
-        const [name] = cookie.trim().split("=");
-        if (name === "token") {
-            isAuthenticated = true;
-        }
-    });
-
+    const { isAuthenticated } = useUser();
     return isAuthenticated ? (<>{children}</>) : <Navigate to="/" />;
 };
 export default PrivateRoute;

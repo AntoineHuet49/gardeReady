@@ -91,7 +91,7 @@ JWT-based: `AuthService.login()` issues a token stored in an httpOnly cookie (se
 Pages → Components → hooks → App/utils/Api (axios)
 ```
 - `App/Provider/`: React contexts (User, Admin, Toast).
-- `App/Routes/`: route table; `PrivateRoute` gates authenticated pages by reading/decoding the JWT cookie.
+- `App/Routes/`: route table; `UserProvider` loads the session from `GET /api/auth/me` (the JWT cookie is httpOnly, unreadable in JS) and `PrivateRoute` gates pages on it; logout goes through `POST /api/auth/logout`.
 - `App/utils/Api/`: one file per REST resource wrapping a shared `axios` instance (`withCredentials: true` so the auth cookie is sent).
 - `hooks/`: TanStack Query mutation hooks per resource (e.g. `useGardeMutations`, `useElementMutations`) — always invalidate the relevant query key(s) `onSuccess`. Deleting a garde must invalidate both `["gardes"]` and `["users"]` since users reference gardes.
 - Styling: Tailwind CSS 4 + DaisyUI 5 components (`btn`, `card`, etc.); SASS only for custom transitions not covered by Tailwind.
@@ -110,7 +110,7 @@ Level controlled by `LOG_LEVEL` (backend) / `VITE_LOG_LEVEL` (frontend) env vars
 ## Conventions
 - **Tests are part of every change.** Before considering a dev done (and before any commit/PR): run the test suites of every project you touched (`npm test` in `Sources/api`, `Sources/client`, and `Sources/e2e` when a user flow changed). Update existing tests the change makes obsolete, and add tests for new behavior or a fixed bug (unit for logic, integration for API routes/DB constraints, E2E for a new user flow). Never delete or skip a failing test to make the suite pass — fix the code or explain why in the PR.
 - Never use `sequelize.sync({ force: true })` — it drops and recreates all tables. `alter: true` is likewise avoided in production; schema changes for prod should go through raw SQL / Sequelize CLI migrations.
-- Every FK cascades `ON DELETE CASCADE` except `gardes.responsable`, which is `ON DELETE SET NULL` — deleting a responsable's user account does not delete the garde.
+- Every FK cascades `ON DELETE CASCADE` except `gardes.responsable` and `users.garde_id`, which are `ON DELETE SET NULL` — deleting a responsable's user account does not delete the garde, and deleting a garde leaves its members unassigned (not deleted).
 - Frontend env vars must be prefixed `VITE_` to be exposed to client code (`import.meta.env.VITE_*`).
 - Do not create Markdown files documenting changes unless explicitly requested; if requested, place them under `docs/changes/`.
 
