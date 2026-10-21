@@ -91,7 +91,7 @@ JWT-based: `AuthService.login()` issues a token stored in an httpOnly cookie (se
 Pages → Components → hooks → App/utils/Api (axios)
 ```
 - `App/Provider/`: React contexts (User, Admin, Toast).
-- `App/Routes/`: route table; `PrivateRoute` gates authenticated pages by reading/decoding the JWT cookie.
+- `App/Routes/`: route table; `UserProvider` loads the session from `GET /api/auth/me` (the JWT cookie is httpOnly, unreadable in JS) and `PrivateRoute` gates pages on it; logout goes through `POST /api/auth/logout`.
 - `App/utils/Api/`: one file per REST resource wrapping a shared `axios` instance (`withCredentials: true` so the auth cookie is sent).
 - `hooks/`: TanStack Query mutation hooks per resource (e.g. `useGardeMutations`, `useElementMutations`) — always invalidate the relevant query key(s) `onSuccess`. Deleting a garde must invalidate both `["gardes"]` and `["users"]` since users reference gardes.
 - Styling: Tailwind CSS 4 + DaisyUI 5 components (`btn`, `card`, etc.); SASS only for custom transitions not covered by Tailwind.

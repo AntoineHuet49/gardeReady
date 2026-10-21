@@ -23,6 +23,8 @@ router.get("/", (req, res) => {
 // fichier, pour ne pas dépendre de l'ordre de chargement de dotenv dans app.ts.
 router.get("/auth/provider", AuthController.getAuthProvider)
 router.post("/auth/login", requireAuthProvider("local"), AuthController.login)
+router.get("/auth/me", verifyToken, AuthController.me)
+router.post("/auth/logout", AuthController.logout)
 router.post("/auth/set-password", requireAuthProvider("local"), AuthController.setPassword)
 router.get("/auth/microsoft/login", requireAuthProvider("microsoft"), AuthController.redirectToMicrosoft)
 router.get("/auth/microsoft/callback", requireAuthProvider("microsoft"), AuthController.microsoftCallback)

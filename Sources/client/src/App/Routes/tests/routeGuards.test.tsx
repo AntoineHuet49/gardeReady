@@ -1,17 +1,12 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { ReactNode } from 'react'
-import { MemoryRouter, Route, Routes } from 'react-router'
-import { afterEach, describe, expect, it } from 'vitest'
-import { removeCookie } from '../../utils/getCookie'
+import { Route, Routes } from 'react-router'
+import { describe, expect, it } from 'vitest'
 import { makeUser, renderWithProviders } from '../../../test/render'
 import { User } from '../../../Types/User'
 import PrivateRoute from '../privatesRoutes'
 import AdminRoutes from '../adminRoutes'
 import SuperAdminRoutes from '../superAdminRoutes'
-
-// JWT non signé (seul le payload est lu côté client)
-const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')
-const jwt = (payload: object) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64(payload)}.signature`
 
 const pages = (guarded: ReactNode) => (
   <Routes>
@@ -21,30 +16,19 @@ const pages = (guarded: ReactNode) => (
   </Routes>
 )
 
-afterEach(() => removeCookie('token'))
-
 describe('PrivateRoute', () => {
-  const renderPrivate = () =>
-    render(<MemoryRouter initialEntries={['/protegee']}>{pages(<PrivateRoute><p>Contenu privé</p></PrivateRoute>)}</MemoryRouter>)
+  const renderPrivate = (user: User | null) =>
+    renderWithProviders(pages(<PrivateRoute><p>Contenu privé</p></PrivateRoute>), { user, route: '/protegee' })
 
-  it("redirige vers l'accueil sans cookie token", () => {
-    renderPrivate()
+  it("redirige vers l'accueil sans session", () => {
+    renderPrivate(null)
     expect(screen.getByText('Page de connexion')).toBeInTheDocument()
     expect(screen.queryByText('Contenu privé')).not.toBeInTheDocument()
   })
 
-  it('affiche la page avec un cookie token', () => {
-    document.cookie = `token=${jwt({ id: 1, role: 'user', exp: Math.floor(Date.now() / 1000) + 3600 })}; path=/`
-    renderPrivate()
+  it('affiche la page avec une session', () => {
+    renderPrivate(makeUser('user'))
     expect(screen.getByText('Contenu privé')).toBeInTheDocument()
-  })
-
-  // BUG: PrivateRoute ne vérifie que la présence du cookie (TODO dans le code) : un JWT expiré ouvre la page,
-  // l'utilisateur n'est renvoyé à l'accueil qu'au premier 401 de l'API (intercepteur axios).
-  it.fails('redirige vers l\'accueil avec un JWT expiré', () => {
-    document.cookie = `token=${jwt({ id: 1, role: 'user', exp: 1 })}; path=/`
-    renderPrivate()
-    expect(screen.getByText('Page de connexion')).toBeInTheDocument()
   })
 })
 
