@@ -13,8 +13,8 @@ export class VehiculeAssignmentsService {
     }
 
     /**
-     * Remplace les assignations de la semaine `shiftDate`. Autorisé aux admins, et au responsable
-     * de la garde de service cette semaine-là ; seuls les membres de cette garde peuvent être assignés.
+     * Remplace les assignations de la semaine `shiftDate`. Autorisé au superAdmin, aux admins membres de la garde
+     * de service cette semaine-là, et à son responsable ; seuls les membres de cette garde peuvent être assignés.
      */
     public static async replaceWeek(shiftDate: string, assignments: WeekAssignmentsDto, requester: TUserPayload) {
         const rotation = await GardesRepository.GetRotation();
@@ -24,12 +24,14 @@ export class VehiculeAssignmentsService {
         }
         const garde = gardes[gardeIndexForShift(shiftDate, rotation.reference_date, gardes.length)];
 
-        const isAdmin = requester.role === "admin" || requester.role === "superAdmin";
-        if (!isAdmin && garde.responsable !== requester.id) {
-            return OperationResult.fail("Seuls les admins et le responsable de la garde peuvent assigner les véhicules", HttpCode.Forbidden);
+        const memberIds = new Set((garde.users ?? []).map((u) => u.id));
+        // superAdmin : tout ; admin : sa propre garde seulement (un admin sans garde n'a donc aucun droit) ; responsable : sa garde
+        const allowed = requester.role === "superAdmin" || garde.responsable === requester.id
+            || (requester.role === "admin" && memberIds.has(requester.id));
+        if (!allowed) {
+            return OperationResult.fail(`Vous ne pouvez assigner les véhicules que pour les membres de votre garde (cette semaine : Garde ${garde.numero})`, HttpCode.Forbidden);
         }
 
-        const memberIds = new Set((garde.users ?? []).map((u) => u.id));
         const rows = assignments.flatMap((a) => a.user_ids.map((user_id) => ({ vehicule_id: a.vehicule_id, user_id })));
         if (rows.some((row) => !memberIds.has(row.user_id))) {
             return OperationResult.fail(`Seuls les membres de la Garde ${garde.numero} peuvent être assignés cette semaine`, HttpCode.BadRequest);

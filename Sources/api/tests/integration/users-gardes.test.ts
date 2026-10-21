@@ -143,10 +143,10 @@ describe('assignations véhicules', () => {
         await request(app).put(`/api/vehicule-assignments/${REFERENCE_DATE}`).set('Cookie', user).send({ assignments: [] }).expect(403);
     });
 
-    it('400 : agent hors de la garde de service, véhicule inconnu, format ou dates invalides', async () => {
-        // La semaine suivante est celle de la Garde 2, dont l'agent n'est pas membre
+    it('400/403 : semaine d’une autre garde, véhicule inconnu, format ou dates invalides', async () => {
+        // La semaine suivante est celle de la Garde 2 : l'admin de la Garde 1 n'a pas la main dessus (403, cf. vehicule-assignments.test.ts)
         await request(app).put('/api/vehicule-assignments/2026-10-09').set('Cookie', admin)
-            .send({ assignments: [{ vehicule_id: ids.vehicule, user_ids: [ids.user] }] }).expect(400);
+            .send({ assignments: [{ vehicule_id: ids.vehicule, user_ids: [ids.user] }] }).expect(403);
         await request(app).put(`/api/vehicule-assignments/${REFERENCE_DATE}`).set('Cookie', admin)
             .send({ assignments: [{ vehicule_id: 999, user_ids: [ids.user] }] }).expect(400);
         await request(app).put(`/api/vehicule-assignments/${REFERENCE_DATE}`).set('Cookie', admin).send({ assignments: [{ vehicule_id: 'a' }] }).expect(400);

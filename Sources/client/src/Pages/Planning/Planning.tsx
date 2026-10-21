@@ -14,7 +14,7 @@ import MonthView from "./MonthView";
 import ListView from "./ListView";
 import AssignmentModal from "./AssignmentModal";
 import AssignmentSummary from "./AssignmentSummary";
-import { formatDay, gardeColor, responsableName, Shift, shiftEnd } from "./shared";
+import { canAssignVehicules, formatDay, gardeColor, responsableName, Shift, shiftEnd } from "./shared";
 
 function RotationForm({ firstGarde, referenceDate }: { firstGarde?: Garde; referenceDate?: string }) {
     const { updateRotation } = useGardeRotation();
@@ -124,8 +124,8 @@ function Planning() {
     const [assigning, setAssigning] = useState<Shift | null>(null);
     const { data: vehiculesResponse } = useQuery({ queryKey: ["vehicules"], queryFn: () => getAllVehicules() });
     const vehicules = vehiculesResponse?.data ?? [];
-    // Admins : toutes les gardes ; responsable : uniquement la sienne (règle vérifiée aussi côté API)
-    const canAssign = (garde: Garde) => isAdmin || (user !== null && garde.responsable === user.id);
+    // superAdmin : toutes les gardes ; admin / responsable : uniquement la leur (règle vérifiée aussi côté API)
+    const canAssign = (garde: Garde) => canAssignVehicules(user, garde);
 
     if (gardesLoading || rotationLoading) return <Loader />;
     if (gardesError || rotationError) {

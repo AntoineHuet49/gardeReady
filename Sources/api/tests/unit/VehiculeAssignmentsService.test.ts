@@ -43,9 +43,18 @@ describe('replaceWeek', () => {
         ]);
     });
 
-    it.each(['admin', 'superAdmin'])('un %s peut assigner même sans être responsable', async (role) => {
-        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(99, role))).success).toBe(true);
-        expect(repo.CountVehicules).not.toHaveBeenCalled();
+    it('un superAdmin peut assigner pour n’importe quelle garde', async () => {
+        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(99, 'superAdmin'))).success).toBe(true);
+    });
+
+    it('un admin membre de la garde de service peut assigner sans en être responsable', async () => {
+        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(11, 'admin'))).success).toBe(true);
+    });
+
+    it.each([[20, 'admin d’une autre garde'], [99, 'admin sans garde']])('403 pour un %s', async (id) => {
+        const result = await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(id, 'admin'));
+        expect(result).toMatchObject({ success: false, errors: HttpCode.Forbidden });
+        expect(repo.ReplaceWeek).not.toHaveBeenCalled();
     });
 
     it('403 pour le responsable d’une autre garde', async () => {
@@ -72,9 +81,9 @@ describe('replaceWeek', () => {
 
     it('échoue si la rotation n’est pas configurée ou s’il n’y a aucune garde', async () => {
         gardesRepo.GetRotation.mockResolvedValueOnce(null);
-        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(1, 'admin'))).success).toBe(false);
+        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(1, 'superAdmin'))).success).toBe(false);
         gardesRepo.GetAll.mockResolvedValueOnce([]);
-        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(1, 'admin'))).success).toBe(false);
+        expect((await VehiculeAssignmentsService.replaceWeek(SEMAINE_G1, [], as(1, 'superAdmin'))).success).toBe(false);
     });
 });
 
