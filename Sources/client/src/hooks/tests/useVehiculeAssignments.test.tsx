@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
-import { mockApi } from '../test/api'
-import { createTestQueryClient, createWrapper, invalidatedKeys } from '../test/render'
-import { server } from '../test/server'
-import { useReplaceWeekAssignments, useVehiculeAssignments } from './useVehiculeAssignments'
+import { mockApi } from '../../test/api'
+import { createTestQueryClient, createWrapper, invalidatedKeys } from '../../test/render'
+import { server } from '../../test/server'
+import { useReplaceWeekAssignments, useVehiculeAssignments } from '../useVehiculeAssignments'
 
 describe('useVehiculeAssignments', () => {
   it('demande la période from/to et renvoie [] avant réponse', async () => {

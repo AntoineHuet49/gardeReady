@@ -1,10 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { mockApi } from '../test/api'
-import { createTestQueryClient, createWrapper, invalidatedKeys } from '../test/render'
-import { useGardeMutations } from './useGardeMutations'
-import { useGardes } from './useGardes'
-import { useGardeRotation } from './useGardeRotation'
+import { mockApi } from '../../test/api'
+import { createTestQueryClient, createWrapper, invalidatedKeys } from '../../test/render'
+import { useGardeMutations } from '../useGardeMutations'
+import { useGardes } from '../useGardes'
+import { useGardeRotation } from '../useGardeRotation'
 
 const setup = () => {
   const { queryClient, invalidate } = createTestQueryClient()

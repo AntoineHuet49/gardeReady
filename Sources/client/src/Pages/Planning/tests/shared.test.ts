@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { gardeColor } from './shared'
+import { gardeColor } from '../shared'
 
 describe('gardeColor', () => {
   it('traduit les couleurs françaises, sans tenir compte de la casse, des accents ni des espaces', () => {

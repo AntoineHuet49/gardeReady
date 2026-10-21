@@ -2,15 +2,15 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { UseMutationResult } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
-import { mockApi } from '../test/api'
-import { server } from '../test/server'
-import { createTestQueryClient, createWrapper, invalidatedKeys } from '../test/render'
-import { useElementMutations } from './useElementMutations'
-import { useSectionMutations } from './useSectionMutations'
-import { useVehiculeMutations } from './useVehiculeMutations'
+import { mockApi } from '../../test/api'
+import { server } from '../../test/server'
+import { createTestQueryClient, createWrapper, invalidatedKeys } from '../../test/render'
+import { useElementMutations } from '../useElementMutations'
+import { useSectionMutations } from '../useSectionMutations'
+import { useVehiculeMutations } from '../useVehiculeMutations'
 
 // La compression passe par canvas (absent de jsdom) : testée à part dans resizeImage.test.ts
-vi.mock('../App/utils/resizeImage', () => ({
+vi.mock('../../App/utils/resizeImage', () => ({
   resizeImage: vi.fn(async () => new Blob(['jpeg'], { type: 'image/jpeg' })),
 }))
 

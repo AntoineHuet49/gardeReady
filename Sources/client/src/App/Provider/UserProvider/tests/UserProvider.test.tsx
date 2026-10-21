@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { removeCookie } from '../../utils/getCookie'
-import { UserProvider } from './UserProvider'
-import { useUser } from './UserContext'
+import { removeCookie } from '../../../utils/getCookie'
+import { UserProvider } from '../UserProvider'
+import { useUser } from '../UserContext'
 
 const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')
 const setToken = (payload: object) => (document.cookie = `token=${b64({ alg: 'HS256' })}.${b64(payload)}.sig; path=/`)

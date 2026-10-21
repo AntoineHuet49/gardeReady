@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAllCookie, removeCookie } from './getCookie'
+import { getAllCookie, removeCookie } from '../getCookie'
 
 describe('getCookie', () => {
   it('lit puis supprime un cookie', () => {

@@ -42,8 +42,9 @@ npm run dev       # vite --host, port 5173
 npm run build     # tsc -b && vite build -> dist/
 npm run lint      # eslint .
 npm run preview   # vite preview --host --port 3000
-npm test          # Vitest + React Testing Library + MSW (jsdom), *.test.ts(x) next to the tested code
+npm test          # Vitest + React Testing Library + MSW (jsdom)
 ```
+Client tests live in a `tests/` folder next to the tested file: the test of `dir/Foo.tsx` is `dir/tests/Foo.test.tsx`. Shared test helpers (render with providers, MSW server, `mockApi`) are in `src/test/`.
 
 ### End-to-end (`Sources/e2e`)
 ```bash

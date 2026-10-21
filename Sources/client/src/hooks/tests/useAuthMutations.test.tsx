@@ -1,8 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { mockApi } from '../test/api'
-import { createTestQueryClient, createWrapper, invalidatedKeys } from '../test/render'
-import { useAuthMutations } from './useAuthMutations'
+import { mockApi } from '../../test/api'
+import { createTestQueryClient, createWrapper, invalidatedKeys } from '../../test/render'
+import { useAuthMutations } from '../useAuthMutations'
 
 const setup = () => {
   const { queryClient, invalidate } = createTestQueryClient()

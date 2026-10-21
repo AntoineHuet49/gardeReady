@@ -2,13 +2,13 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { notify } from '../../App/utils/notify'
-import { mockApi } from '../../test/api'
-import { renderWithProviders } from '../../test/render'
-import { Vehicule } from '../../Types/Vehicule'
-import { Verifications } from '.'
+import { notify } from '../../../App/utils/notify'
+import { mockApi } from '../../../test/api'
+import { renderWithProviders } from '../../../test/render'
+import { Vehicule } from '../../../Types/Vehicule'
+import { Verifications } from '..'
 
-vi.mock('../../App/utils/notify', () => ({ notify: vi.fn() }))
+vi.mock('../../../App/utils/notify', () => ({ notify: vi.fn() }))
 
 const fpt: Vehicule = {
   id: 1,

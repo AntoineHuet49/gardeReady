@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, gardeForShift, mondayOf, parseDateOnly, shiftStartOf, toDateOnly } from './planning'
+import { addDays, gardeForShift, mondayOf, parseDateOnly, shiftStartOf, toDateOnly } from '../planning'
 
 // Fuseau Europe/Paris imposé par vitest.config.ts (test.env.TZ)
 const gardes = [1, 2, 3]

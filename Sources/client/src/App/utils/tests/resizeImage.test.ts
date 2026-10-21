@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resizeImage } from './resizeImage'
+import { resizeImage } from '../resizeImage'
 
 const file = new File(['x'], 'photo.png', { type: 'image/png' })
 

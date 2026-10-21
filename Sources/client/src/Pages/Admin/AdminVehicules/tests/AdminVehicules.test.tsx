@@ -1,10 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { mockApi } from '../../../test/api'
-import { renderWithProviders } from '../../../test/render'
-import { Vehicule } from '../../../Types/Vehicule'
-import { AdminVehicule as AdminVehicules } from '.'
+import { mockApi } from '../../../../test/api'
+import { renderWithProviders } from '../../../../test/render'
+import { Vehicule } from '../../../../Types/Vehicule'
+import { AdminVehicule as AdminVehicules } from '..'
 
 // VSAV : Cabine > Sac > Trousse, et Coffre à la racine
 const vsav: Vehicule = {

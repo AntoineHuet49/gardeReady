@@ -2,12 +2,12 @@ import { render, screen } from '@testing-library/react'
 import { ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
-import { removeCookie } from '../utils/getCookie'
-import { makeUser, renderWithProviders } from '../../test/render'
-import { User } from '../../Types/User'
-import PrivateRoute from './privatesRoutes'
-import AdminRoutes from './adminRoutes'
-import SuperAdminRoutes from './superAdminRoutes'
+import { removeCookie } from '../../utils/getCookie'
+import { makeUser, renderWithProviders } from '../../../test/render'
+import { User } from '../../../Types/User'
+import PrivateRoute from '../privatesRoutes'
+import AdminRoutes from '../adminRoutes'
+import SuperAdminRoutes from '../superAdminRoutes'
 
 // JWT non signé (seul le payload est lu côté client)
 const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')

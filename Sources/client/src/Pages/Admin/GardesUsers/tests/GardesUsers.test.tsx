@@ -1,10 +1,10 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { mockApi } from '../../../test/api'
-import { makeUser, renderWithProviders } from '../../../test/render'
-import { User } from '../../../Types/User'
-import { GardesUsers } from '.'
+import { mockApi } from '../../../../test/api'
+import { makeUser, renderWithProviders } from '../../../../test/render'
+import { User } from '../../../../Types/User'
+import { GardesUsers } from '..'
 
 const gardes = [
   { id: 30, numero: 3, color: 'Vert' },
