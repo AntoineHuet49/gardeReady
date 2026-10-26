@@ -42,7 +42,7 @@ function HomeContainer() {
     const handleSubmitForm = async (loginValues: LoginValues) => {
         const response = await loginMutation.mutateAsync(loginValues);
         if (response.status === 200) {
-            const { isAdmin: userIsAdmin } = refreshUser();
+            const { isAdmin: userIsAdmin } = await refreshUser();
             navigate(userIsAdmin && window.innerWidth > 768 ? routePath.admin : routePath.vehicules);
         }
     };

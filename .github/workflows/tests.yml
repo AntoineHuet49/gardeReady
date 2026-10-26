@@ -1,0 +1,65 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Sources/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Sources/api/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+      # Le runner GitHub fournit Docker : Testcontainers y lance la base Postgres de test
+      - run: npm test
+
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Sources/client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Sources/client/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+
+  e2e:
+    needs: [api, client]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: Sources/api
+      - run: npm ci
+        working-directory: Sources/client
+      - run: npm ci && npx playwright install --with-deps chromium
+        working-directory: Sources/e2e
+      - run: npm test
+        working-directory: Sources/e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: Sources/e2e/playwright-report

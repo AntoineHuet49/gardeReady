@@ -49,6 +49,17 @@ export default class VehiculesService {
         }
     }
 
+    public static async updateVehicule(id: number, name: string) {
+        if (!name || name.trim() === "") {
+            throw new Error("Le nom du véhicule est requis");
+        }
+        const vehicule = await VehiculesRepository.updateVehicule(id, { name: name.trim() });
+        if (!vehicule) {
+            throw new Error("Véhicule non trouvé");
+        }
+        return vehicule;
+    }
+
     public static async deleteVehicule(id: number) {
         try {
             const result = await VehiculesRepository.deleteVehicule(id);

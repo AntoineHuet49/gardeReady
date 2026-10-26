@@ -4,6 +4,13 @@ import { HttpCode } from "~~/Helpers/HttpCode";
 import { AuthService } from "~~/Services/AuthService";
 import { getAuthProvider } from "~~/Utils/AuthProvider";
 
+// Cookie illisible en JS : le client passe par /auth/me et /auth/logout
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+} as const;
+
 export class AuthController {
     public static getAuthProvider(req: Request, res: Response) {
         res.send({ provider: getAuthProvider() });
@@ -12,14 +19,21 @@ export class AuthController {
     public static async login(req: Request, res: Response) {
         const result = await AuthService.login(req.body);
         if (result.success) {
-            res.cookie('token', result.data, {
-                maxAge: 1000 * 60 * 60 * 24,
-            });
+            res.cookie('token', result.data, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 24 });
             res.locals.auditUser = jwt.decode(result.data ?? "");
         } else {
             res.status(HttpCode.BadRequest);
         }
         res.send(result.message);
+    }
+
+    public static me(req: Request, res: Response) {
+        res.json(req.user);
+    }
+
+    public static logout(req: Request, res: Response) {
+        res.clearCookie('token', cookieOptions);
+        res.sendStatus(HttpCode.Ok);
     }
 
     public static async redirectToMicrosoft(req: Request, res: Response) {
@@ -38,9 +52,7 @@ export class AuthController {
 
         const result = await AuthService.handleMicrosoftCallback(code);
         if (result.success) {
-            res.cookie('token', result.data, {
-                maxAge: 1000 * 60 * 60 * 24,
-            });
+            res.cookie('token', result.data, { ...cookieOptions, maxAge: 1000 * 60 * 60 * 24 });
             res.locals.auditUser = jwt.decode(result.data ?? "");
             res.redirect(frontendUrl);
         } else {

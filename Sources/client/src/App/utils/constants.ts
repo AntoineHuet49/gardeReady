@@ -2,6 +2,8 @@ export const apiUrl = {
     base: import.meta.env.VITE_API_URL || "/api",
     authProvider: "/auth/provider",
     login: "/auth/login",
+    me: "/auth/me",
+    logout: "/auth/logout",
     setPassword: "/auth/set-password",
     microsoftLogin: "/auth/microsoft/login",
     vehicule: "/vehicules",

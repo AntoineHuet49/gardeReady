@@ -1,6 +1,6 @@
 // Rotation des gardes côté serveur (miroir de client/src/App/utils/planning.ts) : une semaine de garde est
 // identifiée par son vendredi de relève (AAAA-MM-JJ), les gardes tournent dans l'ordre des numéros.
-// Pas d'import : le fichier est exécuté tel quel par scripts/rotation.check.ts.
+// Testé par tests/unit/GardeRotation.test.ts.
 
 const DAY_MS = 86_400_000;
 

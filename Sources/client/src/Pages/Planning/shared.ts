@@ -30,3 +30,10 @@ export const gardeTint = (color: string): React.CSSProperties => ({
 
 export const responsableName = (garde: Garde) =>
     garde.responsableUser ? `${garde.responsableUser.firstname} ${garde.responsableUser.lastname}` : null;
+
+/** Droit d'assigner les véhicules d'une garde : superAdmin partout, admin et responsable pour leur garde seulement (miroir de l'API). */
+export const canAssignVehicules = (user: { id: number; role: string } | null, garde: Garde) =>
+    user !== null &&
+    (user.role === "superAdmin" ||
+        garde.responsable === user.id ||
+        (user.role === "admin" && !!garde.users?.some((u) => u.id === user.id)));

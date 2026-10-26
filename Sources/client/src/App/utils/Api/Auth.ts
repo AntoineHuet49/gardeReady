@@ -1,5 +1,6 @@
 import { apiUrl } from "../constants";
 import { instance } from "./axios";
+import { User } from "../../../Types/User";
 
 export type AuthProvider = "local" | "microsoft";
 
@@ -15,6 +16,14 @@ export async function login(email: string, password: string) {
             password: password,
         },
     );
+}
+
+export async function getMe() {
+    return await instance.get<User>(apiUrl.me).then((response) => response.data);
+}
+
+export async function logout() {
+    return await instance.post(apiUrl.logout);
 }
 
 export async function setPassword(token: string, password: string) {

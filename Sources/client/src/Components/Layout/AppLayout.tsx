@@ -13,8 +13,8 @@ function AppLayout({ title, children }: AppLayoutProps) {
     const { user, isAdmin, logout } = useUser();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate("/");
     };
 

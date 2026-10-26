@@ -20,13 +20,13 @@ type GardesUsersProps = {
 };
 
 function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersProps) {
-    const { user: currentUser } = useUser();
+    const { user: currentUser, isSuperAdmin } = useUser();
     const { deleteUserMutation, updateGardeMutation } = useAuthMutations();
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
     const [isDragOver, setIsDragOver] = useState(false);
 
     // Récupérer les utilisateurs non assignés à une garde
-    const unassignedUsers = allUsers.filter(user => !user.garde_id);
+    const unassignedUsers = allUsers.filter(user => !user.garde_id && (isSuperAdmin || user.role !== "superAdmin"));
 
     const handleDeleteUser = (user: User) => {
         setPendingConfirm({
