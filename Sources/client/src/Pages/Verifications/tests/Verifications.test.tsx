@@ -112,10 +112,7 @@ describe('Verifications', () => {
     expect(await screen.findByText("Aucun vehicule n'a été trouvé")).toBeInTheDocument()
   })
 
-  // BUG: en cas d'échec de l'API, mutateAsync rejette au lieu de renvoyer la réponse : la branche
-  // « Une erreur est survenue » n'est jamais atteinte, l'utilisateur n'a aucun retour (rejet non géré).
-  // it.skip et non it.fails : le rejet non géré ferait échouer toute la suite Vitest.
-  it.skip("prévient l'utilisateur si l'envoi échoue", async () => {
+  it("prévient l'utilisateur si l'envoi échoue", async () => {
     setup()
     mockApi('post', '/vehicules/verifications/:id', { error: 'Erreur serveur' }, 500)
     await screen.findByText('0/3 éléments vérifiés')

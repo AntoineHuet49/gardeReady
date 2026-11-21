@@ -26,11 +26,11 @@ function VerificationsContainer() {
     });
 
     const onSubmit = async (data: VerificationValues[]) => {
-        const response = await verification.mutateAsync(data);
-        if (response.status >= 200 && response.status < 300) {
+        try {
+            await verification.mutateAsync(data);
             notify("Verifications envoyées", "success");
             navigate(routePath.vehicules);
-        } else {
+        } catch {
             notify("Une erreur est survenue", "error");
         }
     };
