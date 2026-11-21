@@ -16,6 +16,7 @@ type AddElementModalProps = {
 type FormData = {
     name: string;
     quantite: number;
+    pression_min: number | null;
 };
 
 const AddElementModal = ({ isOpen, onClose, sectionId, sectionName, element }: AddElementModalProps) => {
@@ -33,7 +34,7 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName, element }: A
     // Mettre le focus sur l'input quand le modal s'ouvre
     useEffect(() => {
         if (isOpen) {
-            reset({ name: element?.name ?? "", quantite: element?.quantite ?? 1 });
+            reset({ name: element?.name ?? "", quantite: element?.quantite ?? 1, pression_min: element?.pression_min ?? null });
             // Délai pour que le modal soit complètement rendu
             setTimeout(() => {
                 setFocus("name");
@@ -49,9 +50,9 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName, element }: A
             }
         };
         if (element) {
-            updateElementMutation.mutate({ id: element.id, data: { name: data.name, quantite: data.quantite } }, options);
+            updateElementMutation.mutate({ id: element.id, data: { name: data.name, quantite: data.quantite, pression_min: data.pression_min } }, options);
         } else {
-            createElementMutation.mutate({ name: data.name, quantite: data.quantite, section_id: sectionId }, options);
+            createElementMutation.mutate({ name: data.name, quantite: data.quantite, pression_min: data.pression_min, section_id: sectionId }, options);
         }
     };
 
@@ -111,6 +112,23 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName, element }: A
                         />
                         {errors.quantite && (
                             <p className="text-error text-sm mt-1 ml-1">{errors.quantite.message}</p>
+                        )}
+                        <label className="label text-sm mb-1" htmlFor="element-pression-min">Pression minimale (bar, optionnel)</label>
+                        <input
+                            id="element-pression-min"
+                            type="number"
+                            min={1}
+                            step={1}
+                            placeholder="Ex: 200 pour une bouteille d'ARI"
+                            className={`input input-bordered w-full ${errors.pression_min ? 'input-error' : ''}`}
+                            {...register("pression_min", {
+                                setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
+                                min: { value: 1, message: "La pression doit être au moins 1 bar" },
+                                validate: (v) => v == null || Number.isInteger(v) || "La pression doit être un nombre entier",
+                            })}
+                        />
+                        {errors.pression_min && (
+                            <p className="text-error text-sm mt-1 ml-1">{errors.pression_min.message}</p>
                         )}
                     </div>
 

@@ -191,6 +191,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                             <span className="font-medium">
                                                 <strong>{element.quantite} </strong>
                                                 {element.name}
+                                                {element.pression_min != null && <span className="font-normal"> (min. {element.pression_min} bar)</span>}
                                             </span>
                                             <div className="flex gap-1">
                                                 <Button

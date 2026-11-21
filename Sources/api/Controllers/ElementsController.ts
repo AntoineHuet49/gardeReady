@@ -7,10 +7,14 @@ import { CreateElementDto, UpdateElementDto } from "~~/Types/DTO/ElementDto";
 const isValidQuantite = (quantite: unknown) =>
     quantite === undefined || (Number.isInteger(quantite) && (quantite as number) >= 1);
 
+// pression_min (bar) est optionnelle (null = aucune) mais doit être un entier >= 1 si fournie
+const isValidPression = (p: unknown) =>
+    p === undefined || p === null || (Number.isInteger(p) && (p as number) >= 1);
+
 export default class ElementsController extends BaseController {
     public static async createElement(req: Request, res: Response): Promise<void> {
         try {
-            const { name, section_id, quantite } = req.body as CreateElementDto;
+            const { name, section_id, quantite, pression_min } = req.body as CreateElementDto;
             
             if (!name || !section_id) {
                 res.status(400).json({ error: "Le nom et l'ID de section sont requis" });
@@ -20,8 +24,12 @@ export default class ElementsController extends BaseController {
                 res.status(400).json({ error: "La quantité doit être un entier supérieur ou égal à 1" });
                 return;
             }
+            if (!isValidPression(pression_min)) {
+                res.status(400).json({ error: "La pression minimale doit être un entier supérieur ou égal à 1" });
+                return;
+            }
 
-            const element = await ElementsRepository.createElement({ name, section_id, quantite });
+            const element = await ElementsRepository.createElement({ name, section_id, quantite, pression_min });
             res.status(201).json(element);
         } catch (error) {
             console.error("Erreur lors de la création de l'élément:", error);
@@ -32,7 +40,7 @@ export default class ElementsController extends BaseController {
     public static async updateElement(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id);
-            const { name, quantite } = req.body as UpdateElementDto;
+            const { name, quantite, pression_min } = req.body as UpdateElementDto;
             
             if (!name) {
                 res.status(400).json({ error: "Le nom est requis" });
@@ -42,8 +50,12 @@ export default class ElementsController extends BaseController {
                 res.status(400).json({ error: "La quantité doit être un entier supérieur ou égal à 1" });
                 return;
             }
+            if (!isValidPression(pression_min)) {
+                res.status(400).json({ error: "La pression minimale doit être un entier supérieur ou égal à 1" });
+                return;
+            }
 
-            const element = await ElementsRepository.updateElement(id, { name, quantite });
+            const element = await ElementsRepository.updateElement(id, { name, quantite, pression_min });
             if (!element) {
                 res.status(404).json({ error: "Élément non trouvé" });
                 return;

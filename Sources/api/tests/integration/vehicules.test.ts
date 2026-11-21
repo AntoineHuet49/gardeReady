@@ -162,6 +162,11 @@ describe('éléments', () => {
         const updated = await request(app).put(`/api/elements/${created.body.id}`).set('Cookie', admin).send({ name: 'Garrot tourniquet', quantite: 3 }).expect(200);
         expect(updated.body).toMatchObject({ name: 'Garrot tourniquet', quantite: 3 });
 
+        const withPression = await request(app).put(`/api/elements/${created.body.id}`).set('Cookie', admin).send({ name: 'ARI', pression_min: 200 }).expect(200);
+        expect(withPression.body.pression_min).toBe(200);
+        const cleared = await request(app).put(`/api/elements/${created.body.id}`).set('Cookie', admin).send({ name: 'ARI', pression_min: null }).expect(200);
+        expect(cleared.body.pression_min).toBeNull();
+
         await request(app).delete(`/api/elements/${created.body.id}`).set('Cookie', admin).expect(204);
         await request(app).delete(`/api/elements/${created.body.id}`).set('Cookie', admin).expect(404);
     });
@@ -170,6 +175,7 @@ describe('éléments', () => {
         await request(app).post('/api/elements').set('Cookie', admin).send({ name: 'X' }).expect(400);
         await request(app).post('/api/elements').set('Cookie', admin).send({ name: 'X', section_id: ids.sac, quantite: 0 }).expect(400);
         await request(app).put(`/api/elements/${ids.phare}`).set('Cookie', admin).send({ name: 'X', quantite: 1.5 }).expect(400);
+        await request(app).post('/api/elements').set('Cookie', admin).send({ name: 'X', section_id: ids.sac, pression_min: 0 }).expect(400);
         await request(app).put('/api/elements/999').set('Cookie', admin).send({ name: 'X' }).expect(404);
     });
 });

@@ -18,6 +18,7 @@ export class Elements extends Model<
     declare id: CreationOptional<number>;
     declare name: string;
     declare quantite: CreationOptional<number>;
+    declare pression_min: CreationOptional<number | null>;
     declare section_id: ForeignKey<number> | null;
 
     // Associations
@@ -44,6 +45,11 @@ Elements.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1,
+            validate: { min: 1 },
+        },
+        pression_min: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
             validate: { min: 1 },
         },
         section_id: {
