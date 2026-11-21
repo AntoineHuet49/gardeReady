@@ -3,6 +3,7 @@ import VehiculesService from "~~/Services/VehiculesService";
 import { TUserPayload } from "~~/Types/User";
 import { BaseController } from "./BaseController";
 import * as path from 'path';
+import * as fs from 'fs';
 import asyncHandler from "express-async-handler";
 import { HttpCode } from "~~/Helpers/HttpCode";
 import { CreateVehiculeDto } from "~~/Types/DTO/CreateVehiculeDto";
@@ -114,9 +115,20 @@ export default class VehiculesController extends BaseController {
             // Générer le PDF
             await VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
             
-            // Envoyer l'email avec le PDF en pièce jointe
-            await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
-            
+            // Un échec d'envoi ne doit pas perdre la vérification : on renvoie le PDF en secours
+            try {
+                await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
+            } catch (mailError) {
+                logger.error("Envoi du rapport par e-mail impossible", mailError);
+                res.send({
+                    warning: "Vérification enregistrée, mais le rapport n'a pas pu être envoyé par e-mail.",
+                    filename: `Verif_${vehicule.name.replace(/[^a-zA-Z0-9]+/g, "_")}.pdf`,
+                    pdf: fs.readFileSync(filePath, "base64"),
+                });
+                return;
+            }
+
+
             logger.success(`Vérification validée pour le véhicule ${vehicule.name} par ${userPayload.firstname} ${userPayload.lastname}`);
             res.send("Vehicule validated");
         } catch (error) {

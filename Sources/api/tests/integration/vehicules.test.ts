@@ -82,13 +82,15 @@ describe('POST /api/vehicules/verifications/:id', () => {
         await request(app).post('/api/vehicules/verifications/999').set('Cookie', user).send({}).expect(404);
     });
 
-    it('500 si la garde de l’agent n’a pas de responsable', async () => {
+    it('200 avec avertissement et PDF de secours si l’envoi du mail échoue (pas de responsable)', async () => {
         await request(app).put(`/api/gardes/${ids.garde1}/responsable`).set('Cookie', admin).send({ responsableId: null }).expect(200);
-        await request(app)
+        const res = await request(app)
             .post(`/api/vehicules/verifications/${ids.vehicule}`)
             .set('Cookie', user)
             .send({ 0: { elementId: ids.phare, status: 'OK' } })
-            .expect(500);
+            .expect(200);
+        expect(res.body.warning).toMatch(/e-mail/);
+        expect(Buffer.from(res.body.pdf, 'base64').subarray(0, 5).toString()).toBe('%PDF-');
     });
 });
 

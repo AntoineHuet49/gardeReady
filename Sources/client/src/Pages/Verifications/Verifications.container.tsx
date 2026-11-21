@@ -28,7 +28,17 @@ function VerificationsContainer() {
     const onSubmit = async (data: VerificationValues[]) => {
         const response = await verification.mutateAsync(data);
         if (response.status >= 200 && response.status < 300) {
-            notify("Verifications envoyées", "success");
+            const { warning, pdf, filename } = response.data ?? {};
+            if (pdf) {
+                // Secours : l'e-mail a échoué, on télécharge le rapport
+                const link = document.createElement("a");
+                link.href = `data:application/pdf;base64,${pdf}`;
+                link.download = filename ?? "verification.pdf";
+                link.click();
+                notify(warning, "warning");
+            } else {
+                notify("Verifications envoyées", "success");
+            }
             navigate(routePath.vehicules);
         } else {
             notify("Une erreur est survenue", "error");
