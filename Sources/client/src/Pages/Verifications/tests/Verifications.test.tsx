@@ -1,11 +1,13 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Route, Routes } from 'react-router'
+import { Link, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { notify } from '../../../App/utils/notify'
 import { mockApi } from '../../../test/api'
 import { renderWithProviders } from '../../../test/render'
 import { Vehicule } from '../../../Types/Vehicule'
+import { server } from '../../../test/server'
+import { http, HttpResponse, delay } from 'msw'
 import { Verifications } from '..'
 
 vi.mock('../../../App/utils/notify', () => ({ notify: vi.fn() }))
@@ -123,5 +125,29 @@ describe('Verifications', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Valider' }))
 
     await waitFor(() => expect(notify).toHaveBeenCalledWith(expect.any(String), 'error'))
+  })
+
+  it("n'affiche pas le véhicule précédent en passant à un autre véhicule", async () => {
+    server.use(
+      http.get('*/api/vehicules/:id', async ({ params }) => {
+        if (params.id === '2') await delay(200)
+        return HttpResponse.json({ id: Number(params.id), name: params.id === '1' ? 'fpt' : 'vsav', sections: [] })
+      }),
+    )
+    renderWithProviders(
+      <>
+        <Link to="/vehicules/2">suivant</Link>
+        <Routes>
+          <Route path="/vehicules/:id" element={<Verifications />} />
+        </Routes>
+      </>,
+      { route: '/vehicules/1' },
+    )
+    expect(await screen.findByRole('heading', { name: 'FPT' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('link', { name: 'suivant' }))
+
+    expect(screen.queryByRole('heading', { name: 'FPT' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'VSAV' })).toBeInTheDocument()
   })
 })
