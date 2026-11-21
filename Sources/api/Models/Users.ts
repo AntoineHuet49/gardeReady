@@ -43,8 +43,9 @@ Users.init(
             allowNull: false,
         },
         role : {
-            type: DataTypes.STRING(50),
+            type: DataTypes.STRING(20),
             allowNull: false,
+            defaultValue: "user",
         },
         garde_id: {
             type: DataTypes.INTEGER,

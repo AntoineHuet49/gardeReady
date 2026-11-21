@@ -39,13 +39,7 @@ describe('cohérence init.sql / modèles Sequelize', () => {
                 if (modelLength !== dbLength) ecarts.push(`${model.tableName}.${attr.field}: modèle ${modelLength}, init.sql ${dbLength}`);
             }
         }
-        // Écarts sans impact en prod (le schéma SQL fait foi) mais `sync({ alter: true })` en développement
-        // élargit ces colonnes : les bases de dev divergent alors de init.sql. Aligner les modèles pour les supprimer.
-        expect(ecarts.sort()).toEqual([
-            'elements.name: modèle 255, init.sql 100',
-            'users.role: modèle 50, init.sql 20',
-            'vehicules.name: modèle 255, init.sql 100',
-        ]);
+        expect(ecarts).toEqual([]);
     });
 });
 
