@@ -21,12 +21,21 @@ function VehiculesContainer() {
     const { assignments } = useVehiculeAssignments(shiftDate, shiftDate);
     const assignedIds = new Set(assignments.filter((a) => a.user_id === user?.id).map((a) => a.vehicule_id));
 
+    // Collègues assignés au même véhicule (hors agent connecté)
+    const colleagues = new Map<number, string[]>();
+    for (const a of assignments) {
+        if (assignedIds.has(a.vehicule_id) && a.user_id !== user?.id) {
+            colleagues.set(a.vehicule_id, [...(colleagues.get(a.vehicule_id) ?? []), `${a.user.firstname} ${a.user.lastname}`]);
+        }
+    }
+
     const vehicules: Vehicule[] = data?.data || [];
 
     return (
         <Vehicules
             vehicules={vehicules}
             assignedIds={assignedIds}
+            colleagues={colleagues}
             currentShift={currentShift}
             isLoading={isLoading}
             error={error}
