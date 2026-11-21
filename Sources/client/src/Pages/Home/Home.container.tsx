@@ -31,7 +31,7 @@ function HomeContainer() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate(isAdmin && window.innerWidth > 768 ? routePath.admin : routePath.vehicules);
+            navigate(isAdmin ?routePath.admin : routePath.vehicules);
         }
     }, [isAuthenticated, isAdmin, navigate]);
 
@@ -43,7 +43,7 @@ function HomeContainer() {
         const response = await loginMutation.mutateAsync(loginValues);
         if (response.status === 200) {
             const { isAdmin: userIsAdmin } = await refreshUser();
-            navigate(userIsAdmin && window.innerWidth > 768 ? routePath.admin : routePath.vehicules);
+            navigate(userIsAdmin ?routePath.admin : routePath.vehicules);
         }
     };
 

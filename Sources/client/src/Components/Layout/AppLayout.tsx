@@ -38,8 +38,7 @@ function AppLayout({ title, children }: AppLayoutProps) {
                     Planning
                 </NavLink>
                 {isAdmin && (
-                    // Le tableau de bord admin n'est pas disponible sur mobile (cf. AdminRoutes)
-                    <NavLink to={routePath.admin} className={({ isActive }) => `btn btn-ghost btn-sm hidden md:inline-flex ${isActive ? "btn-active" : ""}`}>
+                    <NavLink to={routePath.admin} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
                         Admin
                     </NavLink>
                 )}
