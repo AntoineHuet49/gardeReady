@@ -11,7 +11,7 @@ export const REFERENCE_DATE = '2026-10-02';
 /** Vide toutes les tables (et remet les séquences à 1) : chaque fichier de test part d'une base propre. */
 export async function resetDatabase() {
     await dbContext.query(
-        'TRUNCATE users, gardes, garde_rotation, vehicules, sections, elements, vehicule_assignments RESTART IDENTITY CASCADE',
+        'TRUNCATE users, gardes, garde_rotation, vehicules, sections, elements, vehicule_assignments, vehicule_kilometrages RESTART IDENTITY CASCADE',
     );
 }
 

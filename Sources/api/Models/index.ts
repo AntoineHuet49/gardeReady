@@ -5,9 +5,10 @@ import { Users } from "./Users";
 import { Gardes } from "./Garde";
 import { GardeRotation } from "./GardeRotation";
 import { VehiculeAssignments } from "./VehiculeAssignments";
+import { VehiculeKilometrages } from "./VehiculeKilometrages";
 import { setupAssociations } from "./setupAssociations";
 
 // On déclare toutes les relations
 setupAssociations();
 
-export { Vehicules, Elements, Sections, Users, Gardes, GardeRotation, VehiculeAssignments };
+export { Vehicules, Elements, Sections, Users, Gardes, GardeRotation, VehiculeAssignments, VehiculeKilometrages };

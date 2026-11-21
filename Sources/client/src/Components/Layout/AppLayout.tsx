@@ -37,6 +37,9 @@ function AppLayout({ title, children }: AppLayoutProps) {
                 <NavLink to={routePath.planning} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
                     Planning
                 </NavLink>
+                <NavLink to={routePath.kilometrage} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
+                    Km
+                </NavLink>
                 {isAdmin && (
                     // Le tableau de bord admin n'est pas disponible sur mobile (cf. AdminRoutes)
                     <NavLink to={routePath.admin} className={({ isActive }) => `btn btn-ghost btn-sm hidden md:inline-flex ${isActive ? "btn-active" : ""}`}>

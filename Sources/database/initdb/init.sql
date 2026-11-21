@@ -74,6 +74,16 @@ CREATE TABLE vehicule_assignments (
     UNIQUE (shift_date, vehicule_id, user_id)
 );
 
+-- Relevés kilométriques des véhicules
+CREATE TABLE vehicule_kilometrages (
+    id SERIAL PRIMARY KEY,
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kilometrage INT NOT NULL CHECK (kilometrage >= 0),
+    motif VARCHAR(200),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
 -- SuperAdmin: email=admin@gardeready.com, password=AdminReady2024!
