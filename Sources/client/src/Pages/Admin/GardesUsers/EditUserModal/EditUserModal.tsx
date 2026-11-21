@@ -4,7 +4,12 @@ import Button from "../../../../Components/Button/button";
 import TextInput from "../../../../Components/Input/TextInput";
 import { User } from "../../../../Types/User";
 import { UpdateUserData } from "../../../../App/utils/Api/Users";
+import DropdownInput from "../../../../Components/Input/DropdownInput";
 import { useAuthMutations } from "../../../../hooks/useAuthMutations";
+import { useQuery } from "@tanstack/react-query";
+import { getAllGardes } from "../../../../App/utils/Api/Gardes";
+
+type EditUserForm = UpdateUserData & { garde_id: string };
 
 type EditUserModalProps = {
     user: User;
@@ -12,29 +17,44 @@ type EditUserModalProps = {
 
 function EditUserModal({ user }: EditUserModalProps) {
     const modalId = `edit-user-modal-${user.id}`;
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateUserData>({
-        defaultValues: {
-            email: user.email,
-            firstname: user.firstname,
-            lastname: user.lastname,
-        },
+    const initialValues = () => ({
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        garde_id: user.garde_id ? String(user.garde_id) : "",
     });
-    const { updateUserMutation } = useAuthMutations();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<EditUserForm>({
+        defaultValues: initialValues(),
+    });
+    const { updateUserMutation, updateGardeMutation } = useAuthMutations();
+    const { data: gardes } = useQuery({ queryKey: ["gardes"], queryFn: getAllGardes });
+    const gardesOptions: Record<string, string> = { "Aucune garde": "" };
+    [...(gardes ?? [])].sort((a, b) => a.numero - b.numero).forEach((g) => {
+        gardesOptions[`Garde ${g.numero}`] = String(g.id);
+    });
 
     const handleClose = () => {
-        reset({ email: user.email, firstname: user.firstname, lastname: user.lastname });
+        reset(initialValues());
         (document.getElementById(modalId) as HTMLDialogElement)?.close();
     };
 
     const handleOpen = () => {
-        reset({ email: user.email, firstname: user.firstname, lastname: user.lastname });
+        reset(initialValues());
         (document.getElementById(modalId) as HTMLDialogElement)?.showModal();
     };
 
-    const handleSubmitForm = (data: UpdateUserData) => {
+    const handleSubmitForm = ({ garde_id, ...data }: EditUserForm) => {
+        const newGardeId = garde_id ? Number(garde_id) : null;
         updateUserMutation.mutate(
             { userId: user.id, data },
-            { onSuccess: handleClose }
+            {
+                onSuccess: () => {
+                    if (newGardeId !== (user.garde_id ?? null)) {
+                        updateGardeMutation.mutate({ userId: user.id, gardeId: newGardeId });
+                    }
+                    handleClose();
+                },
+            }
         );
     };
 
@@ -93,6 +113,12 @@ function EditUserModal({ user }: EditUserModalProps) {
                             options={{
                                 required: "Veuillez entrer un nom",
                             }}
+                        />
+                        <DropdownInput
+                            register={register}
+                            name="garde_id"
+                            label="Garde"
+                            options={gardesOptions}
                         />
                         <Button
                             type="submit"
