@@ -13,7 +13,7 @@ test.describe('Mobile', () => {
 
         test("vérification d'un véhicule sur mobile", async ({ page }) => {
             await page.goto('/vehicules');
-            await page.locator('.card', { has: page.getByRole('heading', { name: 'VSAV' }) }).getByRole('button', { name: 'Vérifier' }).tap();
+            await page.getByRole('region', { name: 'VSAV', exact: true }).getByRole('button', { name: 'Vérifier' }).tap();
 
             for (const section of ['Sac prompt secours', 'Poche bleue', 'Poche rouge', 'Extérieur']) await openCollapse(page, section);
             for (const ok of await page.getByRole('radio', { name: 'OK' }).all()) await ok.tap();

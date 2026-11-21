@@ -85,6 +85,8 @@ function GardesUsers({ gardes, usersByGarde, allUsers, isLoading }: GardesUsersP
             {!isLoading && (
                 <div className="mt-4">
                     <div
+                        role="region"
+                        aria-label="Utilisateurs non assignés à une garde"
                         className={`card bg-base-100 border shadow-sm transition-colors ${isDragOver ? 'border-primary border-2' : 'border-base-content/10'}`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}

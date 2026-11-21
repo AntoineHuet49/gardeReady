@@ -97,6 +97,8 @@ function GardeCard({ garde, users }: GardeCardProps) {
 
     return (
         <div
+            role="region"
+            aria-label={`Garde ${garde.numero}`}
             className={`card bg-base-100 border shadow-sm transition-colors ${isDragOver ? 'border-primary border-2' : 'border-base-content/10'}`}
             style={{ borderLeftWidth: isDragOver ? undefined : '4px', borderLeftColor: isDragOver ? undefined : gardeColor(garde.color) }}
             onDragOver={handleDragOver}

@@ -43,6 +43,6 @@ test("l'admin crée un véhicule, une section, une sous-section et un équipemen
 
     // Visible côté vérification
     await page.getByRole('link', { name: 'Véhicules' }).click();
-    await page.locator('.card', { has: page.getByRole('heading', { name: 'FPT E2E' }) }).getByRole('button', { name: 'Vérifier' }).click();
+    await page.getByRole('region', { name: 'FPT E2E', exact: true }).getByRole('button', { name: 'Vérifier' }).click();
     await expect(page.getByText('0/1 éléments vérifiés')).toBeVisible();
 });

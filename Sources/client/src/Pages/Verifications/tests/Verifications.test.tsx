@@ -46,9 +46,9 @@ describe('Verifications', () => {
   it("affiche les sections non vides, tous les équipements et une progression à 0", async () => {
     setup()
     expect(await screen.findByRole('heading', { name: 'FPT' })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: 'Cabine' })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: 'Sac' })).toBeInTheDocument()
-    expect(screen.queryByRole('checkbox', { name: 'Coffre vide' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cabine' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sac' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Coffre vide' })).not.toBeInTheDocument()
     expect(radios('OK')).toHaveLength(3)
     expect(screen.getByText('0/3 éléments vérifiés')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Valider' })).toBeDisabled()
