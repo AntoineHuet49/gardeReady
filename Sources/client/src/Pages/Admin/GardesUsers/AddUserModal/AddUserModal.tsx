@@ -97,7 +97,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                     ) as HTMLDialogElement)!.showModal()
                 }
             />
-            <dialog id={modalId} className="modal">
+            <dialog id={modalId} aria-labelledby={`${modalId}-title`} className="modal">
                 <div className="modal-box">
                     <form method="dialog">
                         <button 
@@ -107,7 +107,7 @@ function AddUserModal({ buttonText, defaultGardeId }: AddUserModalProps) {
                             ✕
                         </button>
                     </form>
-                    <h3 className="font-bold text-lg mb-6">
+                    <h3 id={`${modalId}-title`} className="font-bold text-lg mb-6">
                         Ajouter un utilisateur
                     </h3>
                     <form onSubmit={handleSubmit(handleSubmitForm)}>

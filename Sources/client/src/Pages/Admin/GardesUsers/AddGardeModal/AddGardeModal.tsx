@@ -43,14 +43,14 @@ function AddGardeModal({ buttonText }: AddGardeModalProps) {
                     ) as HTMLDialogElement)!.showModal()
                 }
             />
-            <dialog id={modalId} className="modal">
+            <dialog id={modalId} aria-labelledby={`${modalId}-title`} className="modal">
                 <div className="modal-box">
                     <form method="dialog">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
                             ✕
                         </button>
                     </form>
-                    <h3 className="font-bold text-lg mb-6">
+                    <h3 id={`${modalId}-title`} className="font-bold text-lg mb-6">
                         Ajouter une garde
                     </h3>
                     <form onSubmit={handleSubmit(handleSubmitForm)}>

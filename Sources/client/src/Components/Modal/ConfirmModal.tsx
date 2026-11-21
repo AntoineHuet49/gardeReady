@@ -16,9 +16,9 @@ function ConfirmModal({ pending, onClose }: ConfirmModalProps) {
     }, [pending]);
 
     return (
-        <dialog ref={ref} className="modal" onClose={onClose}>
+        <dialog ref={ref} aria-labelledby="confirm-modal-title" className="modal" onClose={onClose}>
             <div className="modal-box">
-                <h3 className="font-bold text-lg">Confirmer la suppression</h3>
+                <h3 id="confirm-modal-title" className="font-bold text-lg">Confirmer la suppression</h3>
                 <p className="py-4">{pending?.message}</p>
                 <form method="dialog" className="modal-action">
                     <button className="btn">Annuler</button>

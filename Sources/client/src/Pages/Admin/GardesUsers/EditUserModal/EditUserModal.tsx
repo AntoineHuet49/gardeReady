@@ -47,7 +47,7 @@ function EditUserModal({ user }: EditUserModalProps) {
                 title="Modifier cet utilisateur"
             />
             {createPortal(
-            <dialog id={modalId} className="modal">
+            <dialog id={modalId} aria-labelledby={`${modalId}-title`} className="modal">
                 <div className="modal-box">
                     <form method="dialog">
                         <button
@@ -57,7 +57,7 @@ function EditUserModal({ user }: EditUserModalProps) {
                             ✕
                         </button>
                     </form>
-                    <h3 className="font-bold text-lg mb-6">
+                    <h3 id={`${modalId}-title`} className="font-bold text-lg mb-6">
                         Modifier l'utilisateur
                     </h3>
                     <form onSubmit={handleSubmit(handleSubmitForm)}>

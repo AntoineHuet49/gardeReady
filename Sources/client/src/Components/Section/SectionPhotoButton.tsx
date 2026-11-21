@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Section } from "../../Types/Section";
 import { sectionPhotoUrl } from "../../App/utils/Api/Sections";
 
@@ -13,6 +13,7 @@ const SectionPhotoButton = ({ section, className = "btn-xs" }: SectionPhotoButto
     const ref = useRef<HTMLDialogElement>(null);
     const [openedAt, setOpenedAt] = useState<number | null>(null);
 
+    const titleId = useId();
     const open = () => {
         setOpenedAt(Date.now());
         ref.current?.showModal();
@@ -25,9 +26,9 @@ const SectionPhotoButton = ({ section, className = "btn-xs" }: SectionPhotoButto
                 📷 Photo
             </button>
             {/* Pas de <form method="dialog"> : ce composant peut être rendu dans le formulaire de vérification */}
-            <dialog ref={ref} className="modal" onClose={() => setOpenedAt(null)}>
+            <dialog ref={ref} aria-labelledby={titleId} className="modal" onClose={() => setOpenedAt(null)}>
                 <div className="modal-box max-w-3xl">
-                    <h3 className="font-bold text-lg mb-4">{section.name}</h3>
+                    <h3 id={titleId} className="font-bold text-lg mb-4">{section.name}</h3>
                     {openedAt && (
                         <img
                             src={`${sectionPhotoUrl(section.id)}?v=${openedAt}`}
