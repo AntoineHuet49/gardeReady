@@ -31,6 +31,7 @@ router.get("/auth/microsoft/callback", requireAuthProvider("microsoft"), AuthCon
 
 // Vehicules (protégées - authentification requise)
 router.get('/vehicules', verifyToken, VehiculesController.getAllVehicules);
+router.get('/vehicules/verifications', verifyToken, VehiculesController.getVerifications); // avant /:id
 router.get('/vehicules/:id', verifyToken, VehiculesController.getOneVehiculeWithElements);
 router.post('/vehicules', verifyToken, requireAdmin, VehiculesController.addVehicule);
 router.put('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.updateVehicule);

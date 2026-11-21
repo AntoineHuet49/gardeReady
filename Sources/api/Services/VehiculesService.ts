@@ -7,6 +7,7 @@ import { ElementsRepository } from "~~/Repositories/ElementsRepository";
 import VehiculesRepository from "~~/Repositories/VehiculesRepository";
 import { verificationDTO } from "~~/Types/DTO/VerificationDto";
 import { TUserPayload } from "~~/Types/User";
+import { VerificationsRepository } from "~~/Repositories/VerificationsRepository";
 import { GardesRepository } from "~~/Repositories/GardeRepository";
 import { Attachments, Message } from "~~/Types/Mailer";
 import * as path from "path";
@@ -78,7 +79,7 @@ export default class VehiculesService {
         verification: verificationDTO[],
         filePath: string,
         user: TUserPayload
-    ) {
+    ): Promise<string[][]> {
         // Créer le dossier public s'il n'existe pas
         const publicDir = path.dirname(filePath);
         if (!fs.existsSync(publicDir)) {
@@ -93,6 +94,20 @@ export default class VehiculesService {
         doc.text("Garde : " + user.garde_id, 10, 20);
         doc.text(`Agent : ${user.firstname} ${user.lastname}`, 10, 30);
         doc.text("Véhicule : " + vehicule.name, 10, 40);
+
+        const rows = await Promise.all(
+            Object.keys(verification).map(async (key) => {
+                const elementId = parseInt(key);
+                const element = await ElementsRepository.getOneById(
+                    verification[elementId].elementId
+                );
+                return [
+                    element ? `${element.quantite} ${element.name}` : "",
+                    verification[elementId].status ?? "",
+                    verification[elementId].comment ?? "",
+                ];
+            })
+        );
 
         autoTable(doc, {
             margin: { top: 60 },
@@ -110,24 +125,31 @@ export default class VehiculesService {
                     }
                 }
             },
-            body: await Promise.all(
-                Object.keys(verification).map(async (key) => {
-                    const elementId = parseInt(key);
-                    const element = await ElementsRepository.getOneById(
-                        verification[elementId].elementId
-                    );
-                    return [
-                        element ? `${element.quantite} ${element.name}` : "",
-                        verification[elementId].status ?? "",
-                        verification[elementId].comment ?? "",
-                    ];
-                })
-            ),
+            body: rows,
         });
 
         const pdfBuffer = doc.output("arraybuffer");
         fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
         logger.info(`PDF généré avec succès: ${filePath}`);
+        return rows;
+    }
+
+    /** Historique : conserve un instantané des lignes du rapport (renommer/supprimer un élément ne le modifie pas). */
+    public static saveVerification(vehicule: TVehicules, rows: string[][], user: TUserPayload) {
+        return VerificationsRepository.Create({
+            vehicule_id: vehicule.id,
+            user_id: user.id,
+            garde_id: user.garde_id ?? null,
+            results: rows.map(([element, status, comment]) => ({ element, status, comment })),
+        });
+    }
+
+    /** superAdmin : tout ; sinon les vérifications des gardes dont l'utilisateur est responsable, plus sa propre garde s'il est admin. */
+    public static async getHistory(user: TUserPayload) {
+        if (user.role === "superAdmin") return VerificationsRepository.GetAll();
+        const gardeIds = await VerificationsRepository.GardeIdsOfResponsable(user.id);
+        if (user.role === "admin" && user.garde_id) gardeIds.push(user.garde_id);
+        return VerificationsRepository.GetAll(gardeIds);
     }
 
     public static async sendVerificationMail(

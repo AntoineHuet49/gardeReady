@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import VehiculesRepository from '~~/Repositories/VehiculesRepository';
 import { ElementsRepository } from '~~/Repositories/ElementsRepository';
 import { GardesRepository } from '~~/Repositories/GardeRepository';
+import { VerificationsRepository } from '~~/Repositories/VerificationsRepository';
 import { MailerService } from '~~/Services/MailerService';
 import VehiculesService from '~~/Services/VehiculesService';
 import type { TUserPayload } from '~~/Types/User';
@@ -14,6 +15,7 @@ vi.mock('~~/Repositories/VehiculesRepository', () => ({
 }));
 vi.mock('~~/Repositories/ElementsRepository', () => ({ ElementsRepository: { getOneById: vi.fn() } }));
 vi.mock('~~/Repositories/GardeRepository', () => ({ GardesRepository: { getResponsable: vi.fn() } }));
+vi.mock('~~/Repositories/VerificationsRepository', () => ({ VerificationsRepository: { Create: vi.fn(), GetAll: vi.fn(), GardeIdsOfResponsable: vi.fn() } }));
 vi.mock('~~/Services/MailerService', () => ({ MailerService: { sendMailAsync: vi.fn() } }));
 
 const repo = vi.mocked(VehiculesRepository);
@@ -96,5 +98,28 @@ describe('removePdf', () => {
         VehiculesService.removePdf(filePath);
         expect(fs.existsSync(filePath)).toBe(false);
         expect(() => VehiculesService.removePdf(filePath)).not.toThrow();
+    });
+});
+
+describe('historique des vérifications', () => {
+    const history = vi.mocked(VerificationsRepository);
+
+    it('saveVerification stocke un instantané des lignes avec la garde de l’agent', async () => {
+        await VehiculesService.saveVerification(vehicule as never, [['2 Thermomètre', 'KO', 'cassé']], user);
+        expect(history.Create).toHaveBeenCalledWith({
+            vehicule_id: 1, user_id: 2, garde_id: 1,
+            results: [{ element: '2 Thermomètre', status: 'KO', comment: 'cassé' }],
+        });
+    });
+
+    it('superAdmin : tout ; admin : sa garde + celles dont il est responsable ; agent : seulement s’il est responsable', async () => {
+        history.GardeIdsOfResponsable.mockResolvedValue([3]);
+        await VehiculesService.getHistory({ ...user, role: 'superAdmin' });
+        expect(history.GetAll).toHaveBeenLastCalledWith();
+        await VehiculesService.getHistory({ ...user, role: 'admin' });
+        expect(history.GetAll).toHaveBeenLastCalledWith([3, 1]);
+        history.GardeIdsOfResponsable.mockResolvedValue([]);
+        await VehiculesService.getHistory(user);
+        expect(history.GetAll).toHaveBeenLastCalledWith([]);
     });
 });

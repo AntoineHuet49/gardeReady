@@ -69,6 +69,37 @@ describe('POST /api/vehicules/verifications/:id', () => {
         expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
     });
 
+    it('conserve la vérification dans l’historique, visible par l’admin de la garde mais pas par un agent', async () => {
+        await request(app)
+            .post(`/api/vehicules/verifications/${ids.vehicule}`)
+            .set('Cookie', user)
+            .send({ 0: { elementId: ids.thermometre, status: 'KO', comment: 'pile HS' } })
+            .expect(200);
+
+        const res = await request(app).get('/api/vehicules/verifications').set('Cookie', admin).expect(200);
+        expect(res.body).toMatchObject([{
+            vehicule: { name: 'VSAV' },
+            user: { lastname: 'Agent' },
+            garde: { numero: 1 },
+            results: [{ element: '2 Thermomètre', status: 'KO', comment: 'pile HS' }],
+        }]);
+
+        // Un agent qui n'est ni admin ni responsable ne voit rien
+        const asUser = await request(app).get('/api/vehicules/verifications').set('Cookie', user).expect(200);
+        expect(asUser.body).toEqual([]);
+    });
+
+    it('n’enregistre pas d’historique si l’envoi du rapport échoue', async () => {
+        vi.mocked(MailerService.sendMailAsync).mockRejectedValueOnce(new Error('smtp'));
+        await request(app)
+            .post(`/api/vehicules/verifications/${ids.vehicule}`)
+            .set('Cookie', user)
+            .send({ 0: { elementId: ids.phare, status: 'OK' } })
+            .expect(500);
+        const res = await request(app).get('/api/vehicules/verifications').set('Cookie', admin).expect(200);
+        expect(res.body).toEqual([]);
+    });
+
     it('400 si un élément n’a pas de statut OK/KO', async () => {
         await request(app)
             .post(`/api/vehicules/verifications/${ids.vehicule}`)

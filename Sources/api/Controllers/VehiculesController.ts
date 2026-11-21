@@ -86,6 +86,10 @@ export default class VehiculesController extends BaseController {
         }
     });
 
+    public static getVerifications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        res.json(await VehiculesService.getHistory(BaseController.getUserPayload(req)));
+    });
+
     public static async validateVehicule(req: Request, res: Response): Promise<void> {
         const id = parseInt(req.params.id);
         const body = req.body;
@@ -112,10 +116,11 @@ export default class VehiculesController extends BaseController {
 
         try {
             // Générer le PDF
-            await VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
+            const rows = await VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
             
             // Envoyer l'email avec le PDF en pièce jointe
             await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
+            await VehiculesService.saveVerification(vehicule, rows, userPayload);
             
             logger.success(`Vérification validée pour le véhicule ${vehicule.name} par ${userPayload.firstname} ${userPayload.lastname}`);
             res.send("Vehicule validated");

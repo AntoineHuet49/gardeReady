@@ -2,6 +2,7 @@ import Tabs from "../../Components/Tabs/Tabs";
 import { AdminVehicule } from "./AdminVehicules";
 import { AdminTabs } from "./constants";
 import { GardesUsers } from "./GardesUsers";
+import { Historique } from "./Historique";
 
 type AdminProps = {
     tabs: string[];
@@ -16,7 +17,9 @@ function Admin({ tabs, activeTab, setActiveTab, tabToDisplay }: AdminProps) {
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab}/>
             <div id="tab-content" className="w-11/12">
                 {tabToDisplay === AdminTabs.GARDES && <GardesUsers />}
-                {tabToDisplay === AdminTabs.VEHICULES && <AdminVehicule />}            </div>
+                {tabToDisplay === AdminTabs.VEHICULES && <AdminVehicule />}
+                {tabToDisplay === AdminTabs.HISTORIQUE && <Historique />}
+            </div>
         </div>
     );
 }

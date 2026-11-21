@@ -5,7 +5,14 @@ import { Gardes } from "./Garde";
 import { Users } from "./Users";
 import { VehiculeAssignments } from "./VehiculeAssignments";
 
+import { VehiculeVerifications } from "./VehiculeVerifications";
+
 export function setupAssociations() {
+    // Historique des vérifications
+    VehiculeVerifications.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
+    VehiculeVerifications.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
+    VehiculeVerifications.belongsTo(Gardes, { foreignKey: "garde_id", as: "garde", onDelete: "SET NULL" });
+
     // Assignations agent → véhicule pour une semaine de garde
     VehiculeAssignments.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
     VehiculeAssignments.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
