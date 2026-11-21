@@ -31,16 +31,16 @@ const AddVehiculeModal = ({
         formState: { errors }
     } = useForm<FormData>();
 
-    // Mettre le focus sur l'input quand le modal s'ouvre
+    // Deps primitives : un nouvel objet `vehicule` (refetch) ne doit pas effacer la saisie en cours
+    const initialName = vehicule?.name ?? "";
     useEffect(() => {
         if (isOpen) {
-            // Délai pour que le modal soit complètement rendu
-            reset({ name: vehicule?.name ?? "" });
+            reset({ name: initialName });
             setTimeout(() => {
                 setFocus("name");
             }, 100);
         }
-    }, [isOpen, vehicule, reset, setFocus]);
+    }, [isOpen, initialName, reset, setFocus]);
 
     const onSubmit = (data: FormData) => {
         const onSuccess = () => {

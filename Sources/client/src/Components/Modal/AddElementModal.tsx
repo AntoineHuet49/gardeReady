@@ -30,16 +30,18 @@ const AddElementModal = ({ isOpen, onClose, sectionId, sectionName, element }: A
         formState: { errors }
     } = useForm<FormData>();
 
-    // Mettre le focus sur l'input quand le modal s'ouvre
+    // Deps primitives : un nouvel objet `element` (refetch) ne doit pas effacer la saisie en cours
+    const initialName = element?.name ?? "";
+    const initialQuantite = element?.quantite ?? 1;
     useEffect(() => {
         if (isOpen) {
-            reset({ name: element?.name ?? "", quantite: element?.quantite ?? 1 });
+            reset({ name: initialName, quantite: initialQuantite });
             // Délai pour que le modal soit complètement rendu
             setTimeout(() => {
                 setFocus("name");
             }, 100);
         }
-    }, [isOpen, setFocus, reset, element]);
+    }, [isOpen, setFocus, reset, initialName, initialQuantite]);
 
     const onSubmit = (data: FormData) => {
         const options = {
