@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { login, ADMIN, userState, openCollapse } from './helpers';
 
 test.describe('Mobile', () => {
-    test("un admin connecté sur mobile arrive sur les véhicules, pas sur l'admin", async ({ page }) => {
+    test("un admin connecté sur mobile arrive sur l'admin et voit le lien Admin", async ({ page }) => {
         await login(page, ADMIN);
-        await expect(page).toHaveURL('/vehicules');
-        await expect(page.getByRole('link', { name: 'Admin' })).toBeHidden();
+        await expect(page).toHaveURL('/admin');
+        await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
     });
 
     test.describe(() => {

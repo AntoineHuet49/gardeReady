@@ -267,7 +267,7 @@ const AdminVehicules = ({ vehicules, isLoading, error }: AdminVehiculesProps) =>
                                 <div className="p-4">
                                     {vehicule.sections && vehicule.sections.length > 0 ? (
                                         <div className="space-y-3">
-                                            <div className="flex justify-between items-center mb-4">
+                                            <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
                                                 <div className="text-sm text-gray-600">
                                                     <strong>Sections :</strong> {vehicule.sections.length} section(s) principale(s)
                                                 </div>
