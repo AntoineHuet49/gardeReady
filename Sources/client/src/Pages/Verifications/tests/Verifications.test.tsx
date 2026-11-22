@@ -101,6 +101,17 @@ describe('Verifications', () => {
     expect(notify).toHaveBeenCalledWith('Verifications envoyées', 'success')
   })
 
+  it("affiche un avertissement mais revient à la liste quand l'e-mail n'a pas pu partir", async () => {
+    setup()
+    mockApi('post', '/vehicules/verifications/:id', { warning: 'mail' })
+    await screen.findByText('0/3 éléments vérifiés')
+    for (const radio of radios('OK')) await userEvent.click(radio)
+    await userEvent.click(screen.getByRole('button', { name: 'Valider' }))
+
+    expect(await screen.findByText('Liste des véhicules')).toBeInTheDocument()
+    expect(notify).toHaveBeenCalledWith(expect.stringContaining('Mes vérifications'), 'warning')
+  })
+
   it("indique qu'aucun élément n'est à vérifier pour un véhicule sans équipement", async () => {
     setup({ id: 2, name: 'vl', sections: [] })
     expect(await screen.findByText('Aucun élément de vérification disponible pour ce véhicule.')).toBeInTheDocument()
@@ -112,10 +123,7 @@ describe('Verifications', () => {
     expect(await screen.findByText("Aucun vehicule n'a été trouvé")).toBeInTheDocument()
   })
 
-  // BUG: en cas d'échec de l'API, mutateAsync rejette au lieu de renvoyer la réponse : la branche
-  // « Une erreur est survenue » n'est jamais atteinte, l'utilisateur n'a aucun retour (rejet non géré).
-  // it.skip et non it.fails : le rejet non géré ferait échouer toute la suite Vitest.
-  it.skip("prévient l'utilisateur si l'envoi échoue", async () => {
+  it("prévient l'utilisateur si l'envoi échoue", async () => {
     setup()
     mockApi('post', '/vehicules/verifications/:id', { error: 'Erreur serveur' }, 500)
     await screen.findByText('0/3 éléments vérifiés')

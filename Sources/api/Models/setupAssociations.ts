@@ -6,9 +6,15 @@ import { Users } from "./Users";
 import { VehiculeAssignments } from "./VehiculeAssignments";
 import { VehiculeKilometrages } from "./VehiculeKilometrages";
 
+import { VehiculeVerifications } from "./VehiculeVerifications";
+
 export function setupAssociations() {
     VehiculeKilometrages.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
     VehiculeKilometrages.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
+    // Historique des vérifications
+    VehiculeVerifications.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
+    VehiculeVerifications.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
+    VehiculeVerifications.belongsTo(Gardes, { foreignKey: "garde_id", as: "garde", onDelete: "SET NULL" });
 
     // Assignations agent → véhicule pour une semaine de garde
     VehiculeAssignments.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });

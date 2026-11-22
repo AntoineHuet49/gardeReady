@@ -26,11 +26,15 @@ function VerificationsContainer() {
     });
 
     const onSubmit = async (data: VerificationValues[]) => {
-        const response = await verification.mutateAsync(data);
-        if (response.status >= 200 && response.status < 300) {
-            notify("Verifications envoyées", "success");
+        try {
+            const response = await verification.mutateAsync(data);
+            if (response.data?.warning) {
+                notify("Vérification enregistrée, mais l'e-mail n'a pas pu être envoyé. Retrouvez-la dans Mes vérifications.", "warning");
+            } else {
+                notify("Verifications envoyées", "success");
+            }
             navigate(routePath.vehicules);
-        } else {
+        } catch {
             notify("Une erreur est survenue", "error");
         }
     };

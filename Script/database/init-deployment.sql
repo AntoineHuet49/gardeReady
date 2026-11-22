@@ -3,6 +3,7 @@
 
 -- Nettoyer les tables existantes (évite les conflits)
 DROP TABLE IF EXISTS vehicule_kilometrages CASCADE;
+DROP TABLE IF EXISTS vehicule_verifications CASCADE;
 DROP TABLE IF EXISTS vehicule_assignments CASCADE;
 DROP TABLE IF EXISTS elements CASCADE;
 DROP TABLE IF EXISTS sections CASCADE;
@@ -84,6 +85,17 @@ CREATE TABLE vehicule_kilometrages (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     kilometrage INT NOT NULL CHECK (kilometrage >= 0),
     motif VARCHAR(200),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Historique des vérifications de véhicules (results = instantané des lignes du rapport)
+CREATE TABLE vehicule_verifications (
+    id SERIAL PRIMARY KEY,
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    garde_id INT REFERENCES gardes(id) ON DELETE SET NULL,
+    results JSONB NOT NULL,
+    mail_envoye BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

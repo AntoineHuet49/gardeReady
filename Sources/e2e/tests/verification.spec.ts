@@ -24,6 +24,11 @@ test("vérification complète d'un véhicule et envoi du rapport PDF", async ({ 
     await expect(page.getByText('Verifications envoyées')).toBeVisible();
     await expect(page).toHaveURL('/vehicules');
 
+    // La vérification est conservée et consultable (avec téléchargement du PDF) dans « Mes vérifications »
+    await page.goto('/mes-verifications');
+    await expect(page.getByText('Camion de pompier').first()).toBeVisible();
+    await expect(page.getByText('e-mail non envoyé')).toHaveCount(0);
+
     // Le rapport PDF part par e-mail au responsable de la garde de l'agent (Garde 1 : admin)
     const mails = await sentMails();
     expect(mails).toHaveLength(before + 1);

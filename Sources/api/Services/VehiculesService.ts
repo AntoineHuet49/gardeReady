@@ -7,6 +7,7 @@ import { ElementsRepository } from "~~/Repositories/ElementsRepository";
 import VehiculesRepository from "~~/Repositories/VehiculesRepository";
 import { verificationDTO } from "~~/Types/DTO/VerificationDto";
 import { TUserPayload } from "~~/Types/User";
+import { VerificationsRepository } from "~~/Repositories/VerificationsRepository";
 import { GardesRepository } from "~~/Repositories/GardeRepository";
 import { Attachments, Message } from "~~/Types/Mailer";
 import * as path from "path";
@@ -78,7 +79,7 @@ export default class VehiculesService {
         verification: verificationDTO[],
         filePath: string,
         user: TUserPayload
-    ) {
+    ): Promise<string[][]> {
         // Créer le dossier public s'il n'existe pas
         const publicDir = path.dirname(filePath);
         if (!fs.existsSync(publicDir)) {
@@ -88,11 +89,39 @@ export default class VehiculesService {
 
         logger.debug(`Génération du PDF pour le véhicule ${vehicule.name} par ${user.firstname} ${user.lastname}`);
 
+        const rows = await Promise.all(
+            Object.keys(verification).map(async (key) => {
+                const elementId = parseInt(key);
+                const element = await ElementsRepository.getOneById(
+                    verification[elementId].elementId
+                );
+                return [
+                    element ? `${element.quantite} ${element.name}` : "",
+                    verification[elementId].status ?? "",
+                    verification[elementId].comment ?? "",
+                ];
+            })
+        );
+
+        const pdfBuffer = this.renderPdf(
+            { date: this.getFormatDate(), garde: user.garde_id, agent: `${user.firstname} ${user.lastname}`, vehicule: vehicule.name },
+            rows
+        );
+        fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
+        logger.info(`PDF généré avec succès: ${filePath}`);
+        return rows;
+    }
+
+    /** Met en page le rapport ; sert à la génération initiale comme au téléchargement depuis l'historique. */
+    public static renderPdf(
+        info: { date: string; garde: number | null | undefined; agent: string; vehicule: string },
+        rows: string[][]
+    ): ArrayBuffer {
         const doc = new jsPDF();
-        doc.text("Date : " + this.getFormatDate(), 10, 10);
-        doc.text("Garde : " + user.garde_id, 10, 20);
-        doc.text(`Agent : ${user.firstname} ${user.lastname}`, 10, 30);
-        doc.text("Véhicule : " + vehicule.name, 10, 40);
+        doc.text("Date : " + info.date, 10, 10);
+        doc.text("Garde : " + info.garde, 10, 20);
+        doc.text(`Agent : ${info.agent}`, 10, 30);
+        doc.text("Véhicule : " + info.vehicule, 10, 40);
 
         autoTable(doc, {
             margin: { top: 60 },
@@ -110,24 +139,60 @@ export default class VehiculesService {
                     }
                 }
             },
-            body: await Promise.all(
-                Object.keys(verification).map(async (key) => {
-                    const elementId = parseInt(key);
-                    const element = await ElementsRepository.getOneById(
-                        verification[elementId].elementId
-                    );
-                    return [
-                        element ? `${element.quantite} ${element.name}` : "",
-                        verification[elementId].status ?? "",
-                        verification[elementId].comment ?? "",
-                    ];
-                })
-            ),
+            body: rows,
         });
 
-        const pdfBuffer = doc.output("arraybuffer");
-        fs.writeFileSync(filePath, Buffer.from(pdfBuffer));
-        logger.info(`PDF généré avec succès: ${filePath}`);
+        return doc.output("arraybuffer");
+    }
+
+    /** Historique : conserve un instantané des lignes du rapport (renommer/supprimer un élément ne le modifie pas). */
+    public static saveVerification(vehicule: TVehicules, rows: string[][], user: TUserPayload) {
+        return VerificationsRepository.Create({
+            vehicule_id: vehicule.id,
+            user_id: user.id,
+            garde_id: user.garde_id ?? null,
+            results: rows.map(([element, status, comment]) => ({ element, status, comment })),
+        });
+    }
+
+    /** undefined = toutes les gardes (superAdmin) ; sinon les gardes dont l'utilisateur est responsable, plus la sienne s'il est admin. */
+    private static async visibleGardeIds(user: TUserPayload) {
+        if (user.role === "superAdmin") return undefined;
+        const gardeIds = await VerificationsRepository.GardeIdsOfResponsable(user.id);
+        if (user.role === "admin" && user.garde_id) gardeIds.push(user.garde_id);
+        return gardeIds;
+    }
+
+    public static async getHistory(user: TUserPayload) {
+        return VerificationsRepository.GetAll(await this.visibleGardeIds(user));
+    }
+
+    public static getMine(user: TUserPayload) {
+        return VerificationsRepository.GetAll(undefined, user.id);
+    }
+
+    public static setMailSent(id: number, sent: boolean) {
+        return VerificationsRepository.SetMailSent(id, sent);
+    }
+
+    /** PDF régénéré depuis l'instantané ; null si introuvable ou non autorisé (auteur, ou ceux qui voient l'historique). */
+    public static async getVerificationPdf(id: number, user: TUserPayload) {
+        const v = await VerificationsRepository.GetOne(id);
+        if (!v) return null;
+        if (v.user_id !== user.id) {
+            const gardeIds = await this.visibleGardeIds(user);
+            if (gardeIds && !(v.garde_id && gardeIds.includes(v.garde_id))) return null;
+        }
+        const pdf = this.renderPdf(
+            {
+                date: this.getFormatDate(v.created_at),
+                garde: v.garde_id,
+                agent: `${v.user.firstname} ${v.user.lastname}`,
+                vehicule: v.vehicule.name,
+            },
+            v.results.map((r) => [r.element, r.status, r.comment])
+        );
+        return { pdf: Buffer.from(pdf), filename: `Verif_${sanitizeFilename(v.vehicule.name)}_${moment(v.created_at).format("YYYYMMDD")}.pdf` };
     }
 
     public static async sendVerificationMail(
@@ -216,7 +281,7 @@ export default class VehiculesService {
         }
     }
 
-    public static getFormatDate() {
-        return moment().locale("fr").format("LLL");
+    public static getFormatDate(date: Date = new Date()) {
+        return moment(date).locale("fr").format("LLL");
     }
 }

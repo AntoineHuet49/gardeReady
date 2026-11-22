@@ -84,6 +84,17 @@ CREATE TABLE vehicule_kilometrages (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Historique des vérifications de véhicules (results = instantané des lignes du rapport)
+CREATE TABLE vehicule_verifications (
+    id SERIAL PRIMARY KEY,
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    garde_id INT REFERENCES gardes(id) ON DELETE SET NULL,
+    results JSONB NOT NULL,
+    mail_envoye BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Insertion des données dans les tables
 -- Table users (mots de passe cryptés avec bcrypt)
 -- SuperAdmin: email=admin@gardeready.com, password=AdminReady2024!
