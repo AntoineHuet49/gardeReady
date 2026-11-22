@@ -1,9 +1,17 @@
 import './Utils/LoadEnv';
 import app from './expressApp';
 import { connectDatabase } from './Utils/Database';
+import { getJwtSecret } from './Services/AuthService';
 import { createLogger } from './Utils/Logger';
 
 const logger = createLogger('Application');
+
+try {
+    getJwtSecret();
+} catch (error) {
+    logger.error('JWT_SECRET est obligatoire', error);
+    process.exit(1);
+}
 
 // Initialiser la base de données de manière asynchrone
 connectDatabase().catch(error => {

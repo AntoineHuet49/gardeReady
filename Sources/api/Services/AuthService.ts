@@ -16,6 +16,13 @@ const SET_PASSWORD_PURPOSE = "set-password";
 const INVITATION_EXPIRES_IN = "72h";
 const INVALID_LINK_MESSAGE = "Ce lien est invalide ou a expiré. Contactez un administrateur.";
 
+/** Secret JWT obligatoire : pas de valeur par défaut. Appelé aussi au démarrage (app.ts) pour échouer tôt. */
+export function getJwtSecret(): string {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error("JWT_SECRET non configuré");
+    return secret;
+}
+
 type MicrosoftClaims = IdTokenClaims & {
     email?: string;
     given_name?: string;
@@ -33,7 +40,7 @@ export class AuthService {
 
         const isPasswordValid = await this.comparePassword(body.password, userWithPassword.password);
         if (isPasswordValid) {
-            const secret = process.env.JWT_SECRET ?? "secret";
+            const secret = getJwtSecret();
             const token = jwt.sign(user, secret, { expiresIn: "1d" });
             return OperationResult.ok(token, "Login successful");
         }
@@ -78,7 +85,7 @@ export class AuthService {
 
             const user = await this.findOrCreateUser(azureOid, email, claims, authResult.account.name);
 
-            const secret = process.env.JWT_SECRET ?? "secret";
+            const secret = getJwtSecret();
             const token = jwt.sign(user, secret, { expiresIn: "1d" });
             return OperationResult.ok(token, "Login successful");
         } catch (error) {
@@ -124,7 +131,7 @@ export class AuthService {
     public static async sendInvitation(user: TUser, frontendUrl: string): Promise<OperationResult<null>> {
         try {
             // Secret dérivé : un jeton d'invitation ne peut pas servir de jeton de session (verifyToken)
-            const secret = `${process.env.JWT_SECRET ?? "secret"}:${SET_PASSWORD_PURPOSE}`;
+            const secret = `${getJwtSecret()}:${SET_PASSWORD_PURPOSE}`;
             const token = jwt.sign({ sub: String(user.id) }, secret, { expiresIn: INVITATION_EXPIRES_IN });
             const link = `${frontendUrl.replace(/\/$/, "")}/?invitation=${encodeURIComponent(token)}`;
 
@@ -147,7 +154,7 @@ export class AuthService {
     public static async setPassword(token: string, password: string): Promise<OperationResult<null>> {
         let userId: number;
         try {
-            const secret = `${process.env.JWT_SECRET ?? "secret"}:${SET_PASSWORD_PURPOSE}`;
+            const secret = `${getJwtSecret()}:${SET_PASSWORD_PURPOSE}`;
             userId = Number((jwt.verify(token, secret) as jwt.JwtPayload).sub);
         } catch {
             return OperationResult.fail(INVALID_LINK_MESSAGE);
