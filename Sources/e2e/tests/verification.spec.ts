@@ -5,7 +5,7 @@ test.use({ storageState: userState });
 
 test("vérification complète d'un véhicule et envoi du rapport PDF", async ({ page }) => {
     await page.goto('/vehicules');
-    await page.locator('.card', { has: page.getByRole('heading', { name: 'Camion de pompier' }) }).getByRole('button', { name: 'Vérifier' }).click();
+    await page.getByRole('region', { name: 'Camion de pompier', exact: true }).getByRole('button', { name: 'Vérifier' }).click();
     await expect(page.getByRole('heading', { name: 'CAMION DE POMPIER' })).toBeVisible();
 
     for (const section of ['Compartiment principal', 'Tiroir gauche', 'Tiroir droit']) await openCollapse(page, section);

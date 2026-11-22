@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useId, useRef, useState } from "react";
 
 // Durée de l'animation d'ouverture DaisyUI : on attend que le contenu ait sa hauteur finale
 const OPEN_ANIMATION_MS = 300;
@@ -17,10 +17,13 @@ const Collapse = ({
     level = 0,
 }: CollapseProps) => {
     const rootRef = useRef<HTMLDivElement>(null);
+    const [open, setOpen] = useState(defaultOpen);
+    const contentId = useId();
 
     // À l'ouverture : section centrée à l'écran, ou calée en haut si elle est plus haute que la fenêtre
-    const scrollOnOpen = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.checked) return;
+    const toggle = () => {
+        setOpen(!open);
+        if (open) return;
         setTimeout(() => {
             const el = rootRef.current;
             if (!el) return;
@@ -57,18 +60,23 @@ const Collapse = ({
     return (
         <div
             ref={rootRef}
-            className={`collapse collapse-arrow ${getBackgroundClass(level)} ${getBorderClass(level)} mb-2`}
+            className={`collapse collapse-arrow ${open ? "collapse-open" : ""} ${getBackgroundClass(level)} ${getBorderClass(level)} mb-2`}
         >
-            <input type="checkbox" defaultChecked={defaultOpen} onChange={scrollOnOpen} aria-label={title} />
-            <div className={`collapse-title ${getTitleClass(level)}`}>
+            <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={contentId}
+                onClick={toggle}
+                className={`collapse-title w-full text-left ${getTitleClass(level)}`}
+            >
                 {title}
                 {level > 5 && (
                     <span className="text-xs text-gray-400 ml-2">
                         (niveau {level})
                     </span>
                 )}
-            </div>
-            <div className="collapse-content">
+            </button>
+            <div id={contentId} role="region" aria-label={title} className="collapse-content">
                 <div className="pt-2">{children}</div>
             </div>
         </div>

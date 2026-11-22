@@ -11,7 +11,7 @@ function Installer() {
             </div>
             <p>Ajoutez l'application sur l'écran d'accueil de votre téléphone pour l'ouvrir en plein écran, comme une application classique.</p>
 
-            <div className="card border-2 border-base-300">
+            <div role="region" aria-label="iPhone (Safari)" className="card border-2 border-base-300">
                 <div className="card-body">
                     <h2 className="card-title">iPhone (Safari)</h2>
                     <ol className="list-decimal list-inside space-y-1">
@@ -23,7 +23,7 @@ function Installer() {
                 </div>
             </div>
 
-            <div className="card border-2 border-base-300">
+            <div role="region" aria-label="Android (Chrome)" className="card border-2 border-base-300">
                 <div className="card-body">
                     <h2 className="card-title">Android (Chrome)</h2>
                     <ol className="list-decimal list-inside space-y-1">

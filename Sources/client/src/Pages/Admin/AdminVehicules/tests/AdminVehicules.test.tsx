@@ -37,7 +37,7 @@ const setup = () => {
   return { getDetails }
 }
 // Bloc repliable d'une section (son en-tête est la case à cocher libellée par son nom)
-const section = (name: string) => screen.getByRole('checkbox', { name }).closest('.collapse') as HTMLElement
+const section = (name: string) => screen.getByRole('button', { name }).closest('.collapse') as HTMLElement
 const openMove = async (name: string) => {
   // Le premier bouton du bloc est celui de la section elle-même (les sous-sections suivent)
   await userEvent.click(within(section(name)).getAllByRole('button', { name: '↪ Déplacer' })[0])
@@ -49,20 +49,20 @@ const optionLabels = (dialog: Pick<typeof screen, 'getAllByRole'>) =>
 describe('AdminVehicules — arbre des sections', () => {
   it('affiche la hiérarchie véhicule → sections → sous-sections → équipements', async () => {
     setup()
-    await screen.findByRole('checkbox', { name: 'VSAV' })
+    await screen.findByRole('button', { name: 'VSAV' })
     // Les compteurs de la section précèdent ceux de ses sous-sections
     const cabine = within(section('Cabine'))
     expect(cabine.getAllByText(/équipement/)[0]).toHaveTextContent('1 équipement(s)')
     expect(cabine.getAllByText(/sous-section/)[0]).toHaveTextContent('1 sous-section(s)')
     expect(cabine.getByText('Radio')).toBeInTheDocument()
-    expect(within(section('Sac')).getByRole('checkbox', { name: 'Trousse' })).toBeInTheDocument()
+    expect(within(section('Sac')).getByRole('button', { name: 'Trousse' })).toBeInTheDocument()
     expect(within(section('Trousse')).getByText('Ciseaux')).toBeInTheDocument()
     expect(within(section('Coffre')).getByText('Aucun équipement')).toBeInTheDocument()
   })
 
   it("« Déplacer » propose la racine et les autres sections, sans la section, ses descendantes ni son parent actuel", async () => {
     setup()
-    await screen.findByRole('checkbox', { name: 'Sac' })
+    await screen.findByRole('button', { name: 'Sac' })
     const dialog = await openMove('Sac')
 
     expect(dialog.getByText('Sac')).toBeInTheDocument()
@@ -72,7 +72,7 @@ describe('AdminVehicules — arbre des sections', () => {
 
   it("ne propose pas la racine pour une section déjà à la racine", async () => {
     setup()
-    await screen.findByRole('checkbox', { name: 'Cabine' })
+    await screen.findByRole('button', { name: 'Cabine' })
     const dialog = await openMove('Cabine')
     expect(optionLabels(dialog)).toEqual(['Choisir une destination…', 'Coffre'])
   })
@@ -80,7 +80,7 @@ describe('AdminVehicules — arbre des sections', () => {
   it("déplace la section vers la destination choisie puis recharge l'arbre", async () => {
     const { getDetails } = setup()
     const calls = mockApi('patch', '/sections/:id/parent')
-    await screen.findByRole('checkbox', { name: 'Trousse' })
+    await screen.findByRole('button', { name: 'Trousse' })
     const dialog = await openMove('Trousse')
 
     await userEvent.selectOptions(dialog.getByRole('combobox'), 'Racine du véhicule')
@@ -93,7 +93,7 @@ describe('AdminVehicules — arbre des sections', () => {
   it('déplace vers une autre section avec son id', async () => {
     setup()
     const calls = mockApi('patch', '/sections/:id/parent')
-    await screen.findByRole('checkbox', { name: 'Sac' })
+    await screen.findByRole('button', { name: 'Sac' })
     const dialog = await openMove('Sac')
 
     await userEvent.selectOptions(dialog.getByRole('combobox'), 'Coffre')
@@ -105,7 +105,7 @@ describe('AdminVehicules — arbre des sections', () => {
   it('renomme le véhicule puis recharge la liste', async () => {
     const { getDetails } = setup()
     const calls = mockApi('put', '/vehicules/:id')
-    await screen.findByRole('checkbox', { name: 'Trousse' })
+    await screen.findByRole('button', { name: 'Trousse' })
 
     await userEvent.click(screen.getByTitle('Renommer ce véhicule'))
     const input = await screen.findByDisplayValue('VSAV')

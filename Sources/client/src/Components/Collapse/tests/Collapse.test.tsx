@@ -16,7 +16,7 @@ describe('Collapse', () => {
   })
 
   const toggle = () => {
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Section' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Section' }))
     act(() => { vi.advanceTimersByTime(300) })
   }
 
@@ -37,5 +37,14 @@ describe('Collapse', () => {
     render(<Collapse title="Section" defaultOpen>contenu</Collapse>)
     toggle()
     expect(scrollIntoView).not.toHaveBeenCalled()
+  })
+
+  it('expose un bouton aria-expanded et une région nommée', () => {
+    render(<Collapse title="Section">contenu</Collapse>)
+    const header = screen.getByRole('button', { name: 'Section' })
+    expect(header).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(header)
+    expect(header).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('region', { name: 'Section' })).toHaveTextContent('contenu')
   })
 })

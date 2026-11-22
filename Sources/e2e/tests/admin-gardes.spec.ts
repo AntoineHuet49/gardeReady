@@ -15,7 +15,7 @@ test("l'admin crée une garde, y affecte un utilisateur et le nomme responsable"
     await gardeDialog.getByRole('button', { name: 'Ajouter' }).click();
     await expect(gardeDialog).toBeHidden();
 
-    const card = page.locator('.card', { has: page.getByRole('heading', { name: 'Garde 7', exact: true }) });
+    const card = page.getByRole('region', { name: 'Garde 7', exact: true });
     await expect(card.getByText('Aucun membre dans cette garde')).toBeVisible();
 
     // Création d'un utilisateur directement affecté à la garde 7

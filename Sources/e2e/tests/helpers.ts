@@ -15,13 +15,12 @@ export async function login(page: Page, { email, password }: { email: string; pa
 export const adminState = '.auth/admin.json';
 export const userState = '.auth/user.json';
 
-// Bloc repliable (Collapse) dont la case à cocher porte le titre : le dernier correspondant est le
-// plus profond (les blocs parents contiennent aussi la case de leurs enfants).
-export const collapse = (page: Page, title: string) =>
-    page.locator('.collapse', { has: page.getByRole('checkbox', { name: title, exact: true }) }).last();
+// Bloc repliable (Collapse) : région nommée par le titre, visible une fois le bloc ouvert.
+export const collapse = (page: Page, title: string) => page.getByRole('region', { name: title, exact: true });
 
 export async function openCollapse(page: Page, title: string) {
-    await page.getByRole('checkbox', { name: title, exact: true }).check();
+    const header = page.getByRole('button', { name: title, exact: true });
+    if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
 }
 
 // Messages reçus par le faux Mailjet (voir global-setup.ts)

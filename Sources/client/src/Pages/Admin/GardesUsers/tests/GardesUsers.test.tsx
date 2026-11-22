@@ -28,7 +28,7 @@ const setup = (role: User['role'] = 'admin') => {
 }
 // Le nom apparaît aussi dans la liste déroulante du responsable : on vise la ligne du membre
 const member = { selector: 'span' }
-const card = (title: string | RegExp) => screen.getByRole('heading', { name: title }).closest('.card') as HTMLElement
+const card = (title: string | RegExp) => screen.getByRole('region', { name: title }) as HTMLElement
 
 describe('GardesUsers', () => {
   it('affiche une carte par garde, triées par numero', async () => {
