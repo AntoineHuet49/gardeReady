@@ -7,6 +7,7 @@ import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
 import { Installer } from "../../Pages/Installer";
 import { Planning } from "../../Pages/Planning";
+import { MesVerifications } from "../../Pages/MesVerifications";
 import AdminRoutes from "./adminRoutes";
 import AppLayout from "../../Components/Layout/AppLayout";
 
@@ -46,6 +47,16 @@ function Router() {
                 <PrivateRoute>
                     <AppLayout title="Planning des gardes">
                         <Planning />
+                    </AppLayout>
+                </PrivateRoute>
+            ),
+        },
+        {
+            path: routePath.mesVerifications,
+            element: (
+                <PrivateRoute>
+                    <AppLayout title="Mes vérifications">
+                        <MesVerifications />
                     </AppLayout>
                 </PrivateRoute>
             ),

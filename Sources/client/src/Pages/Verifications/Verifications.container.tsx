@@ -27,8 +27,12 @@ function VerificationsContainer() {
 
     const onSubmit = async (data: VerificationValues[]) => {
         try {
-            await verification.mutateAsync(data);
-            notify("Verifications envoyées", "success");
+            const response = await verification.mutateAsync(data);
+            if (response.data?.warning) {
+                notify("Vérification enregistrée, mais l'e-mail n'a pas pu être envoyé. Retrouvez-la dans Mes vérifications.", "warning");
+            } else {
+                notify("Verifications envoyées", "success");
+            }
             navigate(routePath.vehicules);
         } catch {
             notify("Une erreur est survenue", "error");

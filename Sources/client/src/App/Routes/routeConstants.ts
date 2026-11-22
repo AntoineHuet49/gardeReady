@@ -4,5 +4,6 @@ export const routePath = {
     details: "/vehicules/:id",
     admin: "/admin",
     planning: "/planning",
+    mesVerifications: "/mes-verifications",
     installer: "/installer",
 }

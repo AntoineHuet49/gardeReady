@@ -2,6 +2,7 @@
 -- Contient uniquement les tables essentielles et un compte admin
 
 -- Nettoyer les tables existantes (évite les conflits)
+DROP TABLE IF EXISTS vehicule_verifications CASCADE;
 DROP TABLE IF EXISTS vehicule_assignments CASCADE;
 DROP TABLE IF EXISTS elements CASCADE;
 DROP TABLE IF EXISTS sections CASCADE;
@@ -74,6 +75,17 @@ CREATE TABLE vehicule_assignments (
     vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (shift_date, vehicule_id, user_id)
+);
+
+-- Historique des vérifications de véhicules (results = instantané des lignes du rapport)
+CREATE TABLE vehicule_verifications (
+    id SERIAL PRIMARY KEY,
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    garde_id INT REFERENCES gardes(id) ON DELETE SET NULL,
+    results JSONB NOT NULL,
+    mail_envoye BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Insertion du compte administrateur
