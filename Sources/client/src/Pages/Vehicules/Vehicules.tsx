@@ -9,6 +9,7 @@ import { PRISE_DE_GARDE_HOUR } from "../../App/utils/planning";
 type VehiculesProps = {
     vehicules: Vehicule[];
     assignedIds: Set<number>;
+    colleagues: Map<number, string[]>;
     currentShift: Date;
     isLoading: boolean;
     error: Error | null;
@@ -18,6 +19,7 @@ type VehiculesProps = {
 function Vehicules({
     vehicules,
     assignedIds,
+    colleagues,
     currentShift,
     isLoading,
     error,
@@ -52,6 +54,7 @@ function Vehicules({
                                 key={vehicule.id}
                                 name={vehicule.name}
                                 highlighted={assignedIds.has(vehicule.id)}
+                                colleagues={assignedIds.has(vehicule.id) ? colleagues.get(vehicule.id) ?? [] : undefined}
                                 onClick={() =>
                                     navigate(
                                         routePath.details.replace(
