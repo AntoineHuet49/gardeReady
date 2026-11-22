@@ -41,9 +41,9 @@ const MoveSectionModal = ({ target, onClose, onMove }: MoveSectionModalProps) =>
     const options = target ? listTargets(target.vehiculeSections, target.section.id).filter((o) => o.id !== currentParent) : [];
 
     return (
-        <dialog ref={ref} className="modal" onClose={onClose}>
+        <dialog ref={ref} aria-labelledby="move-section-modal-title" className="modal" onClose={onClose}>
             <div className="modal-box">
-                <h3 className="font-bold text-lg">Déplacer la section</h3>
+                <h3 id="move-section-modal-title" className="font-bold text-lg">Déplacer la section</h3>
                 <p className="py-2">
                     Où déplacer <strong>{target?.section.name}</strong> ?
                 </p>

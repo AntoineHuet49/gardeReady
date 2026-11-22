@@ -29,7 +29,7 @@ function RotationModal({ open, onClose, firstGarde, referenceDate }: { open: boo
     const isFriday = value !== "" && parseDateOnly(value).getDay() === 5;
 
     return (
-        <dialog ref={ref} className="modal" onClose={onClose}>
+        <dialog ref={ref} aria-labelledby="rotation-modal-title" className="modal" onClose={onClose}>
             <form
                 className="modal-box"
                 onSubmit={(e) => {
@@ -37,7 +37,7 @@ function RotationModal({ open, onClose, firstGarde, referenceDate }: { open: boo
                     if (isFriday) updateRotation.mutate(value, { onSuccess: onClose });
                 }}
             >
-                <h3 className="font-bold text-lg">Rotation des gardes</h3>
+                <h3 id="rotation-modal-title" className="font-bold text-lg">Rotation des gardes</h3>
                 <fieldset className="fieldset mt-2">
                     <div className="join">
                         <input
@@ -80,12 +80,12 @@ function GardeModal({ shift, vehicules, onClose }: { shift: Shift | null; vehicu
     const { assignments } = useVehiculeAssignments(shiftDate, shiftDate, shift !== null);
 
     return (
-        <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onClose={onClose}>
+        <dialog ref={ref} aria-labelledby="garde-modal-title" className="modal modal-bottom sm:modal-middle" onClose={onClose}>
             {shift && (
                 // Hauteur en dvh (pas vh) : sur mobile la barre du navigateur masquait le bas de la modale.
                 // Seuls véhicules et membres défilent ; en-tête et bouton Fermer restent visibles.
                 <div className="modal-box flex flex-col max-h-[85dvh] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                    <h3 className="font-bold text-lg flex items-center gap-2">
+                    <h3 id="garde-modal-title" className="font-bold text-lg flex items-center gap-2">
                         <span className="inline-block size-4 rounded-full" style={{ backgroundColor: gardeColor(shift.garde.color) }} />
                         Garde {shift.garde.numero}
                     </h3>

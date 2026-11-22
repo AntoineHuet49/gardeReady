@@ -48,9 +48,9 @@ function FeedbackModal() {
             >
                 💬 <span className="hidden sm:inline">Un problème ? Une idée ?</span>
             </button>
-            <dialog ref={ref} className="modal modal-bottom sm:modal-middle">
+            <dialog ref={ref} aria-labelledby="feedback-modal-title" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box">
-                    <h3 className="font-bold text-lg">Votre avis nous aide à améliorer l'application</h3>
+                    <h3 id="feedback-modal-title" className="font-bold text-lg">Votre avis nous aide à améliorer l'application</h3>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();

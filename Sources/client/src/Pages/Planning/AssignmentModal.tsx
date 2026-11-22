@@ -21,7 +21,7 @@ function AssignmentModal({ shift, vehicules, gardesCount, onClose }: AssignmentM
     }, [shift]);
 
     return (
-        <dialog ref={ref} className="modal modal-bottom sm:modal-middle" onClose={onClose}>
+        <dialog ref={ref} aria-labelledby="assignment-modal-title" className="modal modal-bottom sm:modal-middle" onClose={onClose}>
             {shift && (
                 <AssignmentForm
                     key={shift.start.toISOString()}
@@ -83,7 +83,7 @@ function AssignmentForm({ shift, vehicules, gardesCount, close }: AssignmentForm
     return (
         // Même principe que la modale des membres : seule la liste défile, en-tête et actions restent visibles
         <div className="modal-box flex flex-col max-h-[85dvh] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <h3 className="font-bold text-lg flex items-center gap-2">
+            <h3 id="assignment-modal-title" className="font-bold text-lg flex items-center gap-2">
                 <span className="inline-block size-4 rounded-full" style={{ backgroundColor: gardeColor(shift.garde.color) }} />
                 Véhicules à vérifier · Garde {shift.garde.numero}
             </h3>
