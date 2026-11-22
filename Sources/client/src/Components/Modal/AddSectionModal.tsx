@@ -39,16 +39,17 @@ const AddSectionModal = ({
         formState: { errors }
     } = useForm<FormData>();
 
-    // Mettre le focus sur l'input quand le modal s'ouvre
+    // Deps primitives : un nouvel objet `section` (refetch) ne doit pas effacer la saisie en cours
+    const initialName = section?.name ?? "";
     useEffect(() => {
         if (isOpen) {
-            reset({ name: section?.name ?? "" });
+            reset({ name: initialName });
             // Délai pour que le modal soit complètement rendu
             setTimeout(() => {
                 setFocus("name");
             }, 100);
         }
-    }, [isOpen, section, reset, setFocus]);
+    }, [isOpen, initialName, reset, setFocus]);
 
     const onSubmit = (data: FormData) => {
         const onSuccess = () => {
