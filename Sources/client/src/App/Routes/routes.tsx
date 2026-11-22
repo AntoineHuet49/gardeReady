@@ -7,6 +7,7 @@ import { Verifications } from "../../Pages/Verifications";
 import { Admin } from "../../Pages/Admin";
 import { Installer } from "../../Pages/Installer";
 import { Planning } from "../../Pages/Planning";
+import { Kilometrage } from "../../Pages/Kilometrage";
 import { MesVerifications } from "../../Pages/MesVerifications";
 import AdminRoutes from "./adminRoutes";
 import AppLayout from "../../Components/Layout/AppLayout";
@@ -47,6 +48,16 @@ function Router() {
                 <PrivateRoute>
                     <AppLayout title="Planning des gardes">
                         <Planning />
+                    </AppLayout>
+                </PrivateRoute>
+            ),
+        },
+        {
+            path: routePath.kilometrage,
+            element: (
+                <PrivateRoute>
+                    <AppLayout title="Kilométrage">
+                        <Kilometrage />
                     </AppLayout>
                 </PrivateRoute>
             ),

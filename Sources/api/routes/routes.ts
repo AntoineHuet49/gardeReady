@@ -6,6 +6,7 @@ import { UsersController } from '~~/Controllers/UsersController';
 import VehiculesController from '~~/Controllers/VehiculesController';
 import ElementsController from '~~/Controllers/ElementsController';
 import SectionsController from '~~/Controllers/SectionsController';
+import { VehiculeKilometragesController } from '~~/Controllers/VehiculeKilometragesController';
 import { FeedbackController } from '~~/Controllers/FeedbackController';
 import { verifyToken, requireAdmin } from '~~/Middlewares/AuthMiddleware';
 import { requireAuthProvider } from '~~/Utils/AuthProvider';
@@ -39,6 +40,9 @@ router.post('/vehicules', verifyToken, requireAdmin, VehiculesController.addVehi
 router.put('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.updateVehicule);
 router.delete('/vehicules/:id', verifyToken, requireAdmin, VehiculesController.deleteVehicule);
 router.post('/vehicules/verifications/:id', verifyToken, VehiculesController.validateVehicule);
+// Suivi kilométrique : tout agent saisit un relevé, l'historique est réservé aux admins
+router.post('/vehicules/:id/kilometrages', verifyToken, VehiculeKilometragesController.add);
+router.get('/vehicules/:id/kilometrages', verifyToken, requireAdmin, VehiculeKilometragesController.getHistory);
 
 // Elements (protégées - admin requis)
 router.post('/elements', verifyToken, requireAdmin, ElementsController.createElement);

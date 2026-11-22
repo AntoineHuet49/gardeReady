@@ -37,6 +37,9 @@ function AppLayout({ title, children }: AppLayoutProps) {
                 <NavLink to={routePath.planning} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
                     Planning
                 </NavLink>
+                <NavLink to={routePath.kilometrage} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
+                    Km
+                </NavLink>
                 <NavLink to={routePath.mesVerifications} className={({ isActive }) => `btn btn-ghost btn-sm ${isActive ? "btn-active" : ""}`}>
                     Mes vérifications
                 </NavLink>

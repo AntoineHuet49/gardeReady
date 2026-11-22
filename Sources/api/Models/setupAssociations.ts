@@ -4,10 +4,13 @@ import { Sections } from "./Sections";
 import { Gardes } from "./Garde";
 import { Users } from "./Users";
 import { VehiculeAssignments } from "./VehiculeAssignments";
+import { VehiculeKilometrages } from "./VehiculeKilometrages";
 
 import { VehiculeVerifications } from "./VehiculeVerifications";
 
 export function setupAssociations() {
+    VehiculeKilometrages.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
+    VehiculeKilometrages.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });
     // Historique des vérifications
     VehiculeVerifications.belongsTo(Vehicules, { foreignKey: "vehicule_id", as: "vehicule", onDelete: "CASCADE" });
     VehiculeVerifications.belongsTo(Users, { foreignKey: "user_id", as: "user", onDelete: "CASCADE" });

@@ -2,6 +2,7 @@
 -- Contient uniquement les tables essentielles et un compte admin
 
 -- Nettoyer les tables existantes (évite les conflits)
+DROP TABLE IF EXISTS vehicule_kilometrages CASCADE;
 DROP TABLE IF EXISTS vehicule_verifications CASCADE;
 DROP TABLE IF EXISTS vehicule_assignments CASCADE;
 DROP TABLE IF EXISTS elements CASCADE;
@@ -75,6 +76,16 @@ CREATE TABLE vehicule_assignments (
     vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (shift_date, vehicule_id, user_id)
+);
+
+-- Relevés kilométriques des véhicules
+CREATE TABLE vehicule_kilometrages (
+    id SERIAL PRIMARY KEY,
+    vehicule_id INT NOT NULL REFERENCES vehicules(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kilometrage INT NOT NULL CHECK (kilometrage >= 0),
+    motif VARCHAR(200),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Historique des vérifications de véhicules (results = instantané des lignes du rapport)
