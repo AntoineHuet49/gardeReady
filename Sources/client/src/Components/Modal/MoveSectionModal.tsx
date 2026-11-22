@@ -47,7 +47,7 @@ const MoveSectionModal = ({ target, onClose, onMove }: MoveSectionModalProps) =>
                 <p className="py-2">
                     Où déplacer <strong>{target?.section.name}</strong> ?
                 </p>
-                <select className="select select-bordered w-full" value={choice} onChange={(e) => setChoice(e.target.value)}>
+                <select aria-label="Destination" className="select select-bordered w-full" value={choice} onChange={(e) => setChoice(e.target.value)}>
                     <option value="" disabled>
                         Choisir une destination…
                     </option>

@@ -67,6 +67,7 @@ describe('AdminVehicules — arbre des sections', () => {
 
     expect(dialog.getByText('Sac')).toBeInTheDocument()
     expect(optionLabels(dialog)).toEqual(['Choisir une destination…', 'Racine du véhicule', 'Coffre'])
+    expect(dialog.getByRole('combobox', { name: 'Destination' })).toBeInTheDocument()
     expect(dialog.getByRole('button', { name: 'Déplacer' })).toBeDisabled()
   })
 
