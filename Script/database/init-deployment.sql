@@ -57,6 +57,7 @@ CREATE TABLE elements (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     quantite INTEGER NOT NULL DEFAULT 1 CHECK (quantite >= 1),
+    pression_min INTEGER CHECK (pression_min >= 1),
     section_id INT REFERENCES sections(id) ON DELETE CASCADE
 );
 

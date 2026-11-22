@@ -32,7 +32,8 @@ CREATE TABLE vehicules (
 CREATE TABLE elements (
     id SERIAL PRIMARY KEY, -- Identifiant unique pour chaque élément
     name VARCHAR(100) NOT NULL, -- name de l'élément
-    quantite INTEGER NOT NULL DEFAULT 1 CHECK (quantite >= 1) -- quantité attendue de l'équipement
+    quantite INTEGER NOT NULL DEFAULT 1 CHECK (quantite >= 1), -- quantité attendue de l'équipement
+    pression_min INTEGER CHECK (pression_min >= 1) -- pression minimale en bar (ex. bouteille d'ARI), optionnelle
 );
 
 -- Création de la table sections (hiérarchique)

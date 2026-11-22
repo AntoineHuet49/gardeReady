@@ -17,7 +17,7 @@ const fpt: Vehicule = {
     {
       id: 1,
       name: 'Cabine',
-      elements: [{ id: 10, name: 'Radio', quantite: 1 }],
+      elements: [{ id: 10, name: 'Radio', quantite: 1, pression_min: 200 }],
       subSections: [{ id: 2, name: 'Sac', elements: [{ id: 11, name: 'Garrot', quantite: 2 }] }],
     },
     { id: 3, name: 'Coffre vide', elements: [], subSections: [] },
@@ -51,6 +51,7 @@ describe('Verifications', () => {
     expect(screen.queryByRole('checkbox', { name: 'Coffre vide' })).not.toBeInTheDocument()
     expect(radios('OK')).toHaveLength(3)
     expect(screen.getByText('0/3 éléments vérifiés')).toBeInTheDocument()
+    expect(screen.getByText('(min. 200 bar)')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Valider' })).toBeDisabled()
   })
 

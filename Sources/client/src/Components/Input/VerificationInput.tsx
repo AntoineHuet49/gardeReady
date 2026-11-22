@@ -17,6 +17,7 @@ const VerificationInput = ({ element, currentStatus, register }: VerificationInp
                     <h3 className="text-xl break-words min-w-0">
                         <strong>{element.quantite} </strong>
                         {element.name}
+                        {element.pression_min != null && <span className="text-base font-normal"> (min. {element.pression_min} bar)</span>}
                     </h3>
                     <input
                         type="hidden"
