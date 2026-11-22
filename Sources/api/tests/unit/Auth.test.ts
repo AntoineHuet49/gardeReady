@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import type { NextFunction, Request, Response } from 'express';
 import { UsersRepository } from '~~/Repositories/UsersRepository';
 import { MailerService } from '~~/Services/MailerService';
-import { AuthService } from '~~/Services/AuthService';
+import { AuthService, getJwtSecret } from '~~/Services/AuthService';
 import { requireAdmin, requireSuperAdmin, verifyToken } from '~~/Middlewares/AuthMiddleware';
 import type { TUserPayload } from '~~/Types/User';
 
@@ -24,6 +24,20 @@ const user = { id: 7, email: 'agent@sdis49.fr', firstname: 'Jean', lastname: 'Du
 beforeEach(() => {
     vi.clearAllMocks();
     process.env.JWT_SECRET = SECRET;
+});
+
+describe('JWT_SECRET absent', () => {
+    it("getJwtSecret lève une erreur explicite, sans valeur par défaut", () => {
+        delete process.env.JWT_SECRET;
+        expect(() => getJwtSecret()).toThrow('JWT_SECRET non configuré');
+    });
+
+    it("login n'émet aucun token signé avec un secret par défaut", async () => {
+        delete process.env.JWT_SECRET;
+        repo.getOneUserByEmail.mockResolvedValue(user);
+        repo.getOneUserWithPassword.mockResolvedValue({ ...user, password: await bcrypt.hash('Motdepasse1', 4) });
+        await expect(AuthService.login({ email: user.email, password: 'Motdepasse1' })).rejects.toThrow('JWT_SECRET non configuré');
+    });
 });
 
 describe('AuthService.login', () => {
