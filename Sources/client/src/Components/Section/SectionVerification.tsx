@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { UseFormRegister, UseFormWatch } from "react-hook-form";
 import { Section } from "../../Types/Section";
 import { Element } from "../../Types/Element";
@@ -41,15 +42,9 @@ const SectionVerification = ({
                             const isLastElement =
                                 index === section.elements!.length - 1;
 
-                            // Vous pouvez maintenant utiliser isLastElement pour votre logique
-                            console.log(
-                                `Element ${element.name} is last: ${isLastElement}`
-                            );
-
                             return (
-                                <>
+                                <Fragment key={element.id}>
                                     <VerificationInput
-                                        key={element.id}
                                         element={element}
                                         currentStatus={currentStatus}
                                         register={register}
@@ -57,7 +52,7 @@ const SectionVerification = ({
                                     {!isLastElement && (
                                         <div className="divider"></div>
                                     )}
-                                </>
+                                </Fragment>
                             );
                         }
                     )}
