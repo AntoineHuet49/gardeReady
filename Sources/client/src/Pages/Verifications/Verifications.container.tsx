@@ -12,7 +12,7 @@ function VerificationsContainer() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { data, isLoading, error } = useQuery({
-        queryKey: ["details"],
+        queryKey: ["details", id],
         queryFn: () => getVehiculeById(id!),
     });
     const verification = useMutation({
