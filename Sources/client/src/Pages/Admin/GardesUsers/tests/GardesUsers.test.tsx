@@ -117,6 +117,24 @@ describe('GardesUsers', () => {
     await waitFor(() => expect(calls).toEqual([{ url: '/api/users/2/garde', body: { garde_id: null } }]))
   })
 
+  it("change la garde d'un utilisateur depuis la modale d'édition", async () => {
+    setup()
+    mockApi('put', '/users/:id', {})
+    const calls = mockApi('patch', '/users/:id/garde')
+    await screen.findByText('Alice Martin', member)
+
+    const alice = screen.getByText('Alice Martin', member).closest('li') as HTMLElement
+    await userEvent.click(within(alice).getByTitle('Modifier cet utilisateur'))
+    const dialog = screen.getAllByRole('dialog', { hidden: true }).find((d) => d.id === 'edit-user-modal-2') as HTMLElement
+    const select = within(dialog).getByLabelText('Garde', { selector: 'select' })
+    await waitFor(() => expect(within(dialog).getByRole('option', { name: 'Garde 3', hidden: true })).toBeInTheDocument())
+    expect(select).toHaveValue("10")
+    await userEvent.selectOptions(select, 'Garde 3')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Enregistrer', hidden: true }))
+
+    await waitFor(() => expect(calls).toEqual([{ url: '/api/users/2/garde', body: { garde_id: 30 } }]))
+  })
+
   it('masque aussi les superAdmin sans garde à un admin', async () => {
     mockApi('get', '/gardes', gardes)
     mockApi('get', '/users', [...users, user(6, 'Eve', 'superAdmin', null)])
