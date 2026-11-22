@@ -81,6 +81,7 @@ CREATE TABLE vehicule_verifications (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     garde_id INT REFERENCES gardes(id) ON DELETE SET NULL,
     results JSONB NOT NULL,
+    mail_envoye BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

@@ -90,6 +90,22 @@ export default class VehiculesController extends BaseController {
         res.json(await VehiculesService.getHistory(BaseController.getUserPayload(req)));
     });
 
+    public static getMyVerifications = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        res.json(await VehiculesService.getMine(BaseController.getUserPayload(req)));
+    });
+
+    public static downloadVerificationPdf = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+        const id = parseInt(req.params.id);
+        const file = isNaN(id) ? null : await VehiculesService.getVerificationPdf(id, BaseController.getUserPayload(req));
+        if (!file) {
+            res.status(HttpCode.NotFound).json({ error: "Vérification introuvable" });
+            return;
+        }
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="${file.filename}"`);
+        res.send(file.pdf);
+    });
+
     public static async validateVehicule(req: Request, res: Response): Promise<void> {
         const id = parseInt(req.params.id);
         const body = req.body;
@@ -119,11 +135,17 @@ export default class VehiculesController extends BaseController {
             const rows = await VehiculesService.generatePdf(vehicule, body, filePath, userPayload);
             
             // Envoyer l'email avec le PDF en pièce jointe
-            await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
-            await VehiculesService.saveVerification(vehicule, rows, userPayload);
-            
+            // La vérification est toujours conservée, même si le mail échoue
+            const saved = await VehiculesService.saveVerification(vehicule, rows, userPayload);
             logger.success(`Vérification validée pour le véhicule ${vehicule.name} par ${userPayload.firstname} ${userPayload.lastname}`);
-            res.send("Vehicule validated");
+            try {
+                await VehiculesService.sendVerificationMail(userPayload, vehicule, filePath);
+                res.send("Vehicule validated");
+            } catch (mailError) {
+                logger.error("Vérification enregistrée mais e-mail non envoyé", mailError);
+                await VehiculesService.setMailSent(saved.id, false);
+                res.status(HttpCode.Ok).json({ warning: "Vérification enregistrée, mais l'e-mail n'a pas pu être envoyé." });
+            }
         } catch (error) {
             logger.error("Erreur lors de la validation du véhicule", error);
             res.status(500).send("Erreur lors de la validation du véhicule");

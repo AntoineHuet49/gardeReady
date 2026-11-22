@@ -13,6 +13,7 @@ export class VehiculeVerifications extends Model<
   declare user_id: number;
   declare garde_id: number | null; // garde de l'agent au moment de la vérification
   declare results: VerificationResult[];
+  declare mail_envoye: CreationOptional<boolean>; // false si l'envoi au responsable a échoué
   declare created_at: CreationOptional<Date>;
 }
 
@@ -38,6 +39,7 @@ VehiculeVerifications.init(
       onDelete: 'SET NULL',
     },
     results: { type: DataTypes.JSONB, allowNull: false },
+    mail_envoye: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   },
   {

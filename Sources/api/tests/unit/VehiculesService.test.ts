@@ -15,7 +15,7 @@ vi.mock('~~/Repositories/VehiculesRepository', () => ({
 }));
 vi.mock('~~/Repositories/ElementsRepository', () => ({ ElementsRepository: { getOneById: vi.fn() } }));
 vi.mock('~~/Repositories/GardeRepository', () => ({ GardesRepository: { getResponsable: vi.fn() } }));
-vi.mock('~~/Repositories/VerificationsRepository', () => ({ VerificationsRepository: { Create: vi.fn(), GetAll: vi.fn(), GardeIdsOfResponsable: vi.fn() } }));
+vi.mock('~~/Repositories/VerificationsRepository', () => ({ VerificationsRepository: { Create: vi.fn(), GetAll: vi.fn(), GetOne: vi.fn(), SetMailSent: vi.fn(), GardeIdsOfResponsable: vi.fn() } }));
 vi.mock('~~/Services/MailerService', () => ({ MailerService: { sendMailAsync: vi.fn() } }));
 
 const repo = vi.mocked(VehiculesRepository);
@@ -115,11 +115,31 @@ describe('historique des vérifications', () => {
     it('superAdmin : tout ; admin : sa garde + celles dont il est responsable ; agent : seulement s’il est responsable', async () => {
         history.GardeIdsOfResponsable.mockResolvedValue([3]);
         await VehiculesService.getHistory({ ...user, role: 'superAdmin' });
-        expect(history.GetAll).toHaveBeenLastCalledWith();
+        expect(history.GetAll).toHaveBeenLastCalledWith(undefined);
         await VehiculesService.getHistory({ ...user, role: 'admin' });
         expect(history.GetAll).toHaveBeenLastCalledWith([3, 1]);
         history.GardeIdsOfResponsable.mockResolvedValue([]);
         await VehiculesService.getHistory(user);
         expect(history.GetAll).toHaveBeenLastCalledWith([]);
+    });
+
+    it('getVerificationPdf : auteur ou lecteur de l’historique, sinon null', async () => {
+        const record = {
+            id: 5, user_id: 2, garde_id: 1, created_at: new Date('2026-10-02T08:30:00Z'),
+            user: { firstname: 'Jean', lastname: 'Dupont' }, vehicule: { name: 'VSAV n°2' },
+            results: [{ element: '2 Thermomètre', status: 'KO', comment: 'cassé' }],
+        };
+        history.GetOne.mockResolvedValue(record as never);
+        history.GardeIdsOfResponsable.mockImplementation(async () => []); // tableau neuf à chaque appel (le service y ajoute)
+
+        const own = await VehiculesService.getVerificationPdf(5, user);
+        expect(own?.pdf.subarray(0, 5).toString()).toBe('%PDF-');
+        expect(own?.filename).toMatch(/^Verif_VSAV_n_2_\d{8}\.pdf$/);
+        // admin de la garde 1 : oui ; admin d'une autre garde ou agent tiers : non
+        expect(await VehiculesService.getVerificationPdf(5, { ...user, id: 9, role: 'admin' })).not.toBeNull();
+        expect(await VehiculesService.getVerificationPdf(5, { ...user, id: 9, role: 'admin', garde_id: 2 })).toBeNull();
+        expect(await VehiculesService.getVerificationPdf(5, { ...user, id: 9 })).toBeNull();
+        history.GetOne.mockResolvedValue(null);
+        expect(await VehiculesService.getVerificationPdf(5, user)).toBeNull();
     });
 });

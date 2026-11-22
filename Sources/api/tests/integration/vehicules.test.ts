@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import app from '~~/expressApp';
 import { MailerService } from '~~/Services/MailerService';
-import { Elements, Sections } from '~~/Models';
-import { login, seedDatabase } from './seed';
+import bcrypt from 'bcrypt';
+import { Elements, Sections, Users } from '~~/Models';
+import { login, PASSWORD, seedDatabase } from './seed';
 
 // Pas d'envoi réel d'e-mail : on vérifie seulement ce qui serait envoyé
 vi.mock('~~/Services/MailerService', () => ({ MailerService: { sendMailAsync: vi.fn() } }));
@@ -89,15 +90,48 @@ describe('POST /api/vehicules/verifications/:id', () => {
         expect(asUser.body).toEqual([]);
     });
 
-    it('n’enregistre pas d’historique si l’envoi du rapport échoue', async () => {
+    it('enregistre quand même la vérification si l’envoi du rapport échoue : 200 + warning, mail_envoye=false', async () => {
         vi.mocked(MailerService.sendMailAsync).mockRejectedValueOnce(new Error('smtp'));
+        const res = await request(app)
+            .post(`/api/vehicules/verifications/${ids.vehicule}`)
+            .set('Cookie', user)
+            .send({ 0: { elementId: ids.phare, status: 'OK' } })
+            .expect(200);
+        expect(res.body).toEqual({ warning: expect.stringContaining('e-mail') });
+        const mine = await request(app).get('/api/vehicules/verifications/mine').set('Cookie', user).expect(200);
+        expect(mine.body).toMatchObject([{ mail_envoye: false, vehicule: { name: 'VSAV' } }]);
+    });
+
+    it('/mine ne renvoie que les vérifications de l’utilisateur connecté', async () => {
         await request(app)
             .post(`/api/vehicules/verifications/${ids.vehicule}`)
             .set('Cookie', user)
             .send({ 0: { elementId: ids.phare, status: 'OK' } })
-            .expect(500);
-        const res = await request(app).get('/api/vehicules/verifications').set('Cookie', admin).expect(200);
-        expect(res.body).toEqual([]);
+            .expect(200);
+        const mine = await request(app).get('/api/vehicules/verifications/mine').set('Cookie', admin).expect(200);
+        expect(mine.body).toEqual([]);
+    });
+
+    it('télécharge le PDF régénéré : auteur et admin de la garde oui, autre agent non, 404 si inconnu', async () => {
+        await request(app)
+            .post(`/api/vehicules/verifications/${ids.vehicule}`)
+            .set('Cookie', user)
+            .send({ 0: { elementId: ids.phare, status: 'OK' } })
+            .expect(200);
+        const url = '/api/vehicules/verifications/1/pdf';
+        for (const cookie of [user, admin]) {
+            const res = await request(app).get(url).set('Cookie', cookie).buffer(true).parse((r, cb) => {
+                const chunks: Buffer[] = [];
+                r.on('data', (c) => chunks.push(c));
+                r.on('end', () => cb(null, Buffer.concat(chunks)));
+            }).expect(200);
+            expect(res.headers['content-type']).toBe('application/pdf');
+            expect((res.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+        }
+        await Users.create({ email: 'autre@sdis49.fr', password: await bcrypt.hash(PASSWORD, 4), firstname: 'Eve', lastname: 'Autre', role: 'user', garde_id: ids.garde2 });
+        const other = await login('autre@sdis49.fr');
+        await request(app).get(url).set('Cookie', other).expect(404);
+        await request(app).get('/api/vehicules/verifications/999/pdf').set('Cookie', admin).expect(404);
     });
 
     it('400 si un élément n’a pas de statut OK/KO', async () => {
@@ -113,13 +147,15 @@ describe('POST /api/vehicules/verifications/:id', () => {
         await request(app).post('/api/vehicules/verifications/999').set('Cookie', user).send({}).expect(404);
     });
 
-    it('500 si la garde de l’agent n’a pas de responsable', async () => {
+    it('200 + warning (vérification conservée) si la garde de l’agent n’a pas de responsable', async () => {
         await request(app).put(`/api/gardes/${ids.garde1}/responsable`).set('Cookie', admin).send({ responsableId: null }).expect(200);
         await request(app)
             .post(`/api/vehicules/verifications/${ids.vehicule}`)
             .set('Cookie', user)
             .send({ 0: { elementId: ids.phare, status: 'OK' } })
-            .expect(500);
+            .expect(200);
+        const mine = await request(app).get('/api/vehicules/verifications/mine').set('Cookie', user).expect(200);
+        expect(mine.body).toMatchObject([{ mail_envoye: false }]);
     });
 });
 
